@@ -195,6 +195,11 @@ body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-
   border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: manipulation; transition: background 0.15s, transform 0.15s; }
 body.m.walking #usebtn.ready { background: var(--accent); transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199,114,106,0.35); }
 body.m.walking #mintro, body.m.touring #mintro { display: none; }
+#tourcap { left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(520px, calc(100% - 32px));
+  padding: 10px 14px; text-align: center; font: 500 14px/1.38 var(--font-body); pointer-events: none; }
+body.m #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
+body.m.touring.walking #joy { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+body.m.touring.walking #usebtn { bottom: calc(118px + env(safe-area-inset-bottom, 0px)); }
 body.m.touring #tourbar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; transform: none; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 8px; }
 body.m.touring #tourbar .btn { padding: 12px 12px; min-width: 44px; }
 body.m.touring .tour-label { flex: 1; min-width: 0; }
@@ -261,7 +266,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
     </div>
     <div id="status" role="status"></div>
   </div>
-  <p class="hint">Drag to orbit · space-drag, right-drag or two-finger to pan · scroll to zoom · click a room for details. Things you can click light up your cursor: doors, cabinets and drawers, the dishwasher, fridge, fireplace, TV, fan, shower, skylights, the switch by the front door and the car. <span id="found-badge" class="found">★ 0 / 9 found</span></p>
+  <p class="hint">Drag to orbit · space-drag, right-drag or two-finger to pan · scroll to zoom · click a room for details. Things you can click light up your cursor: doors, cabinets and drawers, the dishwasher, fridge, fireplace, TV, fan, shower, the switch by the front door and the car. <span id="found-badge" class="found">★ 0 / 9 found</span></p>
   </div>
 </aside>
 <script>
@@ -334,6 +339,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   <button id="walk-exit" class="btn" type="button">Exit walk</button>
 </div>
 
+<div id="tourcap" class="card" hidden></div>
 <div id="tourbar" class="card hud" hidden>
   <button id="tour-prev" class="btn" type="button" aria-label="Previous stop">◀</button>
   <div class="tour-label"><b id="tour-name">Arrive</b><span id="tour-count">1 / 9</span></div>
@@ -632,7 +638,8 @@ function worldUV(geo, tile) {
 /* Interactive things (doors, cabinets, fridge, fan, fireplace, TV, shower, skylights, the bedtime switch).
    Builders register here; section 8c wires up hover, click, walk-mode aiming and the animations. */
 const ACTS = [];
-let FX_FIRE = null, FX_TV = null, FX_SHOWER = null;
+let FX_FIRE = null, FX_TV = null;
+const FX_SHOWERS = [];                                       // every shower stall: { parts, head, floor, zone, group, mirror, tap }
 const FAN = { speed: 0, spin: null };
 const BATH_MIRROR = M('mirror').clone();                    // its own material so the upstairs mirrors can fog
 const TWEENS = [];
@@ -822,6 +829,29 @@ function doorLeafRaw(parent, { axis, u, face, swing, hinge = 'a', y0, h, open = 
   act(pivot, { kind: 'door', on: open > 0, label: d => d.on ? 'Close door' : 'Open door',
     run: d => tweenTo(pivot.rotation, 'y', d.on ? full : 0, 0.7) });
   return pivot;
+}
+
+/* Pocket door (CD set: solid core, 1¾", 1" casing, 2" extra width, black-painted head pocket). The leaf stands in the opening
+   when closed and slides into the wall, leaving about 2" of its edge showing. axis = the way the wall runs ('z' = a north-south wall);
+   u = the opening along the wall; c / t = the wall's centre plane and thickness; slide = ±1, which way the pocket lies along u. */
+function pocketDoor(parent, { axis, u, c, t, y0, h, slide, open = false, mat = 'door' }) {
+  const ca = axis === 'x' ? 'z' : 'x', [ua, ub] = u, th = 0.146, width = ub - ua - 0.04, cw = 0.2, ct = 0.04, lin = 0.035;
+  const B = (us, ys, ts, m) => { const mesh = axis === 'x' ? box(parent, us, ys, ts, m) : box(parent, ts, ys, us, m); mesh.userData.cutAxis = ca; return mesh; };
+  // casing on both wall faces, jamb and head linings through the wall thickness
+  for (const sg of [-1, 1]) {
+    const f0 = c + sg * t / 2, f1 = f0 + sg * ct, ts = f0 < f1 ? [f0, f1] : [f1, f0];
+    B([ua - cw, ua], [y0, y0 + h + cw], ts, mat); B([ub, ub + cw], [y0, y0 + h + cw], ts, mat); B([ua - cw, ub + cw], [y0 + h, y0 + h + cw], ts, mat);
+  }
+  B([ua, ub], [y0 + h - lin, y0 + h], [c - t / 2, c + t / 2], mat); B([ua, ua + lin], [y0, y0 + h], [c - t / 2, c + t / 2], mat); B([ub - lin, ub], [y0, y0 + h], [c - t / 2, c + t / 2], mat);
+  const n0 = parent.children.length;
+  B([ua + 0.02, ua + 0.02 + width], [y0, y0 + h - lin], [c - th / 2, c + th / 2], mat);                                  // the leaf
+  const lead = slide < 0 ? ua + 0.02 + width : ua + 0.02, pu = lead + slide * 0.14;                                         // flush pulls near the leading edge, both faces
+  for (const sg of [-1, 1]) B([pu - 0.06, pu + 0.06], [y0 + 2.75, y0 + 3.4], sg > 0 ? [c + th / 2, c + th / 2 + 0.012] : [c - th / 2 - 0.012, c - th / 2], 'lever');
+  const pv = pivotFrom(parent, n0, 0, 0, 0), key = axis === 'x' ? 'x' : 'z', dist = slide * (width - 0.16);
+  pv.traverse(o => { o.userData.cutAxis = ca; });
+  if (open) pv.position[key] = dist;
+  act(pv, { kind: 'door', on: open, label: d => d.on ? 'Slide the door shut' : 'Slide the door open', run: d => tweenTo(pv.position, key, d.on ? dist : 0, 0.8) });
+  return pv;
 }
 
 /* Lever handle set: round rose + neck + lever bar, built so +z is out of the leaf face and the bar points +x
@@ -1119,7 +1149,9 @@ function buildGround(g) {
   // Doors
   doorLeaf(g, { axis: 'x', u: [25.2, 27.9], face: 13.14, swing: -1, hinge: 'a', y0: 0, h: 8, wt: 0.4 });          // 104
   doorLeaf(g, { axis: 'x', u: [33.65, 36.32], face: 13.14, swing: -1, hinge: 'a', y0: 0, h: 8, wt: 0.4 });        // 106
-  doorLeaf(g, { axis: 'z', u: [8.0, 10.7], face: 45.16, swing: -1, hinge: 'a', y0: 0, h: 8, wt: 0.35 });           // 108
+  doorLeaf(g, { axis: 'z', u: [8.0, 10.7], face: 45.16, swing: -1, hinge: 'a', y0: 0, h: 8, open: 0, wt: 0.35 });           // 108
+  pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 24.355, t: 0.39, y0: 0, h: 8, slide: -1, open: true });                    // 103 pocket (entry | corridor)
+  pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 39.04, t: 0.54, y0: 0, h: 8, slide: -1, open: true });                      // 107 pocket (corridor | office)
   for (let i = 0; i < 4; i++) {                                                                          // 105 bifold (closed)
     const x0 = 28.45 + i * (32.86 - 28.45) / 4;
     box(g, [x0 + 0.02, x0 + (32.86 - 28.45) / 4 - 0.02], [0, 8], [10.78, 10.9], 'door');
@@ -1909,15 +1941,24 @@ function buildGuestBath(g) {
   box(g, [36.12, 38.77], [0, 3.5], [3.9, 4.3], 'biscuit', R);
   box(g, [38.23, 38.77], [0, 3.5], [4.3, 10.46], 'biscuit', R);
   // frameless glass door (west) + fixed glass on the pony wall (east), 7'-0" (A401.2 elev. 4)
-  box(g, [33.45, 36.1], [0.1, 7.0], [4.06, 4.12], 'glass', { ...R, cast: false });
+  { const n0 = g.children.length;                                    // the glass door: hinged at the west wall, swings out into the bath
+    box(g, [33.45, 36.1], [0.1, 7.0], [4.06, 4.12], 'glass', { ...R, cast: false });
+    box(g, [35.7, 35.78], [2.9, 4.5], [3.99, 4.06], 'chrome', R);                           // pull, both faces
+    box(g, [35.7, 35.78], [2.9, 4.5], [4.12, 4.19], 'chrome', R);
+    for (const hy of [1.0, 3.6, 6.0]) box(g, [33.45, 33.6], [hy, hy + 0.3], [4.03, 4.15], 'chrome', R);   // hinges
+    const pv = pivotFrom(g, n0, 33.45, 0, 4.09);
+    pv.traverse(o => { o.userData.cutAxis = 'z'; });
+    act(pv, { kind: 'door', label: d => d.on ? 'Close the shower door' : 'Open the shower door', run: d => tweenTo(pv.rotation, 'y', d.on ? -1.75 : 0, 0.9) }); }
   box(g, [36.14, 38.75], [3.5, 7.0], [4.06, 4.12], 'glass', { ...R, cast: false });
   // mirror over the sink with D4 sconces either side (elev. 1)
-  box(g, [38.72, 38.77], [4.0, 7.0], [7.6, 9.6], 'mirror', R);
+  const GUEST_MIRROR = M('mirror').clone();
+  box(g, [38.72, 38.77], [4.0, 7.0], [7.6, 9.6], 'mirror', R).material = GUEST_MIRROR;
   for (const z of [7.3, 9.9]) cyl(g, [38.68, z], [5.55, 6.05], 0.12, 'chrome', R);
   // chrome: shower arm/head, valve, faucet, towel bar
-  box(g, [38.2, 38.74], [6.7, 6.78], [2.06, 2.14], 'chrome', R);
-  cyl(g, [38.15, 2.1], [6.6, 6.7], 0.3, 'chrome', R);
-  box(g, [38.68, 38.74], [3.9, 4.3], [2.0, 2.2], 'chrome', R);
+  const guestShowerParts = [box(g, [38.2, 38.74], [6.7, 6.78], [2.06, 2.14], 'chrome', R),
+    cyl(g, [38.15, 2.1], [6.6, 6.7], 0.3, 'chrome', R),
+    box(g, [38.68, 38.74], [3.9, 4.3], [2.0, 2.2], 'chrome', R)];
+  FX_SHOWERS.push({ parts: guestShowerParts, head: [38.15, 6.55, 2.1], floor: 0, zone: [33.45, 38.74, 0.56, 4.05], group: g, mirror: GUEST_MIRROR, tap: [38.55, 38.74, 2.5, 7.0, 0.56, 4.05] });
   box(g, [37.9, 38.23], [3.5, 3.6], [8.55, 8.65], 'chrome', R);
   box(g, [33.43, 33.5], [3.6, 3.66], [5.5, 7.5], 'chrome', R);
   // wall-hung toilet and sink on the ledge, tall cabinet (keynote 22)
@@ -1982,12 +2023,14 @@ function buildLoft(g) {
   };
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]]);        // stair/loft | bedroom, door 201
   P('z', [0.52, 5.42], [30.23, 30.77], [[2.3, 5.42, LV.LOFT, LV.LOFT + 5]]);           // MECH | laundry, door 203 (5' tall)
-  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 7]]);         // MECH+laundry | bedroom; pocket 202 at the east end (revised), 3" jamb
+  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]]);         // MECH+laundry | bedroom; pocket 202 (8'-0", same as 204) at the east end (revised), 3" jamb
   P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]]);          // bedroom | bath, pocket 204
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
   doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, wt: 0.54 });            // 201
   doorLeaf(g, { axis: 'z', u: [2.3, 5.42], face: 30.77, swing: +1, hinge: 'b', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });      // 203 (shown closed, behind the figure)
+  pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (laundry | bedroom)
+  pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
   // MECH (west, revised): hot water heater (keynote 28), HRV
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
@@ -2017,7 +2060,14 @@ function buildUpperBath(g) {
   box(g, [44.26, 47.52], [y, y + 4.0], [PONY_N, 10.58], 'biscuit', R);
   box(g, [44.28, 47.5], [y + 4.0, y + 7.0], [10.43, 10.49], 'glass', { ...R, cast: false });
   box(g, [41.43, 44.26], [y, y + 0.33], [10.34, 10.58], 'brownberry', R);
-  box(g, [41.45, 44.24], [y + 0.35, y + 7.0], [10.43, 10.49], 'glass', { ...R, cast: false });
+  { const n0 = g.children.length;                                    // the glass door: hinged at the west wall, swings out into the bath
+    box(g, [41.45, 44.24], [y + 0.35, y + 7.0], [10.43, 10.49], 'glass', { ...R, cast: false });
+    box(g, [43.92, 44.0], [y + 2.9, y + 4.5], [10.36, 10.43], 'chrome', R);                 // pull
+    box(g, [43.92, 44.0], [y + 2.9, y + 4.5], [10.49, 10.56], 'chrome', R);
+    for (const hy of [y + 1.0, y + 3.6, y + 6.0]) box(g, [41.45, 41.6], [hy, hy + 0.3], [10.4, 10.52], 'chrome', R);   // hinges
+    const pv = pivotFrom(g, n0, 41.45, y, 10.46);
+    pv.traverse(o => { o.userData.cutAxis = 'z'; });
+    act(pv, { kind: 'door', label: d => d.on ? 'Close the shower door' : 'Open the shower door', run: d => tweenTo(pv.rotation, 'y', d.on ? 1.75 : 0, 0.9) }); }
   // bench (keynote 34): bench & curb tile matches the floor tile
   box(g, [41.43, 47.53], [y, y + 1.5], [14.0, 15.18], 'brownberry', R);
   // Tiled half wall behind the vanity (A401.2 plan 6 / elev. 3): 5" deep, 4'-0" high, north wall → pony wall
@@ -2027,7 +2077,8 @@ function buildUpperBath(g) {
   const showerParts = [box(g, [46.9, 47.53], [y + 6.6, y + 6.68], [12.06, 12.14], 'chrome', R),
     cyl(g, [46.85, 12.1], [y + 6.5, y + 6.6], 0.3, 'chrome', R),
     box(g, [47.47, 47.53], [y + 3.9, y + 4.3], [13.2, 13.4], 'chrome', R)];
-  FX_SHOWER = { parts: showerParts, head: [46.85, y + 6.48, 12.1], floor: y, zone: [41.45, 47.5, 10.6, 15.15], group: g };
+  FX_SHOWERS.push({ parts: showerParts, head: [46.85, y + 6.48, 12.1], floor: y, zone: [41.45, 47.5, 10.6, 15.15], group: g, mirror: BATH_MIRROR,
+    tap: [47.4, 47.53, y + 2.5, y + 7.0, 10.62, 15.15] });
   // toilet, double vanity (keynote 1) with two basins + chrome faucets
   box(g, [42.74, 44.0], [y, y + 1.35], [2.6, 4.29], 'porcelain', R);
   box(g, [42.74, 44.0], [y, y + 2.6], [1.94, 2.6], 'porcelain', R);
@@ -2093,13 +2144,7 @@ function buildMainRoof(g) {
     slopedSlab(g, [x1 - c, x1], [zA, top(zA)], [zB, top(zB)], up, 'frame');
     slopedSlab(g, [x0, x1], [zA, top(zA)], [zA + c, top(zA + c)], up, 'frame');
     slopedSlab(g, [x0, x1], [zB - c, top(zB - c)], [zB, top(zB)], up, 'frame');
-    { const n0 = g.children.length;
-      slopedSlab(g, [x0 + c, x1 - c], [zA + c, top(zA + c) - 0.02], [zB - c, top(zB - c) - 0.02], 0.03, 'glass', { cast: false });
-      const pv = pivotFrom(g, n0, 0, top(zB - c), zB - c);
-      const curb = g.children.slice(-5, -1);                                         // the four curb pieces just above
-      const def = act(pv, { kind: 'skylight', label: d => d.on ? 'Close skylight' : 'Open skylight', run: d => {
-        tweenTo(pv.rotation, 'x', d.on ? 0.42 : 0, 1.2); skyWeather(d.on, [x0 + c, x1 - c, zA + c, zB - c], top); } });
-      curb.forEach(m => { m.userData.act = def; }); }
+    slopedSlab(g, [x0 + c, x1 - c], [zA + c, top(zA + c) - 0.02], [zB - c, top(zB - c) - 0.02], 0.03, 'glass', { cast: false });
     // black flashing apron at the low end: closes the gap under the curb where the roof is cut for the well
     slopedSlab(g, [x0, x1], [zA - 0.12, atZ(zA - 0.12) + 0.015], [zA + 0.45, atZ(zA + 0.45) + 0.015], 0.08, 'frame', { cast: false });
   }
@@ -2172,7 +2217,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = LITE ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 // Shadows are re-rendered only when something changes (the scene is static; the camera does not affect them).
 renderer.shadowMap.autoUpdate = false;
-let shadowFrames = 3;
+let shadowFrames = 3, shTick = 0;
 function markShadows() { shadowFrames = Math.max(shadowFrames, 2); }
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -2292,7 +2337,7 @@ function fixtures() {
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(glowR, glowR, 0.02, 20), lampMat); lens.position.set(x, top - drop - 0.005, z); gg.add(lens);
     };
     // Recessed: 4" in the kitchen / dining, 2" everywhere else (owner's selection). Thin black trim + lens.
-    const inKitchen = (x, z) => floor === 'ground' && x > 0.51 && x < 16.52 && z > 0.52 && z < 16.54;
+    const inKitchen = (x, z) => floor === 'ground' && x > 0.51 && x < 16.52 && z > 0.52 && z < 16.54 && !(x > 15 && z > 12);   // the two at the kitchen edge by the foyer are 2" like the other two
     const recessed = (x, z, gg) => inKitchen(x, z) ? disc(x, z, 0.2, 0.03, 0.14, gg) : disc(x, z, 1 / 12, 0.02, 0.06, gg);
     (F.L1 || []).forEach(([x, z]) => recessed(x, z));
     (F.L2 || []).forEach(([x, z]) => recessed(x, z, (floor === 'loft' && x > 24.7 && x < 40.86 && z > 5.97) ? g : R));
@@ -2700,7 +2745,21 @@ function drawTV(ch, t) {
   tvTex.needsUpdate = true;
 }
 // --- shower: falling water, steam, mirror fog
-let water = null, steam = null, fog = 0;
+// a soft hiss while any shower runs (made with WebAudio on the first tap; silent if audio isn't available)
+let SH_AUDIO = null, SH_ON = 0;
+function showerSound(on) {
+  SH_ON = Math.max(0, SH_ON + (on ? 1 : -1));
+  try {
+    if (!SH_AUDIO) {
+      const ac = new (window.AudioContext || window.webkitAudioContext)(), buf = ac.createBuffer(1, ac.sampleRate * 2, ac.sampleRate), d = buf.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+      src.buffer = buf; src.loop = true; f.type = 'bandpass'; f.frequency.value = 3200; f.Q.value = 0.6; g.gain.value = 0;
+      src.connect(f); f.connect(g); g.connect(ac.destination); src.start(); SH_AUDIO = { ac, g };
+    }
+    SH_AUDIO.ac.resume(); SH_AUDIO.g.gain.setTargetAtTime(SH_ON > 0 ? 0.07 : 0, SH_AUDIO.ac.currentTime, 0.25);
+  } catch (e) { /* no audio */ }
+}
 // --- skylight weather
 const skyFx = [];
 function skyWeather(open, [x0, x1, za, zb], top) {
@@ -2747,17 +2806,21 @@ function lightsOut() {
     act(grp, { kind: 'tv', ch: 0, label: d => d.ch === 0 ? 'Turn on the TV' : d.ch === TV_CH.length - 1 ? 'Turn off the TV' : 'Next channel', run: d => {
       d.ch = (d.ch + 1) % TV_CH.length; d.on = d.ch > 0; tvScreen.visible = d.on; tvLight.visible = d.on; if (d.on) { drawTV(d.ch, 0); toast(TV_CH[d.ch]); } } });
   }
-  if (FX_SHOWER) {
-    const n = 110, pos = new Float32Array(n * 6), [hx, hy, hz] = FX_SHOWER.head;
-    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-    water = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xd8e8ff, transparent: true, opacity: 0.55, depthWrite: false }));
-    water.userData.drops = Array.from({ length: n }, () => [hx + (Math.random() - 0.5) * 0.5, hy - Math.random() * (hy - FX_SHOWER.floor), hz + (Math.random() - 0.5) * 0.5, (Math.random() - 0.5) * 0.4]);
-    water.visible = false; water.userData.nocut = true; FX_SHOWER.group.add(water);
-    const [x0, x1, z0, z1] = FX_SHOWER.zone;
-    steam = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 7, z1 - z0), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false }));
-    steam.position.set((x0 + x1) / 2, FX_SHOWER.floor + 3.5, (z0 + z1) / 2); steam.visible = false; steam.userData.nocut = true; FX_SHOWER.group.add(steam);
-    const grp = new THREE.Group(); FX_SHOWER.group.add(grp); FX_SHOWER.parts.forEach(m => { FX_SHOWER.group.remove(m); grp.add(m); });
-    act(grp, { kind: 'shower', label: d => d.on ? 'Turn off the shower' : 'Turn on the shower', run: d => { water.visible = d.on; steam.visible = true; } });
+  for (const S of FX_SHOWERS) {
+    const n = 320, [hx, hy, hz] = S.head;
+    S.mesh = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.024, 0.024, 0.6, 4), new THREE.MeshBasicMaterial({ color: 0xcde6ff, transparent: true, opacity: 0.9, depthWrite: false }), n);
+    S.mesh.renderOrder = -1;                                  // draw before the glass so the spray shows through it
+    S.mesh.frustumCulled = false; S.mesh.visible = false; S.mesh.userData.nocut = true; S.group.add(S.mesh);
+    S.drops = Array.from({ length: n }, () => [hx + (Math.random() - 0.5) * 0.7, hy - Math.random() * (hy - S.floor), hz + (Math.random() - 0.5) * 0.7, (Math.random() - 0.5) * 0.9]);
+    S.dummy = new THREE.Object3D(); S.fog = 0;
+    const [x0, x1, z0, z1] = S.zone;
+    S.steam = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 7, z1 - z0), new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false }));
+    S.steam.position.set((x0 + x1) / 2, S.floor + 3.5, (z0 + z1) / 2); S.steam.visible = false; S.steam.userData.nocut = true; S.group.add(S.steam);
+    const [tx0, tx1, ty0, ty1, tz0, tz1] = S.tap;                                        // an invisible plate on the stall wall: a big target for the tap
+    const tap = new THREE.Mesh(new THREE.BoxGeometry(tx1 - tx0, ty1 - ty0, tz1 - tz0), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false }));
+    tap.position.set((tx0 + tx1) / 2, (ty0 + ty1) / 2, (tz0 + tz1) / 2); tap.userData.nocut = true;
+    const grp = new THREE.Group(); S.group.add(grp); S.parts.forEach(m => { S.group.remove(m); grp.add(m); }); grp.add(tap);
+    act(grp, { kind: 'shower', label: d => d.on ? 'Turn off the water' : 'Turn on the water', run: d => { S.mesh.visible = d.on; S.steam.visible = true; showerSound(d.on); toast(d.on ? 'Water on' : 'Water off'); } });
   }
 })();
 // --- toast (channel names etc.)
@@ -2770,7 +2833,7 @@ function pickAct(nx, ny, maxDist) {
   AV.set(nx, ny); AR.setFromCamera(AV, camera);
   const hits = AR.intersectObjects([G.ground, G.loft, G.mainRoof, G.wingRoof, G.site, LAND], true);
   for (const h of hits) {
-    if (!isShown(h.object) || h.object.isPoints || h.object.isLineSegments || h.object === steam) continue;
+    if (!isShown(h.object) || h.object.isPoints || h.object.isLineSegments || FX_SHOWERS.some(S => S.steam === h.object)) continue;
     const a = actOf(h.object);
     if (!a && h.object.material && h.object.material.transparent) continue;           // see through glass
     return a && h.distance <= maxDist ? a : null;
@@ -2826,7 +2889,7 @@ function interactStep(dt) {
     const w = TWEENS[i]; w.t += dt; const k = Math.min(1, w.t / w.dur), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
     w.obj[w.key] = w.from + (w.to - w.from) * e; if (k >= 1) TWEENS.splice(i, 1);
   }
-  if (TWEENS.length) markShadows();
+  if (TWEENS.length && (!LITE || ++shTick % 3 === 0)) markShadows();
   if (FAN.spin && FAN.speed) FAN.spin.rotation.y += dt * FAN.speed;
   const fireOn = fireLight.visible, tvAct = tvScreen && tvScreen.visible;
   if ((fireOn || tvAct) && (fxDraw += dt) > 0.07) {
@@ -2841,21 +2904,21 @@ function interactStep(dt) {
     sp.position.set(FX_FIRE.flue[0] + Math.sin(t * 6 + sp.id) * 0.4, FX_FIRE.flue[1] + t * 7, FX_FIRE.flue[2] + t * 1.5);
     sp.scale.setScalar(0.6 + t * 2.4); sp.material.opacity = 0.35 * Math.sin(Math.PI * t);
   });
-  if (water) {
-    const on = water.visible;
+  for (const S of FX_SHOWERS) {
+    if (!S.mesh) continue;
+    const on = S.mesh.visible, [hx, hy, hz] = S.head, o = S.dummy;
     if (on) {
-      const pos = water.geometry.attributes.position.array, [hx, hy, hz] = FX_SHOWER.head;
-      water.userData.drops.forEach((d, i) => {
-        d[1] -= dt * 9; if (d[1] < FX_SHOWER.floor) { d[0] = hx + (Math.random() - 0.5) * 0.4; d[1] = hy; d[2] = hz + (Math.random() - 0.5) * 0.4; }
-        const sp = (hy - d[1]) / (hy - FX_SHOWER.floor);
-        const x = d[0] - sp * 0.9 + d[3] * sp, z = d[2] + d[3] * sp * 0.6;              // the spray fans out from the wall
-        pos.set([x, d[1], z, x, d[1] + 0.35, z], i * 6);
+      S.drops.forEach((d, i) => {
+        d[1] -= dt * 9; if (d[1] < S.floor) { d[0] = hx + (Math.random() - 0.5) * 0.6; d[1] = hy; d[2] = hz + (Math.random() - 0.5) * 0.6; }
+        const sp = (hy - d[1]) / (hy - S.floor);
+        o.position.set(d[0] - sp * 0.9 + d[3] * sp, d[1], d[2] + d[3] * sp * 0.6);              // the spray fans out from the wall
+        o.rotation.set(0, 0, 0.25 * sp); o.updateMatrix(); S.mesh.setMatrixAt(i, o.matrix);
       });
-      water.geometry.attributes.position.needsUpdate = true;
+      S.mesh.instanceMatrix.needsUpdate = true;
     }
-    fog = Math.max(0, Math.min(1, fog + dt * (on ? 1 / 8 : -1 / 14)));
-    steam.material.opacity = 0.2 * fog; steam.visible = fog > 0.01;
-    BATH_MIRROR.color.setRGB(0.706 + 0.2 * fog, 0.765 + 0.15 * fog, 0.792 + 0.12 * fog); BATH_MIRROR.roughness = 0.12 + 0.8 * fog;
+    S.fog = Math.max(0, Math.min(1, S.fog + dt * (on ? 1 / 8 : -1 / 14)));
+    S.steam.material.opacity = 0.2 * S.fog; S.steam.visible = S.fog > 0.01;
+    S.mirror.color.setRGB(0.706 + 0.2 * S.fog, 0.765 + 0.15 * S.fog, 0.792 + 0.12 * S.fog); S.mirror.roughness = 0.12 + 0.8 * S.fog;
   }
   for (const f of skyFx) {
     f.pts.visible = f.on; if (!f.on) continue;
@@ -3298,7 +3361,7 @@ applySceneTheme();
    Esc to leave. Walls, glass and furniture block you; steps up to ~1' are climbed (stairs, the sunken living
    steps, deck steps); you can step down anywhere. The two entry doors let you through.
    ===================================================================== */
-const WALK = { on: false, yaw: 0, pitch: -0.05, feet: 0, pos: new THREE.Vector3(), keys: {}, saved: null, drag: null, joy: { x: 0, y: 0 } };
+const WALK = { on: false, yaw: 0, pitch: -0.05, feet: 0, pos: new THREE.Vector3(), keys: {}, saved: null, drag: null, joy: { x: 0, y: 0 }, auto: null, glide: null };
 const EYE = 5.5 * FT, STEP = 1.05 * FT, RAD = 0.95 * FT;
 const toW = (x, y, z) => new THREE.Vector3((x - 24) * FT, y * FT, (z - 13.5) * FT);
 let solids = [], grounds = [];
@@ -3316,8 +3379,17 @@ function castFirst(list, origin, dir, far) {
 const DOWN = new THREE.Vector3(0, -1, 0);
 function floorAt(x, z, fromY) { const h = castFirst(grounds, new THREE.Vector3(x, fromY, z), DOWN, 40); return h ? h.point.y : -Infinity; }
 function walkStep(dt) {
-  const k = WALK.keys, fwd = Math.max(-1, Math.min(1, (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0) + WALK.joy.y));
-  const side = Math.max(-1, Math.min(1, (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + WALK.joy.x));
+  if (WALK.glide) {                                                      // a short glide to a spot in front of something (things-to-try)
+    const G = WALK.glide; G.t += dt; const k = ease(Math.min(1, G.t / G.dur));
+    WALK.pos.set(G.x0 + (G.x1 - G.x0) * k, 0, G.z0 + (G.z1 - G.z0) * k); WALK.feet = G.f0 + (G.f1 - G.f0) * k;
+    WALK.yaw = G.y0 + G.dy * k; WALK.pitch = G.p0 + (G.p1 - G.p0) * k;
+    camera.position.set(WALK.pos.x, WALK.feet + EYE, WALK.pos.z); camera.rotation.set(WALK.pitch, WALK.yaw, 0, 'YXZ');
+    if (G.t >= G.dur) WALK.glide = null;
+    return;
+  }
+  const k = WALK.keys; let fwd = Math.max(-1, Math.min(1, (k.KeyW || k.ArrowUp ? 1 : 0) - (k.KeyS || k.ArrowDown ? 1 : 0) + WALK.joy.y));
+  let side = Math.max(-1, Math.min(1, (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + WALK.joy.x));
+  if (WALK.auto) { const r = autoSteer(dt); fwd = r.fwd; side = r.side; }                // the guided tour is walking for us
   if (k.KeyQ) WALK.yaw += dt * 1.8; if (k.KeyE) WALK.yaw -= dt * 1.8;
   const speed = (k.ShiftLeft || k.ShiftRight ? 10 : 5) * FT;
   const f = new THREE.Vector3(-Math.sin(WALK.yaw), 0, -Math.cos(WALK.yaw)), r = new THREE.Vector3(Math.cos(WALK.yaw), 0, -Math.sin(WALK.yaw));
@@ -3353,7 +3425,7 @@ function enterWalk() {
   document.body.classList.add('walking');
 }
 function exitWalk() {
-  if (!WALK.on) return;
+  if (!WALK.on || TOUR.walking) return;
   WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = 0; setFov(FOV.orbit);
   document.getElementById('walkhud').hidden = true; document.body.classList.remove('walking');
   Object.assign(state, WALK.saved.state, { night: state.night, sun: state.sun }); applyState();   // keep the light set during the walk
@@ -3363,6 +3435,7 @@ addEventListener('keydown', e => {
   if (e.key === 'Escape') { exitWalk(); exitTour(); return; }
   if (!WALK.on) return;
   WALK.keys[e.code] = true;
+  if (/^(Key[WASDQE]|Arrow)/.test(e.code)) takeOver();
   if (e.code.startsWith('Arrow') || e.code === 'Space') e.preventDefault();
 });
 addEventListener('keyup', e => { WALK.keys[e.code] = false; });
@@ -3391,7 +3464,7 @@ addEventListener('blur', () => { WALK.keys = {}; });
   el.addEventListener('pointerdown', () => { if (spacePan) el.style.cursor = 'grabbing'; });
   el.addEventListener('pointerup', () => { if (spacePan) el.style.cursor = 'grab'; });
 }
-renderer.domElement.addEventListener('pointerdown', e => { if (WALK.on) { WALK.drag = [e.clientX, e.clientY]; renderer.domElement.setPointerCapture?.(e.pointerId); } });
+renderer.domElement.addEventListener('pointerdown', e => { if (WALK.on) { takeOver(); WALK.drag = [e.clientX, e.clientY]; renderer.domElement.setPointerCapture?.(e.pointerId); } });
 renderer.domElement.addEventListener('pointermove', e => {
   if (!WALK.on || !WALK.drag) return;
   WALK.yaw -= (e.clientX - WALK.drag[0]) * 0.0045; WALK.pitch -= (e.clientY - WALK.drag[1]) * 0.0045;
@@ -3409,27 +3482,120 @@ document.getElementById('walk-exit').addEventListener('click', exitWalk);
    14. GUIDED TOUR — saved camera stops with eased fly-throughs. Positions in plan feet (x east, y up, z south).
    ===================================================================== */
 const TOUR_STOPS = [
-  { name: 'Arrive', pos: [62, 22, 66], look: [22, 6, 14] },
-  { name: 'Front porch', pos: [22, 5.4, 36], look: [20, 5.2, 18] },
-  { name: 'Entry + stair', inside: true, pos: [21.5, 5.4, 15.8], look: [20.5, 6.0, 3.5] },
-  { name: 'Kitchen', inside: true, pos: [14.2, 5.6, 14.6], look: [4.5, 4.0, 2.5] },
-  { name: 'Conversation pit', inside: true, pos: [15.0, 4.6, 18.4], look: [6.5, 0.5, 24.5] },
-  { name: 'Loft', inside: true, pos: [23.0, 14.6, 15.6], look: [7.0, 7.5, 6.0] },
-  { name: 'Primary bedroom', inside: true, pos: [25.6, 14.8, 15.8], look: [38.0, 11.5, 7.5] },
-  { name: 'Dollhouse', world: true },
-  { name: 'Evening', pos: [70, 20, 70], look: [22, 7, 14], night: true },
+  { name: 'Arrive', pos: [62, 22, 66], look: [22, 6, 14], cap: 'Local Time House, Andes NY. Let\u2019s go inside.' },
+  { name: 'Entry deck', open: [/front door/i], walk: { y: 0, path: [[21.2, 32.0], [20.4, 28.2], [19.7, 24.3]], look: [19.7, 5.5, 17] },
+    cap: 'Up the steps onto the entry deck: light wood over a black skirt, under the porch roof.' },
+  { name: 'Entry + stair', walk: { y: 0, path: [[19.7, 24.3], [19.7, 14.2]], look: [20.5, 5.6, 3.5] },
+    cap: 'The entry: wine tile, a wood-clad stair, and a light switch by the door. Try it.' },
+  { name: 'Kitchen', shut: [{ rx: /front door/i, axis: 'z', lt: 13.8 }], walk: { y: 0, path: [[19.7, 14.2], [18.2, 13.2], [14.2, 14.6]], look: [4.5, 4, 2.5] },
+    cap: 'Reform kitchen in burgundy and oak. Try the corner cabinet (the whole shelf swivels out) and the fridge.' },
+  { name: 'West deck', open: [/side door/i], walk: { y: 0, path: [[14.2, 14.6], [10.5, 15.2], [4.0, 15.2], [1.4, 14.7], [-1.8, 14.7], [-4.5, 14.2]], look: [-14, 6, 6] },
+    cap: 'Out the kitchen\u2019s side door onto the west deck, 8\u2032 \u00d7 17\u2032-8\u2033, wrapped in the same black skirt.' },
+  { name: 'Conversation pit', shut: [{ rx: /side door/i, axis: 'x', gt: 4.5 }], walk: { y: 0, path: [[-4.5, 14.2], [-1.8, 14.7], [1.4, 14.7], [4.0, 15.2], [10.5, 15.2], [14.2, 14.6], [15.0, 18.4]], look: [6.5, 0.5, 24.5] },
+    cap: 'The sunken pit: fireplace, TV, and the sectional. Light the fire.' },
+  { name: 'Guest bedroom', walk: { y: 0, path: [[15.0, 18.4], [15.6, 14.8], [20.8, 14.8], [24.4, 15.0], [26.5, 15.0], [26.5, 12.6], [26.5, 10.2]], look: [30, 4, 6] },
+    cap: 'Through the pocket door into the corridor, then the guest bedroom.' },
+  { name: 'Guest bath', walk: { y: 0, path: [[26.5, 10.2], [26.6, 14.8], [34.9, 14.9], [35.0, 11.5], [35.0, 8.8]], look: [36, 3, 3] },
+    cap: 'The guest bath, in Nautical Blue. Turn the shower on and watch the mirror fog.' },
+  { name: 'Office', walk: { y: 0, path: [[35.0, 8.8], [35.0, 14.8], [41.6, 15.0], [43.5, 12.0]], look: [43, 4, 15.6] },
+    cap: 'Through the second pocket door to the office, with the floating desk under the window.' },
+  { name: 'Loft', walk: { y: 0, path: [[43.5, 12.0], [41.6, 15.0], [30.0, 15.0], [24.4, 15.0], [21.0, 13.8], [18.4, 12.8], [18.6, 9.6], [18.6, 4.4], [19.0, 2.2], [21.8, 1.7], [22.7, 3.4], [22.7, 6.0], [22.7, 10.0], [22.6, 12.4]], look: [7, 7.5, 6] },
+    cap: 'Back to the stair and up to the loft, open to the kitchen below.' },
+  { name: 'Primary bedroom', walk: { y: 9.33, path: [[22.6, 12.4], [27.5, 12.3]], look: [36, 11.5, 8.5] },
+    cap: 'The primary bedroom, with the laundry pocket door beside the bath.' },
+  { name: 'Primary bath', walk: { y: 9.33, path: [[27.5, 12.3], [28.5, 14.8], [38.2, 14.8], [38.6, 7.8], [44.0, 7.6]], look: [44.5, 11, 12.5] },
+    cap: 'Through the pocket door to the bath. Open the shower door and turn the water on.' },
+  { name: 'Dollhouse', world: true, cap: 'The whole house at a glance.' },
+  { name: 'Evening', pos: [70, 20, 70], look: [22, 7, 14], night: true, cap: 'And back outside as the lights come on.' },
 ];
-const TOUR = { on: false, i: 0, fly: null, play: false, wait: 0, saved: null };
+const TOUR = { on: false, i: 0, fly: null, play: false, wait: 0, saved: null, walking: false };
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const cap$ = () => document.getElementById('tourcap');
+// --- walking tour: the real walk engine, steered along hand-placed waypoints
+function takeOver() {                                         // any touch of the controls hands the walk to you
+  if (!WALK.auto) return;
+  WALK.auto = null; TOUR.play = false; document.getElementById('tour-play').textContent = 'Play';
+}
+function tourWalkOn() {
+  if (WALK.on) return;
+  buildColliders(); WALK.on = true; controls.enabled = false; setFov(FOV.inside); document.body.classList.add('walking');
+}
+function tourWalkOff() {
+  if (!WALK.on || !TOUR.walking) return;
+  WALK.on = false; WALK.auto = null; WALK.keys = {}; WALK.joy.x = WALK.joy.y = 0; TOUR.walking = false; document.body.classList.remove('walking');
+  document.getElementById('act-hint').hidden = true;
+}
+function tourOpenDoors(list) {                                // open doors on the route without counting them as found
+  let any = false;
+  for (const rx of list || []) for (const a of ACTS) if (a.kind === 'door' && !a.on && rx.test(a.label({ on: false }))) { a.on = true; a.run(a); any = true; }
+  if (any) setTimeout(buildColliders, 1100);
+}
+const tw = (x, z) => toW(x, 0, z);
+function beginWalk(s, teleport) {
+  tourWalkOn(); TOUR.walking = true;
+  const w = s.walk, pts = w.path.map(([x, z]) => tw(x, z)), start = pts[0];
+  if (teleport) { WALK.pos.set(start.x, 0, start.z); WALK.feet = floorAt(start.x, start.z, (w.y + 3) * FT); }
+  const l = toW(...w.look);
+  tourOpenDoors(s.open);
+  if (teleport) { WALK.yaw = Math.atan2(-(pts[1].x - start.x), -(pts[1].z - start.z)); WALK.pitch = -0.04; }
+  WALK.auto = { pts: pts.slice(1), i: 0, look: l, done: false, t: 0, lastPos: WALK.pos.clone(), still: 0, shut: (s.shut || []).map(o => ({ ...o, done: false })) };
+}
+function tourShutDoors(A, P) {                              // close a door once we have walked well clear of it
+  const px = P.x / FT + 24, pz = P.z / FT + 13.5;
+  for (const o of A.shut) {
+    if (o.done) continue;
+    const v = o.axis === 'x' ? px : pz;
+    if ((o.lt !== undefined && v < o.lt) || (o.gt !== undefined && v > o.gt)) {
+      o.done = true;
+      for (const a of ACTS) if (a.kind === 'door' && a.on && o.rx.test(a.label({ on: true }))) { a.on = false; a.run(a); setTimeout(buildColliders, 1100); }
+    }
+  }
+}
+function autoSteer(dt) {
+  const A = WALK.auto, P = WALK.pos, tgt = A.pts[A.i];
+  if (A.shut.length) tourShutDoors(A, P);
+  const turn = (want, rate) => { let d = want - WALK.yaw; d = Math.atan2(Math.sin(d), Math.cos(d)); WALK.yaw += Math.max(-rate * dt, Math.min(rate * dt, d)); return d; };
+  if (tgt) {
+    const dx = tgt.x - P.x, dz = tgt.z - P.z, dist = Math.hypot(dx, dz);
+    if (dist < 0.3 * FT * 3) { A.i++; A.still = 0; return { fwd: 0, side: 0 }; }
+    const d = turn(Math.atan2(-dx, -dz), 3.2);
+    WALK.pitch += (-0.05 - WALK.pitch) * Math.min(1, dt * 3);
+    // stuck? after 1.2 s without progress, step to the waypoint
+    A.t += dt;
+    if (A.t > 0.4) { A.t = 0; if (P.distanceTo(A.lastPos) < 0.04) A.still += 0.4; else A.still = 0; A.lastPos.copy(P);
+      if (A.still >= 1.2) { P.x = tgt.x; P.z = tgt.z; WALK.feet = floorAt(P.x, P.z, WALK.feet + 1.2); A.i++; A.still = 0; } }
+    return { fwd: Math.abs(d) < 0.7 ? 0.8 : 0, side: 0 };
+  }
+  // arrived: ease round to look at the thing of the stop
+  const lx = A.look.x - P.x, lz = A.look.z - P.z, hy = A.look.y - (WALK.feet + EYE);
+  const d = turn(Math.atan2(-lx, -lz), 2.4), want = Math.max(-0.7, Math.min(0.7, Math.atan2(hy, Math.hypot(lx, lz))));
+  WALK.pitch += (want - WALK.pitch) * Math.min(1, dt * 3);
+  if (Math.abs(d) < 0.03 && Math.abs(want - WALK.pitch) < 0.03) A.done = true;
+  return { fwd: 0, side: 0 };
+}
+function showCap(text) { const el = cap$(); el.textContent = text || ''; el.hidden = !text; }
 function tourGo(i) {
   TOUR.i = (i + TOUR_STOPS.length) % TOUR_STOPS.length;
-  const s = TOUR_STOPS[TOUR.i], world = !!s.world;
+  const s = TOUR_STOPS[TOUR.i], world = !!s.world, walkStop = !!s.walk;
   Object.assign(state, { floors: 'both', walls: 'up', roof: !world, explode: 0, labels: false, night: !!s.night }); applyState(); select(null);
-  const p1 = world ? homePos() : toW(...s.pos), q1 = world ? HOME.target.clone() : toW(...s.look);
-  TOUR.fly = { t: 0, dur: 2.4, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1, f0: camera.fov, f1: s.inside ? FOV.inside : FOV.orbit };
-  controls.enabled = false; TOUR.wait = 0;
   document.getElementById('tour-name').textContent = s.name;
   document.getElementById('tour-count').textContent = `${TOUR.i + 1} / ${TOUR_STOPS.length}`;
+  showCap(s.cap); TOUR.wait = 0; TOUR.fly = null;
+  if (walkStop) {
+    buildColliders();
+    const w = s.walk, st = tw(w.path[0][0], w.path[0][1]);
+    const near = TOUR.walking && WALK.on && Math.hypot(WALK.pos.x - st.x, WALK.pos.z - st.z) < 4 * FT;
+    if (near) { WALK.auto = null; beginWalk(s, false); return; }                          // carry on walking from where we stand
+    tourWalkOff(); WALK.on = false;
+    const fy = floorAt(st.x, st.z, (w.y + 3) * FT), p1 = new THREE.Vector3(st.x, fy + EYE, st.z), nx = tw(w.path[1][0], w.path[1][1]);
+    TOUR.fly = { t: 0, dur: 2.2, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1: new THREE.Vector3(nx.x, fy + EYE, nx.z),
+      f0: camera.fov, f1: FOV.inside, after: () => beginWalk(s, true) };
+    controls.enabled = false; return;
+  }
+  tourWalkOff();
+  const p1 = world ? homePos() : toW(...s.pos), q1 = world ? HOME.target.clone() : toW(...s.look);
+  TOUR.fly = { t: 0, dur: 2.4, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1, f0: camera.fov, f1: FOV.orbit };
+  controls.enabled = false;
 }
 function enterTour() {
   if (WALK.on) exitWalk();
@@ -3439,7 +3605,8 @@ function enterTour() {
 }
 function exitTour() {
   if (!TOUR.on) return;
-  TOUR.on = false; document.body.classList.remove('touring'); TOUR.fly = null; TOUR.play = false; controls.minDistance = 3; setFov(FOV.orbit);
+  tourWalkOff();
+  TOUR.on = false; document.body.classList.remove('touring'); TOUR.fly = null; TOUR.play = false; controls.minDistance = 3; setFov(FOV.orbit); showCap('');
   document.getElementById('tourbar').hidden = true; document.getElementById('tour-play').textContent = 'Play';
   Object.assign(state, TOUR.saved.state); applyState();
   camera.position.copy(TOUR.saved.pos); controls.target.copy(TOUR.saved.target); controls.enabled = true; controls.update();
@@ -3449,8 +3616,10 @@ function tourStep(dt) {
     const F = TOUR.fly; F.t += dt; const k = ease(Math.min(1, F.t / F.dur));
     camera.position.lerpVectors(F.p0, F.p1, k); controls.target.lerpVectors(F.q0, F.q1, k); camera.lookAt(controls.target);
     setFov(F.f0 + (F.f1 - F.f0) * k);
-    if (F.t >= F.dur) { TOUR.fly = null; controls.enabled = true; }
+    if (F.t >= F.dur) { TOUR.fly = null; if (F.after) F.after(); else controls.enabled = true; }
   } else if (TOUR.play) {
+    const arrived = !WALK.on || !WALK.auto || WALK.auto.done;
+    if (!arrived) return;
     TOUR.wait += dt; if (TOUR.wait > 4.5) tourGo(TOUR.i + 1);
   }
 }
@@ -3469,7 +3638,7 @@ const MQ_PHONE = matchMedia('(max-width: 700px), (pointer: coarse) and (max-widt
 const KIND_INFO = {
   door: ['Doors', 'Open any door'], lights: ['Light switch', 'The switch by the front door'], cabinet: ['Cabinets & drawers', 'Try the corner one: it swivels out'],
   dishwasher: ['Dishwasher', 'Panel-ready, next to the sink'], freezer: ['Freezer drawer', 'Bottom of the fridge'], fridge: ['Fridge', 'French doors'],
-  skylight: ['Skylights', 'Let some light in'], fan: ['Ceiling fan', 'Give it a spin'], fireplace: ['Fireplace', 'Light a fire'], tv: ['TV', 'Flip through the channels'],
+  fan: ['Ceiling fan', 'Give it a spin'], fireplace: ['Fireplace', 'Light a fire'], tv: ['TV', 'Flip through the channels'],
   shower: ['Shower', 'Fogs up the mirror'], car: ['The car', 'Flash the headlights'],
 };
 const FLY = { cur: null };
@@ -3487,36 +3656,28 @@ const actCenter = a => {
   if (!a.wc) { a.obj.updateWorldMatrix(true, true); const b = new THREE.Box3().setFromObject(a.obj); if (b.isEmpty()) return null; a.wc = b.getCenter(new THREE.Vector3()); }
   return a.wc;
 };
-function showAct(a) {
+function showAct(a) {                                        // "Show me" / "Surprise me": drop into walk mode right in front of the thing
   const c = actCenter(a); if (!c) return;
-  Object.assign(state, { floors: 'both', walls: 'cutaway', roof: false, explode: 0 }); applyState();
-  const far = a.kind === 'car' ? 7 : 3.4, rise = far * 0.9, ray = new THREE.Raycaster(); ray.camera = camera;
-  const list = [G.ground, G.loft, G.site, LAND];
-  const firstHit = (o, d, L, skip) => {                      // distance to the first solid thing along a ray
-    ray.set(o, d); ray.far = L;
-    for (const h of ray.intersectObjects(list, true)) {
-      if (!isShown(h.object) || h.object.isPoints || h.object.isLineSegments || h.distance < skip) continue;
-      if (h.object.material && (h.object.material.transparent || h.object.material.name === 'glass')) continue;
-      return h.distance;
-    }
-    return L;
-  };
-  // look at it face-on: its thin horizontal axis is its front-to-back axis. Of the viewpoints around that axis, take the clearest one
-  // (nothing between us and it, camera over open floor), then the side you're already on.
-  const ext = new THREE.Box3().setFromObject(a.obj).getSize(new THREE.Vector3());
-  const base = ext.x < ext.z ? [Math.PI / 2, -Math.PI / 2] : [0, Math.PI];
-  const cur = Math.atan2(camera.position.x - controls.target.x, camera.position.z - controls.target.z);
+  closeSheet(); FLY.cur = null;
+  if (TOUR.on) exitTour();
+  if (!WALK.on) enterWalk(); else { takeOver(); buildColliders(); }
+  const radii = a.kind === 'car' ? [7, 9, 5.5] : [4.6, 3.6, 2.8], cur = WALK.pos;
   let best = null, bs = -Infinity;
-  for (const b0 of base) for (const off of [0, -0.45, 0.45]) {
-    const az = b0 + off, p = new THREE.Vector3(c.x + Math.sin(az) * far, c.y + rise, c.z + Math.cos(az) * far);
-    const toC = c.clone().sub(p), L = toC.length(), seen = firstHit(p, toC.normalize(), L, 0);
-    const down = firstHit(p, new THREE.Vector3(0, -1, 0), p.y + 2, 0), open = down >= p.y - 0.6 ? 1 : down / Math.max(0.1, p.y);
-    let d = Math.abs(az - cur); d = Math.min(d, Math.PI * 2 - d);
-    const sc = Math.min(1, seen / (L - 0.8)) * 10 + open * 6 - d * 0.3 - Math.abs(off) * 2;
-    if (sc > bs) { bs = sc; best = p; }
+  for (const R of radii) for (let i = 0; i < 16; i++) {
+    const az = i / 16 * Math.PI * 2, x = c.x + Math.sin(az) * R * FT, z = c.z + Math.cos(az) * R * FT;
+    const fy = floorAt(x, z, c.y + 0.3); if (fy === -Infinity || c.y - fy > 3.4 || fy - c.y > 0.3) continue;       // needs floor, roughly level with the thing
+    const eye = new THREE.Vector3(x, fy + EYE, z), to = c.clone().sub(eye), L = to.length(); to.normalize();
+    const blocked = castFirst(solids, eye, to, L - 0.35);
+    let room = 0;                                                                                                    // room to stand: nothing within a body width on four sides
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!castFirst(solids, new THREE.Vector3(x, fy + 1.2 * FT * 3, z), new THREE.Vector3(dx, 0, dz), RAD)) room++;
+    const sc = (blocked ? 0 : 10) + room * 1.5 + (R === radii[0] ? 2 : 0) - Math.abs(fy - WALK.feet) * 0.15 - Math.hypot(x - cur.x, z - cur.z) * 0.01;
+    if (sc > bs) { bs = sc; best = { x, z, fy, eye }; }
   }
-  flyTo(best, c.clone());
-  closeSheet();
+  if (!best) { const c0 = c.clone(); best = { x: c0.x + 3 * FT, z: c0.z, fy: floorAt(c0.x + 3 * FT, c0.z, c0.y + 0.3), eye: null }; if (best.fy === -Infinity) return; }
+  const lx = c.x - best.x, lz = c.z - best.z, yaw1 = Math.atan2(-lx, -lz), pitch1 = Math.max(-0.5, Math.min(0.5, Math.atan2(c.y - (best.fy + EYE), Math.hypot(lx, lz))));
+  let dy = yaw1 - WALK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
+  WALK.glide = { t: 0, dur: 1.0, x0: WALK.pos.x, z0: WALK.pos.z, f0: WALK.feet, x1: best.x, z1: best.z, f1: best.fy, y0: WALK.yaw, dy, p0: WALK.pitch, p1: pitch1 };
+  toast('Tap Use when it lights up');
 }
 // sheet + panes
 const sheet = $$('msheet');
@@ -3598,13 +3759,14 @@ renderer.domElement.addEventListener('pointerdown', () => { clearTimeout(introT)
     knob.style.transform = `translate(${dx}px,${dy}px)`; WALK.joy.x = dx / R; WALK.joy.y = -dy / R;
   };
   const end = () => { pid = null; knob.style.transform = ''; WALK.joy.x = WALK.joy.y = 0; };
-  joy.addEventListener('pointerdown', e => { pid = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) {} set(e); e.preventDefault(); });
+  joy.addEventListener('pointerdown', e => { takeOver(); pid = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) {} set(e); e.preventDefault(); });
   joy.addEventListener('pointermove', e => { if (e.pointerId === pid) set(e); });
   joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end);
   $$('usebtn').addEventListener('pointerdown', e => { e.preventDefault(); if (aimAct) { useAct(aimAct); aimTick = 4; } });
 }
 // hotspots: pulsing dots on the nearest things you haven't tried yet
 const SPOTS = [], spotEl = $$('spots'); let spotTick = 0, lastFound = -1;
+const SC = { list: [], idx: 0, found: [], dots: [], wait: 0 };
 const VO = { cur: 0, on: false };
 const _v = new THREE.Vector3();
 function phoneStep(dt) {
@@ -3621,33 +3783,45 @@ function phoneStep(dt) {
   }
   $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on));
   if (WALK.on) { const ub = $$('usebtn'); ub.classList.toggle('ready', !!aimAct); ub.firstChild.textContent = aimAct ? aimAct.label(aimAct) : 'Nothing to use'; }
-  if (++spotTick % 6) return;
-  const show = !TOUR.on && !FLY.cur && state.explode < 0.05 && !(sheetPane && sheetPane !== null && false);
-  const used = new Set(), cands = [];
-  if (show) {
-    const ref = WALK.on ? camera.position : controls.target;
-    for (const a of ACTS) {
-      if (FOUND.has(a.kind) || !isShown(a.obj)) continue;
-      const c = actCenter(a); if (!c) continue;
-      const d = c.distanceTo(ref); if (WALK.on && d > 11 * FT) continue;
-      cands.push([d, a, c]);
+  const show = !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
+  if (!show) { SC.list = []; SC.dots = []; for (const sp of SPOTS) sp.style.display = 'none'; return; }
+  // 1) the visibility scan: nearest few unfound things, ONE ray-test per frame, so there is never a hitch
+  if (!SC.list.length) {
+    if (++SC.wait > 20) {
+      SC.wait = 0; SC.found = []; SC.idx = 0;
+      const ref = WALK.on ? camera.position : controls.target, perKind = {}, cands = [];
+      for (const a of ACTS) {
+        if (FOUND.has(a.kind) || !isShown(a.obj)) continue;
+        const c = actCenter(a); if (!c) continue;
+        const d = c.distanceTo(ref); if (WALK.on && d > 11 * FT) continue;
+        cands.push([d, a, c]);
+      }
+      cands.sort((p, q) => p[0] - q[0]);
+      SC.list = cands.filter(([, a]) => (perKind[a.kind] = (perKind[a.kind] || 0) + 1) <= 2).slice(0, 14);
     }
-    cands.sort((p, q) => p[0] - q[0]);
+  } else {
+    const [, a, c] = SC.list[SC.idx++];
+    if (!SC.found.some(f => f.hit.kind === a.kind)) {
+      _v.copy(c).project(camera);
+      if (_v.z <= 1 && Math.abs(_v.x) <= 1 && Math.abs(_v.y) <= 1) {
+        let hit = pickAct(_v.x, _v.y, 400); if (!hit || hit.kind !== a.kind) hit = pickAct(_v.x + 0.05, _v.y, 400);      // the centre may sit in a door seam
+        if (hit && hit.kind === a.kind) SC.found.push({ hit, c });
+      }
+    }
+    if (SC.idx >= SC.list.length) { SC.dots = SC.found.slice(0, 6); SC.list = []; }
   }
+  // 2) the dots follow the camera every few frames (projection only, no rays)
+  if (++spotTick % 3) return;
   let n = 0;
-  for (const [, a, c] of cands) {
-    if (used.has(a.kind) || n >= 6) continue;
+  for (const { hit, c } of SC.dots) {
+    if (FOUND.has(hit.kind)) continue;
     _v.copy(c).project(camera); if (_v.z > 1 || Math.abs(_v.x) > 1 || Math.abs(_v.y) > 1) continue;
-    let hit = null, px = _v.x, py = _v.y;                                              // the centre may fall in a gap (door seam): try nearby points; none = behind a wall
-    for (const [ox, oy] of [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.05], [0, -0.05], [0.1, 0.1], [-0.1, -0.1], [0.1, -0.1], [-0.1, 0.1]]) {
-      const h = pickAct(_v.x + ox, _v.y + oy, 400); if (h && h.kind === a.kind) { hit = h; px = _v.x + ox; py = _v.y + oy; break; }
-    }
-    if (!hit) continue;
-    used.add(a.kind);
-    let s = SPOTS[n]; if (!s) { s = SPOTS[n] = document.createElement('div'); s.className = 'spot'; s.innerHTML = '<i></i>'; spotEl.append(s); s.addEventListener('pointerup', e => { e.stopPropagation(); if (s._a) { useAct(s._a); lastFound = -1; } }); }
-    s._a = hit; s.style.left = ((px + 1) / 2 * innerWidth) + 'px'; s.style.top = ((1 - py) / 2 * innerHeight) + 'px'; s.style.display = 'grid'; n++;
+    let sp = SPOTS[n]; if (!sp) { sp = SPOTS[n] = document.createElement('div'); sp.className = 'spot'; sp.innerHTML = '<i></i>'; spotEl.append(sp); sp.addEventListener('pointerup', e => { e.stopPropagation(); if (sp._a) { useAct(sp._a); lastFound = -1; } }); }
+    sp._a = hit; sp.style.left = ((_v.x + 1) / 2 * innerWidth) + 'px'; sp.style.top = ((1 - _v.y) / 2 * innerHeight) + 'px'; sp.style.display = 'grid'; n++;
   }
   for (let i = n; i < SPOTS.length; i++) SPOTS[i].style.display = 'none';
+  // 3) phones: little things (jars, books, knobs) only render when you are close; far away they are invisible anyway
+  if (LITE) { const far = !WALK.on && camera.position.distanceTo(controls.target) > 20; if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); } }
 }
 
 /* =====================================================================
@@ -3660,14 +3834,35 @@ addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight); labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
 const clock = new THREE.Clock();
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(0.05, clock.getDelta());
+function frame(dt) {
   if (WALK.on) walkStep(dt);
-  else { if (TOUR.on) tourStep(dt); if (controls.enabled) controls.update(); }
+  if (TOUR.on) tourStep(dt);
+  if (!WALK.on && controls.enabled) controls.update();
   interactStep(dt); phoneStep(dt);
   if (shadowFrames > 0) { renderer.shadowMap.needsUpdate = true; shadowFrames--; }
+}
+const GOV = { last: performance.now(), ema: 16, n: 0, pr: renderer.getPixelRatio(), max: renderer.getPixelRatio() };
+function governor() {                                      // phones: trade resolution for smoothness when frames get slow
+  const now = performance.now(), d = Math.min(120, now - GOV.last); GOV.last = now; GOV.ema = GOV.ema * 0.94 + d * 0.06;
+  if (++GOV.n % 45) return;
+  let pr = GOV.pr;
+  if (GOV.ema > 30) pr = Math.max(0.7, pr - 0.15); else if (GOV.ema < 19) pr = Math.min(GOV.max, pr + 0.1);
+  if (Math.abs(pr - GOV.pr) > 0.01) { GOV.pr = pr; renderer.setPixelRatio(pr); renderer.setSize(window.innerWidth, window.innerHeight); }
+}
+renderer.setAnimationLoop(() => {
+  if (LITE) governor();
+  frame(Math.min(0.05, clock.getDelta()));
   renderer.render(scene, camera); labelRenderer.render(scene, camera);
 });
 applyState();
-window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo };
+const TINY = [];
+if (LITE) {
+  root.traverse(o => {
+    if (!o.isMesh || o.isInstancedMesh || actOf(o)) return;
+    o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox;
+    if (Math.max(b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z) < 0.5) { o.castShadow = false; o.layers.set(1); TINY.push(o); }
+  });
+  camera.layers.enable(1);
+}
+window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY };
 </script>
