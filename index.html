@@ -129,7 +129,7 @@ body.walking #panel, body.walking #info { display: none; }
   .hint { display: none; }
 }
 /* ---------- phone layout: bottom bar, sheet, hotspots, touch walking ---------- */
-#mtitle, #mbar, #mchips, #msheet, #mintro, #joy, #usebtn { display: none; }
+#mtitle, #mbar, #mchips, #msheet, #mintro, #joy, #look, #usebtn { display: none; }
 #spots { position: fixed; inset: 0; pointer-events: none; z-index: 6; }
 .spot { position: absolute; width: 40px; height: 40px; margin: -20px 0 0 -20px; display: none; place-items: center; pointer-events: auto; touch-action: manipulation; cursor: pointer; }
 .spot i { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
@@ -152,11 +152,14 @@ body.m.walking #mchips, body.m.touring #mchips { display: none; }
 #mchips button { padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 13px var(--font-body); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); touch-action: manipulation; }
 #mchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 body.m #msheet { display: block; position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: 46%; overflow: auto; overscroll-behavior: contain;
-  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 14px 14px 0 0; padding: 4px 16px 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 14px 14px 0 0; padding: 0 0 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
   box-shadow: 0 -8px 30px rgba(0,0,0,0.12); transform: translateY(110%); visibility: hidden; transition: transform 0.25s ease, visibility 0s 0.25s; }
 body.m #msheet.open { transform: none; visibility: visible; transition: transform 0.25s ease; }
-body.m.walking #msheet, body.m.touring #msheet { display: none; }
-.mgrip { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 6px; position: sticky; top: 0; background: var(--sheet); z-index: 1; }
+body.m.touring #msheet { display: none; }
+body.m.walking:not(.touring) #msheet { bottom: 0; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+body.m.walking #walk-found { padding: 8px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--chip); cursor: pointer; touch-action: manipulation; }
+#pane-more, #pane-found { padding: 0 16px; }
+.mgrip { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; position: sticky; top: 0; background: var(--sheet); z-index: 1; }
 .mgrip h2 { margin: 0; font: 700 16px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
 .mgrip button { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 18px; line-height: 1; }
 .msec { display: grid; gap: 12px; padding: 10px 0 14px; border-top: 1px solid var(--rule); }
@@ -187,19 +190,24 @@ body.m.walking #walkpad, body.m.walking .hud-text { display: none; }
 body.m.walking #walkhud { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; transform: none; max-width: none; padding: 6px 8px; gap: 8px; flex-wrap: nowrap; justify-content: space-between; }
 body.m.walking .walk-light input { width: 80px; }
 body.m.walking .walk-light output { display: none; }
-body.m.walking #walkhud .btn { padding: 8px 10px; }
+body.m.walking #walkhud .btn { padding: 8px 10px; white-space: nowrap; }
+body.m.walking #walk-found { white-space: nowrap; font-size: 10.5px; }
 body.m.walking #joy { display: block; position: fixed; z-index: 8; left: calc(22px + env(safe-area-inset-left, 0px)); bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; border-radius: 50%;
   background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.55); box-shadow: 0 0 0 1px rgba(0,0,0,0.25); touch-action: none; }
+body.m.walking #look { display: block; position: fixed; z-index: 8; right: calc(22px + env(safe-area-inset-right, 0px)); bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; border-radius: 50%;
+  background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.55); box-shadow: 0 0 0 1px rgba(0,0,0,0.25); touch-action: none; }
+#look i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,255,255,0.85); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
+#look::after, #joy::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
 #joy i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,255,255,0.85); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
-body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-index: 8; right: calc(22px + env(safe-area-inset-right, 0px)); bottom: calc(46px + env(safe-area-inset-bottom, 0px)); width: 104px; height: 104px; padding: 8px; border-radius: 50%;
+body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-index: 8; right: calc(36px + env(safe-area-inset-right, 0px)); bottom: calc(184px + env(safe-area-inset-bottom, 0px)); width: 104px; height: 104px; padding: 8px; border-radius: 50%;
   border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: manipulation; transition: background 0.15s, transform 0.15s; }
 body.m.walking #usebtn.ready { background: var(--accent); transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199,114,106,0.35); }
 body.m.walking #mintro, body.m.touring #mintro { display: none; }
 #tourcap { left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(520px, calc(100% - 32px));
   padding: 10px 14px; text-align: center; font: 500 14px/1.38 var(--font-body); pointer-events: none; }
 body.m #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
-body.m.touring.walking #joy { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
-body.m.touring.walking #usebtn { bottom: calc(118px + env(safe-area-inset-bottom, 0px)); }
+body.m.touring.walking #joy, body.m.touring.walking #look { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
+body.m.touring.walking #usebtn { bottom: calc(262px + env(safe-area-inset-bottom, 0px)); }
 body.m.touring #tourbar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; transform: none; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 8px; }
 body.m.touring #tourbar .btn { padding: 12px 12px; min-width: 44px; }
 body.m.touring .tour-label { flex: 1; min-width: 0; }
@@ -321,6 +329,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   </div>
 </section>
 <div id="joy" aria-label="Walk stick"><i></i></div>
+<div id="look" aria-label="Look stick"><i></i></div>
 <button id="usebtn" type="button"><span>Nothing to use</span></button>
 <div id="walkhud" class="card hud" hidden>
   <span class="hud-text">WASD or arrows to walk · drag to look · Shift to hurry · Esc to leave</span>
@@ -3361,7 +3370,7 @@ applySceneTheme();
    Esc to leave. Walls, glass and furniture block you; steps up to ~1' are climbed (stairs, the sunken living
    steps, deck steps); you can step down anywhere. The two entry doors let you through.
    ===================================================================== */
-const WALK = { on: false, yaw: 0, pitch: -0.05, feet: 0, pos: new THREE.Vector3(), keys: {}, saved: null, drag: null, joy: { x: 0, y: 0 }, auto: null, glide: null };
+const WALK = { on: false, yaw: 0, pitch: -0.05, feet: 0, pos: new THREE.Vector3(), keys: {}, saved: null, drag: null, joy: { x: 0, y: 0 }, look: { x: 0, y: 0 }, auto: null, glide: null };
 const EYE = 5.5 * FT, STEP = 1.05 * FT, RAD = 0.95 * FT;
 const toW = (x, y, z) => new THREE.Vector3((x - 24) * FT, y * FT, (z - 13.5) * FT);
 let solids = [], grounds = [];
@@ -3391,6 +3400,7 @@ function walkStep(dt) {
   let side = Math.max(-1, Math.min(1, (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + WALK.joy.x));
   if (WALK.auto) { const r = autoSteer(dt); fwd = r.fwd; side = r.side; }                // the guided tour is walking for us
   if (k.KeyQ) WALK.yaw += dt * 1.8; if (k.KeyE) WALK.yaw -= dt * 1.8;
+  if (WALK.look.x || WALK.look.y) { WALK.yaw -= WALK.look.x * dt * 2.4; WALK.pitch = Math.max(-1.2, Math.min(1.2, WALK.pitch + WALK.look.y * dt * 1.5)); }   // right stick turns the view
   const speed = (k.ShiftLeft || k.ShiftRight ? 10 : 5) * FT;
   const f = new THREE.Vector3(-Math.sin(WALK.yaw), 0, -Math.cos(WALK.yaw)), r = new THREE.Vector3(Math.cos(WALK.yaw), 0, -Math.sin(WALK.yaw));
   const mv = f.multiplyScalar(fwd).add(r.multiplyScalar(side));
@@ -3426,7 +3436,7 @@ function enterWalk() {
 }
 function exitWalk() {
   if (!WALK.on || TOUR.walking) return;
-  WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = 0; setFov(FOV.orbit);
+  WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = WALK.look.x = WALK.look.y = 0; setFov(FOV.orbit);
   document.getElementById('walkhud').hidden = true; document.body.classList.remove('walking');
   Object.assign(state, WALK.saved.state, { night: state.night, sun: state.sun }); applyState();   // keep the light set during the walk
   camera.position.copy(WALK.saved.pos); controls.target.copy(WALK.saved.target); controls.enabled = true; controls.update();
@@ -3677,7 +3687,7 @@ function showAct(a) {                                        // "Show me" / "Sur
   const lx = c.x - best.x, lz = c.z - best.z, yaw1 = Math.atan2(-lx, -lz), pitch1 = Math.max(-0.5, Math.min(0.5, Math.atan2(c.y - (best.fy + EYE), Math.hypot(lx, lz))));
   let dy = yaw1 - WALK.yaw; dy = Math.atan2(Math.sin(dy), Math.cos(dy));
   WALK.glide = { t: 0, dur: 1.0, x0: WALK.pos.x, z0: WALK.pos.z, f0: WALK.feet, x1: best.x, z1: best.z, f1: best.fy, y0: WALK.yaw, dy, p0: WALK.pitch, p1: pitch1 };
-  toast('Tap Use when it lights up');
+  toast('Tap Use when it lights up \u00b7 \u2605 for the list');
 }
 // sheet + panes
 const sheet = $$('msheet');
@@ -3719,7 +3729,7 @@ $$('mb-explore').addEventListener('click', () => {
   if (WALK.on) exitWalk(); if (TOUR.on) exitTour();
   if (wasExploring) { Object.assign(state, { floors: 'both', walls: 'cutaway', roof: false }); applyState(); flyTo(homePos(), HOME.target.clone()); }
 });
-$$('mb-walk').addEventListener('click', () => { closeSheet(); if (WALK.on) exitWalk(); else { FLY.cur = null; enterWalk(); toast('Stick to move · drag to look · tap Use'); } });
+$$('mb-walk').addEventListener('click', () => { closeSheet(); if (WALK.on) exitWalk(); else { FLY.cur = null; enterWalk(); toast('Left stick moves · right stick looks · tap Use'); } });
 $$('mb-tour').addEventListener('click', () => { closeSheet(); FLY.cur = null; if (TOUR.on) exitTour(); else enterTour(); });
 $$('chip-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
 $$('chip-floors').addEventListener('click', () => { state.floors = { both: 'ground', ground: 'loft', loft: 'both' }[state.floors] || 'both'; applyState(); });
@@ -3762,8 +3772,24 @@ renderer.domElement.addEventListener('pointerdown', () => { clearTimeout(introT)
   joy.addEventListener('pointerdown', e => { takeOver(); pid = e.pointerId; try { joy.setPointerCapture(e.pointerId); } catch (_) {} set(e); e.preventDefault(); });
   joy.addEventListener('pointermove', e => { if (e.pointerId === pid) set(e); });
   joy.addEventListener('pointerup', end); joy.addEventListener('pointercancel', end);
+  {                                                                                    // the right-hand stick: look around
+    const lk = $$('look'), kn = lk.querySelector('i'); let lid = null;
+    const setL = e => {
+      const r = lk.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = r.width / 2 - 8;
+      let dx = e.clientX - cx, dy = e.clientY - cy; const l = Math.hypot(dx, dy); if (l > R) { dx *= R / l; dy *= R / l; }
+      kn.style.transform = `translate(${dx}px,${dy}px)`; WALK.look.x = dx / R; WALK.look.y = -dy / R;
+    };
+    const endL = () => { lid = null; kn.style.transform = ''; WALK.look.x = WALK.look.y = 0; };
+    lk.addEventListener('pointerdown', e => { takeOver(); lid = e.pointerId; try { lk.setPointerCapture(e.pointerId); } catch (_) {} setL(e); e.preventDefault(); });
+    lk.addEventListener('pointermove', e => { if (e.pointerId === lid) setL(e); });
+    lk.addEventListener('pointerup', endL); lk.addEventListener('pointercancel', endL);
+  }
   $$('usebtn').addEventListener('pointerdown', e => { e.preventDefault(); if (aimAct) { useAct(aimAct); aimTick = 4; } });
 }
+// while walking, the found counter in the top strip opens the same list, so you can hop to the next thing without leaving walk mode
+$$('walk-found').setAttribute('role', 'button');
+$$('walk-found').addEventListener('click', () => { if (!document.body.classList.contains('m') || TOUR.on) return; sheetPane === 'found' ? closeSheet() : openSheet('found'); });
+$$('walk-exit').addEventListener('click', closeSheet);
 // hotspots: pulsing dots on the nearest things you haven't tried yet
 const SPOTS = [], spotEl = $$('spots'); let spotTick = 0, lastFound = -1;
 const SC = { list: [], idx: 0, found: [], dots: [], wait: 0 };
