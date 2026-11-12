@@ -6,7 +6,7 @@
 <title>Local Time House</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap">
 <style>
 /* Layout: full-bleed 3D viewport; a drafting-sheet control card floats top-left, room detail card bottom-right. */
 :root {
@@ -20,6 +20,8 @@
   --accent-ink: #fbf8f3;
   --chip: #f1ede6;
   --sheet: #f6f3ec;
+  --logo: #3F121A;                 /* the logo's own burgundy */
+  --font-brand: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
   --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
@@ -27,12 +29,12 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #1a1918; --scene: #1d1c1b; --card: rgba(36, 34, 32, 0.94); --ink: #efe9e1; --muted: #a59d92;
-    --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; color-scheme: dark;
+    --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; --logo: #E4B7B0; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #1a1918; --scene: #1d1c1b; --card: rgba(36, 34, 32, 0.94); --ink: #efe9e1; --muted: #a59d92;
-  --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; color-scheme: dark;
+  --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; --logo: #E4B7B0; color-scheme: dark;
 }
 html, body { height: 100%; }
 [hidden] { display: none !important; }
@@ -59,7 +61,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 #panel.collapsed .collapse svg { transform: rotate(180deg); }
 #panel.collapsed #panel-body { display: none; }
 #panel.collapsed .titleblock { border-bottom: 0; }
-.titleblock h1 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 20px; letter-spacing: 0.04em; text-transform: uppercase; text-wrap: balance; }
+.titleblock h1 { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 400; font-size: 28px; line-height: 1; letter-spacing: -0.01em; text-wrap: balance; }
+.logo { flex: none; width: 30px; height: auto; fill: var(--logo); }
 .titleblock .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .controls { padding: 12px 16px; display: grid; gap: 14px; }
 .row { display: grid; gap: 6px; }
@@ -136,8 +139,9 @@ body.walking #panel, body.walking #info { display: none; }
 .spot::before { content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); animation: spotpulse 1.8s ease-out infinite; }
 @keyframes spotpulse { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
 body.m #panel, body.m .hint, body.m #act-tip, body.m #act-hint { display: none !important; }
-body.m #mtitle { display: block; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
-  font: 700 13px var(--font-display); letter-spacing: 0.07em; text-transform: uppercase; padding: 7px 11px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
+body.m #mtitle { display: flex; align-items: center; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
+  font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 7px 12px 8px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
+body.m #mtitle .logo { width: 22px; }
 body.m.walking #mtitle, body.m.touring #mtitle { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -220,7 +224,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <aside id="panel" class="card">
   <div class="titleblock">
     <div class="tb-text">
-      <h1>Local Time House</h1>
+      <h1><svg class="logo" viewBox="0 0 1884 1694" aria-hidden="true" focusable="false"><path d="M755.947 0.637315C772.959 -1.99123 814.555 4.25195 833.493 5.94625C917.864 12.7597 1001.92 23.0033 1085.46 36.6541C1107.27 40.1578 1125.61 36.8128 1144.19 51.8365C1167.83 70.9455 1163.83 97.7847 1164.84 125.671C1166.06 152.991 1166.96 180.325 1167.54 207.666C1168.77 269.841 1173.1 331.915 1180.52 393.658C1209.06 394.971 1234.64 400.57 1262.57 405.694C1320.8 416.34 1378.27 429.751 1437.32 435.257C1454.93 436.897 1483.12 437.893 1497.42 448.591C1519.9 465.894 1521.63 490.974 1524.04 516.796C1530.25 583.531 1524.04 649.68 1526.97 716.589C1528.45 750.231 1528.29 779.793 1533.46 813.388C1594.14 825.748 1655.3 835.609 1716.79 842.94C1755.27 847.606 1796.61 849.804 1834.76 857.986C1844.45 860.07 1858.46 872.813 1865.23 880.673C1875.26 893.271 1876.07 914.092 1877.71 929.957C1889.38 1043.09 1881.87 1160.11 1878.54 1273.51C1872.56 1318.41 1763 1370.66 1729.71 1387.31C1674.99 1424.29 1576.42 1468.98 1525.63 1509.7C1497.82 1532 1379.34 1600.39 1351.27 1622.66C1347.23 1625.88 1239.98 1690.33 1235.2 1691.41C1212.27 1696.57 1155.7 1692.83 1135.11 1690.43C1109.26 1689.99 1078.47 1687.22 1052.49 1685.38C1029.32 1683.85 1006.15 1682.62 982.952 1681.68C894.109 1677.55 805.234 1674.2 716.33 1671.65C672.564 1670.03 628.509 1666.89 584.757 1665.84C520.773 1664.39 456.749 1664.66 392.758 1664.35C366.105 1664.22 339.766 1662.88 312.926 1663.08C272.903 1663.39 232.575 1664.18 192.589 1663.36C162.12 1662.75 131.305 1659.69 100.75 1659.35C85.8362 1658.36 66.2032 1657.09 53.8669 1647.97C32.1964 1631.94 35.0676 1614.54 35.0769 1590.88C35.2449 1573.72 35.0022 1556.55 34.35 1539.4C33.5982 1523.24 31.9537 1506.72 31.4093 1490.67L24.8715 1233.31C24.4143 1218.64 23.7465 1203.81 22.9875 1189.14C15.2552 1039.81 8.89678 890.474 2.37559 741.093C1.1935 714.012 0.188728 686.471 0.0020822 659.375C-0.0798344 589.246 2.25531 519.135 7.00336 449.168C8.29432 429.784 6.45896 383.967 18.7382 370.695C36.5089 351.486 141.896 292.585 165.838 280.432C210.437 257.381 349.864 174.995 395.797 154.732C436.971 136.522 532.301 85.2963 573.257 66.743C587.391 60.1981 639.307 38.4569 653.115 31.2515C687.624 12.945 715.489 4.48422 755.947 0.637315Z"/></svg><span>Local Time House</span></h1>
       <div class="meta"><span>Andes, NY</span></div>
     </div>
     <button id="panel-toggle" class="collapse" type="button" aria-expanded="true" aria-controls="panel-body" aria-label="Hide controls">
@@ -303,7 +307,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <div id="act-toast" class="act-hint act-toast" hidden></div>
 <div id="reticle" aria-hidden="true"></div>
 <div id="spots" aria-hidden="true"></div>
-<div id="mtitle">Local Time House</div>
+<div id="mtitle"><svg class="logo" viewBox="0 0 1884 1694" aria-hidden="true" focusable="false"><path d="M755.947 0.637315C772.959 -1.99123 814.555 4.25195 833.493 5.94625C917.864 12.7597 1001.92 23.0033 1085.46 36.6541C1107.27 40.1578 1125.61 36.8128 1144.19 51.8365C1167.83 70.9455 1163.83 97.7847 1164.84 125.671C1166.06 152.991 1166.96 180.325 1167.54 207.666C1168.77 269.841 1173.1 331.915 1180.52 393.658C1209.06 394.971 1234.64 400.57 1262.57 405.694C1320.8 416.34 1378.27 429.751 1437.32 435.257C1454.93 436.897 1483.12 437.893 1497.42 448.591C1519.9 465.894 1521.63 490.974 1524.04 516.796C1530.25 583.531 1524.04 649.68 1526.97 716.589C1528.45 750.231 1528.29 779.793 1533.46 813.388C1594.14 825.748 1655.3 835.609 1716.79 842.94C1755.27 847.606 1796.61 849.804 1834.76 857.986C1844.45 860.07 1858.46 872.813 1865.23 880.673C1875.26 893.271 1876.07 914.092 1877.71 929.957C1889.38 1043.09 1881.87 1160.11 1878.54 1273.51C1872.56 1318.41 1763 1370.66 1729.71 1387.31C1674.99 1424.29 1576.42 1468.98 1525.63 1509.7C1497.82 1532 1379.34 1600.39 1351.27 1622.66C1347.23 1625.88 1239.98 1690.33 1235.2 1691.41C1212.27 1696.57 1155.7 1692.83 1135.11 1690.43C1109.26 1689.99 1078.47 1687.22 1052.49 1685.38C1029.32 1683.85 1006.15 1682.62 982.952 1681.68C894.109 1677.55 805.234 1674.2 716.33 1671.65C672.564 1670.03 628.509 1666.89 584.757 1665.84C520.773 1664.39 456.749 1664.66 392.758 1664.35C366.105 1664.22 339.766 1662.88 312.926 1663.08C272.903 1663.39 232.575 1664.18 192.589 1663.36C162.12 1662.75 131.305 1659.69 100.75 1659.35C85.8362 1658.36 66.2032 1657.09 53.8669 1647.97C32.1964 1631.94 35.0676 1614.54 35.0769 1590.88C35.2449 1573.72 35.0022 1556.55 34.35 1539.4C33.5982 1523.24 31.9537 1506.72 31.4093 1490.67L24.8715 1233.31C24.4143 1218.64 23.7465 1203.81 22.9875 1189.14C15.2552 1039.81 8.89678 890.474 2.37559 741.093C1.1935 714.012 0.188728 686.471 0.0020822 659.375C-0.0798344 589.246 2.25531 519.135 7.00336 449.168C8.29432 429.784 6.45896 383.967 18.7382 370.695C36.5089 351.486 141.896 292.585 165.838 280.432C210.437 257.381 349.864 174.995 395.797 154.732C436.971 136.522 532.301 85.2963 573.257 66.743C587.391 60.1981 639.307 38.4569 653.115 31.2515C687.624 12.945 715.489 4.48422 755.947 0.637315Z"/></svg><span>Local Time House</span></div>
 <div id="mintro"><b>Tap anything.</b>Drag to look around · pinch to zoom · try the fridge</div>
 <div id="mchips">
   <button id="chip-night" type="button" aria-pressed="false">☾ Night</button>
@@ -574,6 +578,8 @@ const MAT_DEFS = {
   bore:       { color: 0xE2C9A2, rough: 0.7 },                           // light oak seen inside a finger hole
   steelBowl:  { color: 0xA6ACB2, map: TEX.brushed, tile: 3, rough: 0.24, metal: 1.0, env: 0.95 },   // sink walls: same stainless, in its own shade
   steelBowlF: { color: 0xB4BAC0, map: TEX.brushed, tile: 3, rough: 0.26, metal: 1.0, env: 0.95 },   // sink floor
+  ovenGlass:  { color: 0x14171A, rough: 0.07, metal: 0.25, env: 0.9 },                 // black glass: oven door, cooktop, display
+  beverageLemon: { color: 0xF2D04A, rough: 0.6 },
   steelTop:   { color: 0xA7ACB1, map: TEX.brushed, tile: 3, rough: 0.14, metal: 1.0, env: 0.8 },  // 5 mm stainless countertop + range, a touch darker (owner)
   mosaic:     { color: 0xF4F3EF, map: TEX.mosaic, tile: 1.333, rough: 0.3 }, // 2"×2" white mosaic, gray grout
   mirror:     { color: 0xB4C3CA, rough: 0.12, metal: 0.05 },
@@ -587,6 +593,8 @@ const MAT_DEFS = {
   steel:      { color: C.steel, rough: 0.6, metal: 0.5 },
   panel:      { color: C.panel, rough: 0.5, metal: 0.4 },
   appliance:  { color: 0xC4C8CB, rough: 0.35, metal: 0.25 },
+  fridgeDoor: { color: 0xC7CACE, rough: 0.1, metal: 1.0, env: 1.2 },                      // mirror-finish stainless upper doors
+  fridgeLow:  { color: 0xB4B7BB, rough: 0.5, metal: 0.55, env: 0.55 },                    // matte gray steel freezer panel
   fabric:     { color: C.fabric, rough: 1 },
   fabricBase: { color: 0x9C9285, rough: 1 },
   sofa:       { color: 0x6E7E98, rough: 1 },                             // living sectional: blue-gray woven upholstery
@@ -916,7 +924,7 @@ const ROOMS = [
     note: '18" below the main floor: three 6" risers on a 4\'-6" stair. Conversation pit: low L-shaped sectional, 8\'-0" along the pit edge and down the west wall to the hearth, backed by the 1\'-6" pit edge. Fireplace insert on the raised hearth (keynote 11), TV unit with open shelves (keynote 29).' },
   { id: 'guestBed', name: 'Guest Bedroom', floor: 'ground', y: 0, mat: 'concreteFloor',
     rects: [[24.55, 32.86, 0.52, 10.81], [24.55, 28.06, 10.81, 13.14]], dimRect: [24.55, 32.86, 0.52, 13.14], ceiling: "8'-0\"",
-    finishes: [WALLS_CHALK, FLOOR_CONC], note: 'Door 104 2\'-8" swing. W05 3\'-0" × 8\'-0" on the north wall.' },
+    finishes: [WALLS_CHALK, FLOOR_CONC], note: 'Door 104 2\'-8" swing. W05 3\'-0" × 8\'-0" on the north wall. Queen bed (60" × 80"), headboard on the east wall.' },
   { id: 'closet105', name: 'Guest Closet', floor: 'ground', y: 0, mat: 'concreteFloor', small: true,
     rects: [[28.45, 32.86, 10.81, 13.14]], ceiling: "8'-0\"", finishes: [WALLS_CHALK, FLOOR_CONC],
     note: 'Door 105 4\'-0" bifold. The electrical panel is flush on the corridor side of this closet\'s south wall.' },
@@ -990,7 +998,9 @@ function buildSite(g) {
   // foundation walls showing above grade (8" conc., A200 E1)
   const fy = [LV.GRADE, -0.12];
   box(g, [-0.37, 48.43], fy, [-0.35, 0.49], 'foundation');
-  box(g, [-0.37, 48.43], fy, [16.57, 17.42], 'foundation');
+  box(g, [-0.37, 10.51], fy, [16.57, 17.42], 'foundation');
+  box(g, [15.2, 48.43], fy, [16.57, 17.42], 'foundation');                      // (not across the pit steps, x 10.51–15.01)
+  box(g, [10.51, 15.2], [-0.5, 0], [16.54, 16.57], 'concreteFloor');            // riser from the main floor down to the first step
   box(g, [-0.37, 0.48], fy, [-0.35, 17.42], 'foundation');
   box(g, [47.59, 48.43], fy, [-0.35, 17.42], 'foundation');
   // the sunken living room sits 1'-6" lower, so its foundation top is 1'-6" lower than the main house's
@@ -1161,9 +1171,22 @@ function buildGround(g) {
   doorLeaf(g, { axis: 'z', u: [8.0, 10.7], face: 45.16, swing: -1, hinge: 'a', y0: 0, h: 8, open: 0, wt: 0.35 });           // 108
   pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 24.355, t: 0.39, y0: 0, h: 8, slide: -1, open: true });                    // 103 pocket (entry | corridor)
   pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 39.04, t: 0.54, y0: 0, h: 8, slide: -1, open: true });                      // 107 pocket (corridor | office)
-  for (let i = 0; i < 4; i++) {                                                                          // 105 bifold (closed)
-    const x0 = 28.45 + i * (32.86 - 28.45) / 4;
-    box(g, [x0 + 0.02, x0 + (32.86 - 28.45) / 4 - 0.02], [0, 8], [10.78, 10.9], 'door');
+  { // 105 bifold: two pairs of panels, hinged at the jambs, each pair folding in a zigzag into the room
+    const xa = 28.45, xb = 32.86, zc = 10.84, w = (xb - xa) / 4 - 0.01, th = 0.12, hh = 8, grp = new THREE.Group(); g.add(grp);
+    const panel = (parent, dir) => {                                                  // a panel hanging from a pivot, extending dir (+1 east, -1 west)
+      const m = new THREE.Mesh(new THREE.BoxGeometry(w, hh, th).translate(dir * w / 2, hh / 2, 0), M('door')); m.castShadow = m.receiveShadow = true;
+      m.userData.cutAxis = 'x'; parent.add(m);
+      const pull = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.45, 0.02).translate(dir * (w - 0.1), 3.4, th / 2 + 0.01), M('lever')); pull.userData.cutAxis = 'x'; parent.add(pull);
+      return m;
+    };
+    const pairs = [];
+    for (const [xj, dir] of [[xa, 1], [xb, -1]]) {
+      const pa = new THREE.Group(), pb = new THREE.Group(); pa.position.set(xj, 0, zc); pb.position.set(dir * w, 0, 0);
+      panel(pa, dir); panel(pb, dir); pa.add(pb); grp.add(pa); pairs.push([pa, pb, dir]);
+    }
+    act(grp, { kind: 'door', label: d => d.on ? 'Close the closet doors' : 'Open the closet doors', run: d => {
+      for (const [pa, pb, dir] of pairs) { tweenTo(pa.rotation, 'y', d.on ? dir * 1.15 : 0, 0.9); tweenTo(pb.rotation, 'y', d.on ? -dir * 2.3 : 0, 0.9); }
+    } });
   }
 
   // Electrical panel — revised: corridor face of the guest-closet wall, flush, centered
@@ -1173,7 +1196,8 @@ function buildGround(g) {
 
   buildKitchen(g); NOCUT = true; buildStair(g); NOCUT = false; buildStairCladding(g); buildLiving(g); buildGuestBath(g);
   // Guest bedroom bed (dashed on A101.1)
-  bed(g, [27.9, 32.6], [0.6, 7.0], 0, 'guestBed');
+  bedQueenEast(g, 5.7, 32.86, 0, 'guestBed');
+  bunkBed(g, 0.52, 47.56, 0, 'office');                                 // office: twin-over-queen bunk along the north wall, head on the east wall
   // Office desk (keynote 8), floating under W04
   box(g, [45.9, 47.56], [2.4, 2.55], [11.62, 16.46], 'millwork', { room: 'office' });
 }
@@ -1186,6 +1210,54 @@ function bedSized(g, cx, zHead, [mw, ml], y, room) {
   box(g, [x0, x1], [y + 1.1, y + 1.85], [z0, z1], 'porcelain', { room });                    // mattress
   box(g, [x0 + 0.05, x1 - 0.05], [y + 1.85, y + 1.95], [z0 + 1.9, z1 - 0.05], 'fabric', { room }); // throw
   box(g, [x0 - e, x1 + e], [y, y + 3.6], [zHead, zHead + hb], 'millwork', { room });        // headboard
+}
+// Queen bed (60" × 80") with its headboard against the east wall, centered on z = cz
+function bedQueenEast(g, cz, xWall, y, room) {
+  const e = 2 / 12, hb = 0.25, mw = 60 / 12, ml = 80 / 12, z0 = cz - mw / 2, z1 = cz + mw / 2, xh = xWall - hb, xm = xh - ml;
+  box(g, [xm - e, xWall], [y, y + 1.1], [z0 - e, z1 + e], 'millwork', { room });                 // platform frame
+  box(g, [xm, xh], [y + 1.1, y + 1.85], [z0, z1], 'porcelain', { room });                        // mattress
+  box(g, [xm + 0.05, xh - 1.9], [y + 1.85, y + 1.95], [z0 + 0.05, z1 - 0.05], 'fabric', { room });   // throw over the foot half
+  box(g, [xh, xWall], [y, y + 3.6], [z0 - e, z1 + e], 'millwork', { room });                      // headboard
+}
+// Twin-over-queen bunk (after the owner's reference): the twin is set back flush to the north (back) wall, the queen below is wider and
+// sticks out in front. Slatted lower headboard, a low footboard, a two-board guard rail on the twin, and a storage stair with drawer
+// fronts at the foot end, squeezed into the 1'-1" between the bed and the west wall, climbing north onto the foot of the twin.
+// Head on the east (window) wall. Same bed style as the other rooms; posts flush with the frame outline.
+function bunkBed(g, zN, xEast, y, room) {
+  const e = 2 / 12, hb = 0.25, qw = 5, ql = 80 / 12, tw = 38 / 12, post = 0.17, beam = 0.17, ycu = y + 4.5;
+  const B = (xs, ys, zs, m = 'millwork') => box(g, xs, ys, zs, m, { room });
+  const xh = xEast - hb, mx0 = xh - ql, xf0 = mx0 - e;
+  const z0f = zN, z0 = z0f + e, z1 = z0 + qw, z1f = z1 + e, t1 = z0f + tw + 2 * e;
+  // lower queen
+  B([xf0, xEast], [y, y + 1.1], [z0f, z1f]);                                                // platform frame
+  B([mx0, xh], [y + 1.1, y + 1.85], [z0, z1], 'porcelain');                                  // mattress
+  B([mx0 + 0.05, xh - 1.9], [y + 1.85, y + 1.95], [z0 + 0.05, z1 - 0.05], 'fabric');         // throw
+  B([xh, xEast], [y, y + 2.9], [z0f, z1f]);                                                  // solid headboard, kept under the window sill (3'-0")
+  B([xf0, xf0 + 0.14], [y + 1.1, y + 2.2], [z0f, z1f]);                                      // low footboard
+  // four posts carry the twin: two against the back wall, two at the twin's open edge (standing on the queen's headboard and footboard)
+  for (const xs of [[xEast - post, xEast], [xf0, xf0 + post]]) for (const zs of [[z0f, z0f + post], [t1 - post, t1]]) B(xs, [y, ycu + 1.5], zs);
+  // upper deck: just the twin's width, on the wall side
+  B([xf0, xEast], [ycu - 0.3, ycu], [z0f, t1]);                                              // deck under the twin
+  // twin
+  B([mx0 + e, xh], [ycu, ycu + 0.75], [z0f + e, t1 - e], 'porcelain');                       // mattress (75")
+  B([mx0 + e + 0.05, xh - 1.9], [ycu + 0.75, ycu + 0.85], [z0f + e + 0.05, t1 - e - 0.05], 'fabric');
+  B([xh, xEast], [ycu, ycu + 1.5], [z0f, t1]);                                               // headboard
+  B([xf0, xh], [ycu + 0.45, ycu + 0.8], [t1 - 0.06, t1]);                                    // two-board guard rail on the open side
+  B([xf0, xh], [ycu + 1.15, ycu + 1.5], [t1 - 0.06, t1]);
+  B([xf0, xh], [ycu + 1.0, ycu + 1.5], [z0f, z0f + 0.06]);                                   // rail on the wall side
+  // foot-end guard: one solid plank, open over the landing
+  const zL = z0f + 1.5;
+  B([xf0, xf0 + 0.06], [ycu + 0.35, ycu + 1.5], [zL, t1]);
+  // storage stair squeezed in between the west wall and the foot of the bed, pulled out south so the top of the climb is a 1'-6" landing
+  // beside the twin's foot: 8 risers climbing north, drawer fronts facing south
+  const n = 8, rise = 4.5 / n, d = 0.4375, xw = 39.35, zS = zL + n * d;
+  B([xw, xf0], [y, ycu], [z0f, zL]);                                                         // landing: a solid box at deck height
+  for (let j = 1; j <= n; j++) {
+    const zb = zS - (j - 1) * d, za = zb - d;                                               // column j: 1 = south (lowest) ... n = north (top)
+    B([xw, xf0], [y, y + j * rise], [za, zb]);                                              // stepped solid
+    B([xw + 0.06, xf0 - 0.06], [y + (j - 1) * rise + 0.06, y + j * rise - 0.05], [zb, zb + 0.02]);                    // drawer front on the riser
+    B([(xw + xf0) / 2 - 0.03, (xw + xf0) / 2 + 0.03], [y + (j - 0.5) * rise - 0.03, y + (j - 0.5) * rise + 0.03], [zb + 0.02, zb + 0.06]);   // knob
+  }
 }
 function bed(g, xs, zs, y, room) {
   box(g, xs, [y, y + 1.1], zs, 'millwork', { room });
@@ -1503,7 +1575,33 @@ function buildKitchen(g) {
     else { cornerMove(false); cornerTimer = setTimeout(doorMove, 1050); }                         // unit fully back in, then the door closes
   };
   box(g, [kx(77), kx(107)], [0, KIT.TOP - 0.02], [KIT.Z0, zN + FT_], 'steelTop', R);   // 30" slide-in range, stainless, flush with the fronts
-  box(g, [kx(78), kx(106)], [1.6, 2.6], [zN + FT_, zN + FT_ + 0.02], 'frame', R);      // oven window
+  // 30" induction range: brushed stainless body; black glass oven door under a bar handle; control panel with four knobs
+  // and a center display; stainless kick panel; black glass cooktop with a raised stainless back guard.
+  { const x0 = kx(77), x1 = kx(107), fz = zN + FT_, I = v => v / 12;
+    const ov = (xa, xb, ya, yb, mat, d = 0.01) => box(g, [x0 + I(xa), x0 + I(xb)], [I(ya), I(yb)], [fz, fz + d], mat, R);
+    ov(0, 30, 0, 0.9, 'frame');                                       // dark recess under the range (the cabinet plinth stops either side)
+    ov(0.3, 29.7, 8.5, 21.5, 'ovenGlass', 0.012);                     // oven door glass
+    ov(0, 30, 3.8, 4.05, 'frame', 0.012);                             // shadow gap above the kick panel
+    ov(0, 30, 25.8, 26.05, 'frame', 0.012);                           // gap between door and control panel
+    ov(11.5, 18.5, 27.2, 31.4, 'ovenGlass', 0.014);                   // display
+    for (const [a, len, rot] of [[0.07, 0.1, 0.5], [0.07, 0.15, -1.2]]) {                                   // clock hands
+      const h = new THREE.Mesh(new THREE.BoxGeometry(0.012, len, 0.004), M('chrome')); h.position.set(x0 + I(15), I(29.3) + Math.cos(rot) * len / 2, fz + 0.017);
+      h.rotation.z = -rot; h.position.x += Math.sin(rot) * len / 2; h.userData.room = 'kitchen'; g.add(h);
+    }
+    for (const xk of [3.0, 7.0, 23.0, 27.0]) {                         // four knobs: chrome skirt, grip, and a dark indicator line
+      const cx = x0 + I(xk), cy = I(29), mk = (r, hgt, z, mat) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, hgt, 28).rotateX(Math.PI / 2), M(mat)); m.position.set(cx, cy, z); m.castShadow = true; m.userData.room = 'kitchen'; g.add(m); };
+      mk(0.098, 0.035, fz + 0.018, 'chrome'); mk(0.082, 0.055, fz + 0.05, 'steelTop'); mk(0.07, 0.01, fz + 0.082, 'chrome');
+      box(g, [cx - 0.006, cx + 0.006], [cy + 0.02, cy + 0.075], [fz + 0.078, fz + 0.09], 'frame', R);
+    }
+    // bar handle across the top of the door, on two end posts
+    box(g, [x0 + I(1.0), x0 + I(29)], [I(22.3), I(24.3)], [fz + 0.12, fz + 0.17], 'chrome', R);
+    for (const xs of [[1.0, 1.9], [28.1, 29.0]]) box(g, [x0 + I(xs[0]), x0 + I(xs[1])], [I(22.3), I(24.3)], [fz, fz + 0.12], 'chrome', R);
+    // cooktop: black glass, a stainless trim band at the front, and a raised back guard
+    box(g, [x0 + 0.04, x1 - 0.04], [KIT.TOP - 0.02, KIT.TOP + 0.012], [KIT.Z0 + 0.36, fz - 0.28], 'ovenGlass', R);
+    box(g, [x0, x1], [KIT.TOP - 0.02, KIT.TOP + 0.012], [fz - 0.28, fz], 'steelTop', R);
+    box(g, [x0, x1], [KIT.TOP - 0.02, KIT.TOP + 0.14], [KIT.Z0, KIT.Z0 + 0.34], 'steelTop', R);
+    box(g, [x0 + 0.08, x1 - 0.08], [KIT.TOP + 0.09, KIT.TOP + 0.115], [KIT.Z0 + 0.34, KIT.Z0 + 0.352], 'frame', R);   // the slot in the guard
+  }
   frontsZ(zN, [
     [kx(24), kx(25), P, B, null],                                                  // 1" filler on the hinge side (clearance for the door)
     [kx(25), kx(47), P, B, 'tr', null, null, 1.48, cornerHook],                    // corner door, 22", hinged on the sink-run side
@@ -1533,7 +1631,6 @@ function buildKitchen(g) {
   // ---- 5 mm stainless countertops, 1" past the fronts; integral sink under W07
   box(g, [KIT.X0, kx(77)], [B, KIT.TOP], [KIT.Z0, zN + 0.15], 'steelTop', R);
   box(g, [kx(107), kx(129) + 0.02], [B, KIT.TOP], [KIT.Z0, zN + 0.15], 'steelTop', R);
-  box(g, [kx(77), kx(107)], [KIT.TOP - 0.02, KIT.TOP + 0.01], [KIT.Z0 + 0.3, zN], 'frame', R);   // range cooktop
   // The west-run counter is one sheet with a rounded cut-out; the bowl is the same 5 mm stainless, welded to the
   // edge of the cut-out, so top and sink read as a single piece (no rim, no seam).
   { const t = 0.0164, bowlD = 0.7, bx0 = kx(3), bx1 = kx(21), bz0 = kz(29), bz1 = kz(55), r = 0.1, T0 = KIT.TOP;
@@ -1708,9 +1805,9 @@ function buildKitchen(g) {
     layout(E, [I.cans(5, 0xE8B23C, 0x3B6E8C)], u0f, u1f, shelfYs[1] + 0.03, 1.35, true);
     bag.flush(g, { keep: true });
     // ---- freezer drawer: a full-width front on a pull-out basket of frozen food
+    for (const zf of [fz0 + 0.15, fz1 - 0.4]) box(g, [xF - 0.42, xF - 0.18], [0, 0.1], [zf, zf + 0.25], 'frame', R);   // feet
     { const n0 = g.children.length, fb = new Bag(), FE = Emit(fb, kframe('z', fx0, -1)), za = fz0 + PT + 0.03, zb = fz1 - PT - 0.03, y0 = 0.2;
-      box(g, [xF - 0.45, fx0], [0.1, frzTop], [fz0, fz1], 'appliance', R);                                   // drawer front
-      box(g, [xF - 0.55, xF - 0.47], [1.5, 1.58], [fz0 + 0.35, fz1 - 0.35], 'chrome', R);                   // bar handle
+      box(g, [xF - 0.45, fx0], [0.1, frzTop], [fz0, fz1], 'fridgeLow', R);                                   // drawer front: flush, no handle
       const fbin = km('frzBin', 0xE9EEF1, 0.3, 0, { transparent: true, opacity: 0.5, depthWrite: false });
       const fx = (xs, ys, zs) => fb.add(new THREE.BoxGeometry(xs[1] - xs[0], ys[1] - ys[0], zs[1] - zs[0]).translate((xs[0] + xs[1]) / 2, (ys[0] + ys[1]) / 2, (zs[0] + zs[1]) / 2), fbin);
       fx([fx0, 16.25], [y0, y0 + 0.03], [za, zb]); fx([fx0, fx0 + 0.03], [y0, 1.45], [za, zb]); fx([16.22, 16.25], [y0, 1.45], [za, zb]); fx([fx0, 16.25], [y0, 1.45], [za, za + 0.03]); fx([fx0, 16.25], [y0, 1.45], [zb - 0.03, zb]);
@@ -1724,17 +1821,40 @@ function buildKitchen(g) {
       const dv = pivotFrom(g, n0, 0, 0, 0); dv.traverse(o => { o.userData.keep = true; });
       act(dv, { kind: 'freezer', label: d => d.on ? 'Close the freezer' : 'Open the freezer', run: d => tweenTo(dv.position, 'x', d.on ? -1.6 : 0, 0.7) }); }
   }
-  { const zm = (kz(37.3) + kz(73.1)) / 2, doors = [];
+  { const zm = (kz(37.3) + kz(73.1)) / 2, doors = []; let bevPv = null;
     for (const [za, zb, hz, sgn] of [[kz(37.3), zm - 0.005, kz(54.6), 1], [zm + 0.005, kz(73.1), kz(55.8), -1]]) {
       const n0 = g.children.length;
-      box(g, [xF - 0.45, xF - 0.3], [fDoorB, fTop], [za, zb], 'appliance', R);
-      box(g, [xF - 0.55, xF - 0.47], [2.9, 5.0], [hz - 0.03, hz + 0.03], 'chrome', R);
+      box(g, [xF - 0.45, xF - 0.3], [fDoorB, fTop], [za, zb], 'fridgeDoor', R);                    // flush mirror-finish door, no handle
+      box(g, [xF - 0.45, xF - 0.3], [frzTop, fDoorB], [za, zb], 'frame', R);                         // the dark gap above the freezer drawer, carried by the door
+      box(g, [xF - 0.45, xF - 0.3], [fDoorB, fTop], sgn > 0 ? [zb, zb + 0.005] : [za - 0.005, za], 'frame', R);   // dark seam between the two doors
       { const db = new Bag(), bin = km('doorBin', 0xE9EEF1, 0.35, 0, { transparent: true, opacity: 0.55, depthWrite: false }), x0 = xF - 0.3, cs = [0x3B6E4A, 0x8B5A2B, 0xE8B23C, 0xB23A32];
-        [2.05, 3.2, 4.35, 5.0].forEach((yy, bi) => {
+        (sgn > 0 ? [2.05] : [2.05, 3.2, 4.35, 5.0]).forEach((yy, bi) => {
           db.add(new THREE.BoxGeometry(0.2, 0.03, zb - za - 0.1).translate(x0 + 0.1, yy, (za + zb) / 2), bin);
           db.add(new THREE.BoxGeometry(0.02, 0.22, zb - za - 0.1).translate(x0 + 0.19, yy + 0.11, (za + zb) / 2), bin);
           for (let k = 0; k < 4; k++) { const h = 0.5 - (bi % 2) * 0.14; db.add(new THREE.CylinderGeometry(0.075, 0.075, h, 10).translate(x0 + 0.1, yy + 0.03 + h / 2, za + 0.22 + k * ((zb - za - 0.44) / 3)), km('db' + ((k + bi) % 4), cs[(k + bi) % 4], 0.3, 0.1)); }
         }); db.flush(g, { keep: true }); }
+      if (sgn > 0) {
+        const zc = (za + zb) / 2, hw = 0.58, xd = xF - 0.3, xo = xF + 0.15, W = (xs, ys, zs, m = 'porcelain') => box(g, xs, ys, zs, m, R);
+        W([xd, xo + 0.03], [2.9, 2.98], [zc - hw, zc + hw]);                                          // bottom ledge
+        W([xd, xo], [4.35, 5.05], [zc - hw, zc + hw]);                                                // header block
+        W([xd, xo - 0.05], [2.98, 4.35], [zc - hw, zc - hw + 0.05]);                                  // left wall of the bay
+        W([xd, xo - 0.05], [2.98, 4.35], [zc + 0.12, zc + hw]);                                       // right block
+        W([xo - 0.05, xo - 0.04], [3.2, 4.2], [zc + 0.2, zc + 0.5], 'steelTop');                      // stainless plate
+        const cv = document.createElement('canvas'); cv.width = 320; cv.height = 56; const cx = cv.getContext('2d');
+        cx.fillStyle = '#6d7175'; cx.font = '500 30px "IBM Plex Sans", Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('Beverage Center', 160, 30);
+        const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
+        const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9 * 56 / 320).rotateY(Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
+        lab.position.set(xo + 0.004, 4.72, zc); lab.userData.room = 'kitchen'; g.add(lab);
+        const glassP = km('bevPitcher', 0xCFE3EE, 0.1, 0, { transparent: true, opacity: 0.32, depthWrite: false }), water = km('bevWater', 0x8FB4C6, 0.1, 0, { transparent: true, opacity: 0.6, depthWrite: false });
+        const px0 = xd + 0.04, px1 = xo - 0.14, pz0 = zc - hw + 0.1, pz1 = zc + 0.06;
+        box(g, [px0, px1], [3.02, 4.25], [pz0, pz1], 'frame', R).material = glassP;                  // the clear pitcher
+        box(g, [px0 + 0.01, px1 - 0.01], [3.04, 3.95], [pz0 + 0.01, pz1 - 0.01], 'frame', R).material = water;   // water
+        for (const [yy, zz] of [[3.8, 0.4], [3.62, 0.2], [3.47, 0.46]]) {                              // lemon slices
+          const m = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.025, 20).rotateZ(Math.PI / 2), M('beverageLemon')); m.position.set((px0 + px1) / 2, yy, pz0 + zz * (pz1 - pz0) / 0.5 * 0.5); m.userData.room = 'kitchen'; g.add(m);
+        }
+        W([px0 - 0.02, px1 + 0.02], [4.25, 4.33], [pz0 - 0.02, pz1 + 0.02], 'steelTop');                // lid
+        W([px1, px1 + 0.1], [3.1, 4.0], [pz0 + 0.02, pz0 + 0.1]);                                      // white handle
+      }
       doors.push([pivotFrom(g, n0, xF - 0.45, 0, sgn > 0 ? za : zb), -sgn * 1.9]);
     }
     const fl = new THREE.PointLight(0xf4f7ff, 0, 2.2, 2); fl.position.set(xF - 0.7, 3.6, zm); fl.visible = false; g.add(fl);
@@ -1742,7 +1862,8 @@ function buildKitchen(g) {
     grp.traverse(o => { o.userData.nocut = true; });
     act(grp, { kind: 'fridge', label: d => d.on ? 'Close fridge' : 'Open fridge', run: d => {
       doors.forEach(([pv, a]) => tweenTo(pv.rotation, 'y', d.on ? a : 0, 0.8));
-      fl.visible = d.on; fl.intensity = d.on ? 0.5 : 0; } }); }
+      fl.visible = d.on; fl.intensity = d.on ? 0.5 : 0; } });
+  }
   shell({ along: 'z', face: xF, dir: -1, u: [kz(37.19), kz(73.94)], y: [cB, H], back: 16.52, mat: 'oak', top: true, keep: true, shelves: [cB + 1.05] });
   fillShelves(g, kframe('z', xF, -1), kz(37.19) + PT, kz(73.94) - PT, [cB + PT, cB + 1.05 + PT], [[I.platter(), I.mixing(), I.bakingdish()], [I.plates(6, 0.4), I.bowls(4), I.mugs(3)]], 0.7, { keep: true });
   frontsX(xF, [[kz(37.19), kz(55.56), cB, H, 'br'], [kz(55.56), kz(73.94), cB, H, 'bl']], 'oak', -1);
@@ -1930,7 +2051,7 @@ function buildLiving(g) {
   for (const y of [4.0, 7.5]) box(g, [FX - 0.04, FX + 0.04], [y - 0.04, y + 0.04], [27.4, FZ - FR + 0.02], 'steel', R); // wall straps
   // built-in TV unit, 1'-6" deep × 8'-0", open shelves, tile topper (keynote 29), TV on the east wall
   box(g, [15.01, 16.47], [s, s + 1.5], [16.55, 24.54], 'millwork', R);               // all wood; top flush with the main floor and the hearth (1'-6")
-  for (const [z0, z1] of [[18.5, 20.67], [20.84, 22.75], [22.92, 24.4]]) box(g, [15.0, 15.02], [s + 0.2, s + 1.3], [z0, z1], 'frame', R);
+  for (const [z0, z1] of [[18.5, 20.67], [20.84, 22.75], [22.92, 24.4]]) box(g, [15.0, 15.02], [s + 0.2, s + 1.3], [z0, z1], 'woodRiser', R);
   const tvBox = box(g, [16.4, 16.5], [s + 3.1, s + 6.3], [17.54, 22.98], 'frame', R);
   FX_TV = { box: tvBox, center: [16.395, s + 4.7, 20.26], w: 5.3, h: 3.06, group: g };
 }
@@ -2220,14 +2341,16 @@ buildWingRoof(G.wingRoof);
    ===================================================================== */
 const stage = document.getElementById('stage');
 const LITE = matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1024px)').matches;   // phones: lighter rendering
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: !LITE });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, LITE ? 1.25 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = LITE ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
 // Shadows are re-rendered only when something changes (the scene is static; the camera does not affect them).
 renderer.shadowMap.autoUpdate = false;
 let shadowFrames = 3, shTick = 0;
-function markShadows() { shadowFrames = Math.max(shadowFrames, 2); }
+var DIRTY = 8;                                            // phones draw only while something changes: this counts down the frames still owed after a change
+function wake(n = 6) { if (n > DIRTY) DIRTY = n; }
+function markShadows() { shadowFrames = Math.max(shadowFrames, 2); wake(); }
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
@@ -2276,6 +2399,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.copy(HOME.target); controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.maxPolarAngle = Math.PI * 0.495; controls.minDistance = 3; controls.maxDistance = 80;
 controls.screenSpacePanning = true;
+controls.addEventListener('change', () => wake());
 
 const hemi = new THREE.HemisphereLight(0xf4f1ea, 0xd9d1c4, 1.35);   // sky + ground bounce (no direction, so nothing shines through walls)
 scene.add(hemi);
@@ -2572,7 +2696,7 @@ const hiMat = new THREE.MeshBasicMaterial({ color: 0x9b2f2f, transparent: true, 
 const hiGroup = new THREE.Group(); hiGroup.name = 'selection'; root.add(hiGroup);
 let selected = null;
 function select(id) {
-  selected = id; hiGroup.clear();
+  wake(); selected = id; hiGroup.clear();
   const info = document.getElementById('info');
   if (!id) { info.hidden = true; return; }
   const r = roomById[id];
@@ -2948,6 +3072,7 @@ const state = { floors: 'both', walls: 'cutaway', sun: 14, roof: false, labels: 
 let seasonOn = null;
 var siteReady = false;   // set once the landscape (section 12) exists
 function applyState() {
+  wake();
   const showG = state.floors !== 'loft', showL = state.floors !== 'ground';
   G.ground.visible = showG; G.loft.visible = showL;
   G.mainRoof.visible = state.roof && showL;
@@ -3508,7 +3633,7 @@ const TOUR_STOPS = [
   { name: 'Guest bath', walk: { y: 0, path: [[26.5, 10.2], [26.6, 14.8], [34.9, 14.9], [35.0, 11.5], [35.0, 8.8]], look: [36, 3, 3] },
     cap: 'The guest bath, in Nautical Blue. Turn the shower on and watch the mirror fog.' },
   { name: 'Office', walk: { y: 0, path: [[35.0, 8.8], [35.0, 14.8], [41.6, 15.0], [43.5, 12.0]], look: [43, 4, 15.6] },
-    cap: 'Through the second pocket door to the office, with the floating desk under the window.' },
+    cap: 'Through the second pocket door to the office: a twin-over-queen bunk against the back wall, and the floating desk under the window.' },
   { name: 'Loft', walk: { y: 0, path: [[43.5, 12.0], [41.6, 15.0], [30.0, 15.0], [24.4, 15.0], [21.0, 13.8], [18.4, 12.8], [18.6, 9.6], [18.6, 4.4], [19.0, 2.2], [21.8, 1.7], [22.7, 3.4], [22.7, 6.0], [22.7, 10.0], [22.6, 12.4]], look: [7, 7.5, 6] },
     cap: 'Back to the stair and up to the loft, open to the kitchen below.' },
   { name: 'Primary bedroom', walk: { y: 9.33, path: [[22.6, 12.4], [27.5, 12.3]], look: [36, 11.5, 8.5] },
@@ -3800,6 +3925,7 @@ function phoneStep(dt) {
   if (!document.body.classList.contains('m')) { if (SPOTS.length) { SPOTS.forEach(s => s.style.display = 'none'); } if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; } return; }
   {                                                      // keep the house in the part of the screen the sheet doesn't cover
     const want = sheetPane ? Math.round(sheet.offsetHeight / 2) : 0; VO.cur += (want - VO.cur) * Math.min(1, dt * 9);
+    if (Math.abs(VO.cur - want) > 0.3) wake();
     if (Math.abs(VO.cur) > 0.5) { camera.setViewOffset(innerWidth, innerHeight, 0, VO.cur, innerWidth, innerHeight); VO.on = true; }
     else if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; }
   }
@@ -3854,6 +3980,7 @@ function phoneStep(dt) {
    11. LOOP
    ===================================================================== */
 addEventListener('resize', () => {
+  wake();
   if (!window.innerWidth || !window.innerHeight) return;
   camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
   if (!Number.isFinite(camera.position.x)) { camera.position.copy(homePos()); controls.target.copy(HOME.target); }
@@ -3867,17 +3994,29 @@ function frame(dt) {
   interactStep(dt); phoneStep(dt);
   if (shadowFrames > 0) { renderer.shadowMap.needsUpdate = true; shadowFrames--; }
 }
-const GOV = { last: performance.now(), ema: 16, n: 0, pr: renderer.getPixelRatio(), max: renderer.getPixelRatio() };
-function governor() {                                      // phones: trade resolution for smoothness when frames get slow
-  const now = performance.now(), d = Math.min(120, now - GOV.last); GOV.last = now; GOV.ema = GOV.ema * 0.94 + d * 0.06;
+const GOV = { last: performance.now(), ema: 33, n: 0, pr: renderer.getPixelRatio(), max: renderer.getPixelRatio() }, FRAME_MS = 1000 / 30;
+function governor(drew) {                                  // phones: trade resolution for smoothness when frames take too long
+  if (!drew) return;
+  const now = performance.now(), d = Math.min(150, now - GOV.last); GOV.last = now; GOV.ema = GOV.ema * 0.94 + d * 0.06;
   if (++GOV.n % 45) return;
   let pr = GOV.pr;
-  if (GOV.ema > 30) pr = Math.max(0.7, pr - 0.15); else if (GOV.ema < 19) pr = Math.min(GOV.max, pr + 0.1);
-  if (Math.abs(pr - GOV.pr) > 0.01) { GOV.pr = pr; renderer.setPixelRatio(pr); renderer.setSize(window.innerWidth, window.innerHeight); }
+  if (GOV.ema > 46) pr = Math.max(0.7, pr - 0.15); else if (GOV.ema < 38) pr = Math.min(GOV.max, pr + 0.1);       // at the 30 fps cap a frame is ~33 ms
+  if (Math.abs(pr - GOV.pr) > 0.01) { GOV.pr = pr; renderer.setPixelRatio(pr); renderer.setSize(window.innerWidth, window.innerHeight); wake(); }
 }
+function animating() {                                     // things that move on their own
+  return (FAN.speed && FAN.spin) || fireLight.visible || (tvScreen && tvScreen.visible) || smoke.some(sp => sp.visible) || skyFx.some(f => f.on) || LIGHTS_OUT.busy
+    || FX_SHOWERS.some(S => S.mesh && (S.mesh.visible || S.fog > 0.01));
+}
+let lastDraw = 0;
 renderer.setAnimationLoop(() => {
-  if (LITE) governor();
   frame(Math.min(0.05, clock.getDelta()));
+  if (LITE) {
+    const busy = DIRTY > 0 || WALK.on || TOUR.on || FLY.cur || TWEENS.length || shadowFrames > 0 || animating();
+    if (!busy) return;                                     // nothing changed: leave the GPU idle (that is what keeps the phone cool)
+    const now = performance.now(); if (now - lastDraw < FRAME_MS - 3) return; lastDraw = now;
+    if (DIRTY > 0) DIRTY--;
+    governor(true);
+  }
   renderer.render(scene, camera); labelRenderer.render(scene, camera);
 });
 applyState();
@@ -3890,5 +4029,6 @@ if (LITE) {
   });
   camera.layers.enable(1);
 }
-window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY };
+addEventListener('visibilitychange', () => wake(10)); addEventListener('pointerdown', () => wake(10), true); addEventListener('pointerup', () => wake(10), true);
+window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY, wake };
 </script>
