@@ -5,8 +5,21 @@
 <meta charset="utf-8">
 <title>Local Time House</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js">
+<link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap" media="print" onload="this.media='all'">
 <style>
 /* Layout: full-bleed 3D viewport; a drafting-sheet control card floats top-left, room detail card bottom-right. */
 :root {
@@ -437,11 +450,11 @@ const C = {
   soffit: 0xB08A5E,
 };
 
-function canvasTex(draw, px = 512) {
+function canvasTex(draw, px = 256) {
   const c = document.createElement('canvas'); c.width = c.height = px;
   const g = c.getContext('2d'); draw(g, px);
   const t = new THREE.CanvasTexture(c);
-  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8;
+  t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   return t;
 }
 const TEX = {
@@ -450,42 +463,42 @@ const TEX = {
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, s, s);
     const n = 8, w = s / n;
     for (let i = 0; i < n; i++) { g.fillStyle = `rgba(0,0,0,${0.03 + (i * 37 % 7) / 120})`; g.fillRect(i * w, 0, w, s); }
-    g.fillStyle = 'rgba(0,0,0,0.45)'; for (let i = 0; i < n; i++) g.fillRect(i * w, 0, 3, s);
+    g.fillStyle = 'rgba(0,0,0,0.45)'; for (let i = 0; i < n; i++) g.fillRect(i * w, 0, 2, s);
   }),
   // standing seams ~16" o.c. (tile = 4 ft)
   seams: canvasTex((g, s) => {
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, s, s);
     const n = 3, w = s / n;
-    for (let i = 0; i < n; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(i * w, 0, 4, s); g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(i * w + 4, 0, 2, s); }
+    for (let i = 0; i < n; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(i * w, 0, 2, s); g.fillStyle = 'rgba(255,255,255,0.5)'; g.fillRect(i * w + 2, 0, 1, s); }
   }),
   // engineered oak planks, 220 mm (≈8.7") wide, running east–west (tile = 8 ft)
   planks: canvasTex((g, s) => {
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, s, s);
     const rows = 11, h = s / rows;
     for (let r = 0; r < rows; r++) {
-      let x = -((r * 173) % 300);
+      let x = -((r * 87) % 150);
       while (x < s) {
-        const len = 260 + ((r * 97 + x) % 220);
+        const len = 130 + ((r * 49 + x) % 110);
         g.fillStyle = `rgba(90,60,30,${0.02 + ((r * 13 + Math.abs(x)) % 9) / 140})`; g.fillRect(x, r * h, len, h);
-        g.fillStyle = 'rgba(70,45,20,0.28)'; g.fillRect(x, r * h, 2, h);
+        g.fillStyle = 'rgba(70,45,20,0.28)'; g.fillRect(x, r * h, 1, h);
         x += len;
       }
-      g.fillStyle = 'rgba(70,45,20,0.30)'; g.fillRect(0, r * h, s, 2);
+      g.fillStyle = 'rgba(70,45,20,0.30)'; g.fillRect(0, r * h, s, 1);
     }
-  }, 1024),
+  }, 512),
   // square tile, 4 tiles per foot-ish grid (tile = 2 ft → 6" tiles)
   tile: canvasTex((g, s) => {
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, s, s);
     const n = 4, w = s / n; g.fillStyle = 'rgba(0,0,0,0.22)';
-    for (let i = 0; i < n; i++) { g.fillRect(i * w, 0, 3, s); g.fillRect(0, i * w, s, 3); }
+    for (let i = 0; i < n; i++) { g.fillRect(i * w, 0, 2, s); g.fillRect(0, i * w, s, 2); }
   }),
   // sealed/polished concrete (tile = 16 ft): tileable cloudy variation at three scales, fine grain,
   // sparse aggregate flecks and a few faint hairline cracks. Values stay within a narrow band (±6%).
   concrete: canvasTex((g, s) => {
     let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     g.fillStyle = 'rgb(236,236,236)'; g.fillRect(0, 0, s, s);
-    g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-    for (const [cells, alpha] of [[4, 0.10], [12, 0.08], [40, 0.05]]) {
+    g.imageSmoothingEnabled = true;
+    for (const [cells, alpha] of [[4, 0.10], [12, 0.08], [32, 0.05]]) {
       const c = document.createElement('canvas'); c.width = c.height = cells;
       const cg = c.getContext('2d'), id = cg.createImageData(cells, cells);
       for (let i = 0; i < cells * cells; i++) { const v = 150 + rnd() * 105; id.data.set([v, v, v, 255], i * 4); }
@@ -499,24 +512,24 @@ const TEX = {
       const n = (rnd() - 0.5) * 10; px[i] += n; px[i + 1] += n; px[i + 2] += n;
     }
     g.putImageData(img, 0, 0);
-    for (let i = 0; i < 2600; i++) {                                            // sand + small aggregate
-      const x = rnd() * s, y = rnd() * s, r = rnd() < 0.9 ? 0.6 + rnd() * 0.8 : 1.2 + rnd() * 1.6, v = rnd() < 0.5 ? 120 + rnd() * 40 : 250;
-      g.fillStyle = `rgba(${v},${v},${v},${0.18 + rnd() * 0.22})`; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+    for (let i = 0; i < 650; i++) {                                             // sand + small aggregate
+      const x = rnd() * s, y = rnd() * s, d = rnd() < 0.9 ? 1.0 : 2.0, v = rnd() < 0.5 ? 120 + (rnd() * 40 | 0) : 250;
+      g.fillStyle = `rgba(${v},${v},${v},${0.18 + rnd() * 0.22})`; g.fillRect(x, y, d, d);
     }
     g.strokeStyle = 'rgba(110,110,110,0.10)'; g.lineWidth = 1;                // hairline cracks
     for (let k = 0; k < 3; k++) {
       let x = rnd() * s, y = rnd() * s; g.beginPath(); g.moveTo(x, y);
-      for (let j = 0; j < 14; j++) { x += (rnd() - 0.5) * 60; y += (rnd() - 0.3) * 40; g.lineTo(x, y); }
+      for (let j = 0; j < 10; j++) { x += (rnd() - 0.5) * 35; y += (rnd() - 0.3) * 25; g.lineTo(x, y); }
       g.stroke();
     }
-  }, 1024),
+  }, 512),
   // stainless: fine brushed grain with soft long streaks (tile = 3 ft)
   brushed: canvasTex((g, s) => {
     let seed = 5; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
     g.fillStyle = '#f2f2f2'; g.fillRect(0, 0, s, s);
-    for (let i = 0; i < 900; i++) {
-      const y = rnd() * s, v = 200 + rnd() * 55;
-      g.fillStyle = `rgba(${v},${v},${v},${0.10 + rnd() * 0.18})`; g.fillRect(0, y, s, 0.6 + rnd() * 1.2);
+    for (let i = 0; i < 360; i++) {
+      const y = rnd() * s, v = 200 + (rnd() * 55 | 0);
+      g.fillStyle = `rgba(${v},${v},${v},${0.10 + rnd() * 0.18})`; g.fillRect(0, y, s, 0.8 + rnd());
     }
   }),
   // 6" tile with tone-matched grout: barely visible joints, slight per-tile variation (tile = 2 ft → 4 × 4)
@@ -2380,17 +2393,18 @@ scene.add(root);
 // bright ceiling, a band of window light around the horizon, warm floor — so steel reads as polished.
 {
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const c = document.createElement('canvas'); c.width = 1024; c.height = 512;
+  const c = document.createElement('canvas'); c.width = 256; c.height = 128;
   const g = c.getContext('2d');
-  const sky = g.createLinearGradient(0, 0, 0, 256); sky.addColorStop(0, '#ffffff'); sky.addColorStop(1, '#d9dee2');
-  g.fillStyle = sky; g.fillRect(0, 0, 1024, 256);
-  const flr = g.createLinearGradient(0, 256, 0, 512); flr.addColorStop(0, '#9a948d'); flr.addColorStop(1, '#5d5853');
-  g.fillStyle = flr; g.fillRect(0, 256, 1024, 256);
+  const sky = g.createLinearGradient(0, 0, 0, 64); sky.addColorStop(0, '#ffffff'); sky.addColorStop(1, '#d9dee2');
+  g.fillStyle = sky; g.fillRect(0, 0, 256, 64);
+  const flr = g.createLinearGradient(0, 64, 0, 128); flr.addColorStop(0, '#9a948d'); flr.addColorStop(1, '#5d5853');
+  g.fillStyle = flr; g.fillRect(0, 64, 256, 64);
   g.fillStyle = '#ffffff';
-  for (const [x, w] of [[40, 90], [210, 60], [330, 150], [560, 70], [700, 120], [880, 80]]) g.fillRect(x, 150, w, 120);
-  g.fillStyle = '#f4f1ea'; for (let x = 0; x < 1024; x += 128) g.fillRect(x + 30, 30, 60, 14);   // ceiling lights
+  for (const [x, w] of [[10, 22], [52, 15], [82, 38], [140, 18], [175, 30], [220, 20]]) g.fillRect(x, 38, w, 30);
+  g.fillStyle = '#f4f1ea'; for (let x = 0; x < 256; x += 32) g.fillRect(x + 8, 8, 15, 4);   // ceiling lights
   const pano = new THREE.CanvasTexture(c); pano.mapping = THREE.EquirectangularReflectionMapping; pano.colorSpace = THREE.SRGBColorSpace;
   const envTex = pmrem.fromEquirectangular(pano).texture;
+  pano.dispose(); pmrem.dispose();
   for (const [name, d] of Object.entries(MAT_DEFS)) {
     if (d.env && MATS[name]) { MATS[name].envMap = envTex; MATS[name].envMapIntensity = d.env; MATS[name].needsUpdate = true; }
   }
@@ -2626,7 +2640,7 @@ for (const [grp, x, y, z, cd] of NIGHT_LIGHTS) {
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding
   const L = new THREE.PointLight(0xffc98a, 0, 5, 2); L.visible = false;
   L.position.set(x + (axis === 'x' ? n * 0.5 : 0), y - 0.5, z + (axis === 'z' ? n * 0.5 : 0)); G.ground.add(L);   // just under the cone's mouth
-  L.castShadow = !LITE; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;   // crisp cone cut-off
+  L.castShadow = !LITE; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;   // crisp cone cut-off
   L.shadow.camera.near = 0.03; L.shadow.camera.far = 6;
   nightRig.push({ L, cd: 3 });
 }
@@ -2654,7 +2668,7 @@ function applyNight(on) {
   sun.intensity = on ? NIGHTSET.sun : DAY.sun; sun.color.set(on ? NIGHTSET.sunColor : 0xfff3e2);
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
-  for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = on; }   // hidden lights cost nothing by day
+  for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = on; if (on && L.castShadow) L.shadow.needsUpdate = true; }   // hidden lights cost nothing by day
   if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
   lampMat.emissiveIntensity = on ? 2.6 : 0;
   paperMat.emissiveIntensity = on ? 1.1 : 0;
@@ -2833,6 +2847,7 @@ function updateWalls() {
     }
     if (cut === el.cut) continue;
     el.cut = cut; markShadows();
+    for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
     if (el.hide) el.m.visible = !cut;
     else { el.m.material = cut ? clipVariant(el) : el.base; el.cap.visible = cut; }
   }
@@ -2945,7 +2960,7 @@ function lightsOut() {
       sp.scale.setScalar(0.8); sp.visible = false; sp.position.set(...FX_FIRE.flue); sp.userData.t = i / 8; FX_FIRE.group.add(sp); smoke.push(sp);
     }
     act(FX_FIRE.glass, { kind: 'fireplace', label: d => d.on ? 'Put out the fire' : 'Light the fire', run: d => {
-      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.visible = d.on; smoke.forEach(sp => { sp.visible = d.on; }); } });
+      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.visible = d.on; fireLight.intensity = d.on ? 7 : 0; smoke.forEach(sp => { sp.visible = d.on; }); } });
   }
   if (FX_TV) {
     tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(FX_TV.w, FX_TV.h).rotateY(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tvTex }));
@@ -2953,7 +2968,7 @@ function lightsOut() {
     tvLight.position.set(FX_TV.center[0] - 1.6, FX_TV.center[1] - 0.3, FX_TV.center[2]); FX_TV.group.add(tvLight);
     const grp = new THREE.Group(); FX_TV.group.add(grp); FX_TV.group.remove(FX_TV.box); grp.add(FX_TV.box); FX_TV.group.remove(tvScreen); grp.add(tvScreen);
     act(grp, { kind: 'tv', ch: 0, label: d => d.ch === 0 ? 'Turn on the TV' : d.ch === TV_CH.length - 1 ? 'Turn off the TV' : 'Next channel', run: d => {
-      d.ch = (d.ch + 1) % TV_CH.length; d.on = d.ch > 0; tvScreen.visible = d.on; tvLight.visible = d.on; if (d.on) { drawTV(d.ch, 0); toast(TV_CH[d.ch]); } } });
+      d.ch = (d.ch + 1) % TV_CH.length; d.on = d.ch > 0; tvScreen.visible = d.on; tvLight.visible = d.on; tvLight.intensity = d.on ? 2.6 : 0; if (d.on) { drawTV(d.ch, 0); toast(TV_CH[d.ch]); } } });
   }
   for (const S of FX_SHOWERS) {
     const n = 320, [hx, hy, hz] = S.head;
@@ -3040,7 +3055,7 @@ function interactStep(dt) {
   }
   if (TWEENS.length && (!LITE || ++shTick % 3 === 0)) markShadows();
   if (FAN.spin && FAN.speed) FAN.spin.rotation.y += dt * FAN.speed;
-  const fireOn = fireLight.visible, tvAct = tvScreen && tvScreen.visible;
+  const fireOn = fireLight.visible && fireLight.intensity > 0, tvAct = tvScreen && tvScreen.visible;
   if ((fireOn || tvAct) && (fxDraw += dt) > 0.07) {
     fxDraw = 0;
     if (fireOn) { drawFire(fireCan.getContext('2d'), 128, 72, fxT); fireTex.needsUpdate = true; }
@@ -3131,7 +3146,6 @@ document.getElementById('explode').addEventListener('input', e => { state.explod
 for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { state.sun = +e.target.value; applyState(); });
 document.getElementById('walk-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
 document.getElementById('btn-reset').addEventListener('click', () => { camera.position.copy(homePos()); controls.target.copy(HOME.target); controls.update(); });
-applyState();
 
 /* =====================================================================
    10. EXPORT GLB (meters, Y-up). The viewer only saves allow-listed types, so the GLB ships inside a .zip.
@@ -3164,6 +3178,7 @@ async function exportGLB() {
   const snowWas = snowParts.map(m => m.visible); snowParts.forEach(m => { m.visible = false; });
   labels.forEach(l => { l.visible = false; }); hiGroup.visible = false;
   try {
+    const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
     const glb = await new GLTFExporter().parseAsync(root, { binary: true, onlyVisible: true });
     const bytes = new Uint8Array(glb);
     const readme = new TextEncoder().encode('Local Time House, Andes NY.\nUnits: meters, Y up. Origin near the center of the house.\nGroups: site, ground, loft, wingRoof, mainRoof.\n');
@@ -3216,7 +3231,7 @@ const groundMat = new THREE.MeshStandardMaterial({ color: SEASONS.fall.ground, r
 const clearMat = new THREE.MeshStandardMaterial({ color: SEASONS.fall.clearing, roughness: 1 });
 exteriorLightsOnly(groundMat); exteriorLightsOnly(clearMat);
 {
-  const g = new THREE.PlaneGeometry(1400, 1400, 140, 140); g.rotateX(-Math.PI / 2); g.translate(CX, 0, CZ);
+  const g = new THREE.PlaneGeometry(1400, 1400, 72, 72); g.rotateX(-Math.PI / 2); g.translate(CX, 0, CZ);
   const pos = g.attributes.position;
   for (let i = 0; i < pos.count; i++) pos.setY(i, terrainY(pos.getX(i), pos.getZ(i)) - 0.06);
   g.computeVertexNormals();
@@ -3530,11 +3545,11 @@ const GRILL = (() => {
     tweenTo(lidPv.rotation, 'z', on ? 1.08 : 0, 0.65);
     coalM.emissiveIntensity = on ? 2.2 : 0;
     food.visible = on;
-    light.visible = on; light.intensity = on ? 3.8 : 0;
+    light.visible = on || (typeof TL !== 'undefined' && TL.on); light.intensity = on ? 3.8 : 0;
     gSmoke.forEach(sp => { sp.visible = on; });
   };
   const actDef = act(grp, { kind: 'grill', label: d => d.on ? 'Turn off the grill' : 'Light the grill', run: d => setOn(d.on) });
-  return { grp, setOn, actDef };
+  return { grp, setOn, actDef, light };
 })();
 siteReady = true; markShadows();
 function applySeason(name) {
@@ -4092,7 +4107,7 @@ function governor(drew) {                                  // phones: trade reso
    into the house or car (with the front door opening for them), and the
    picnic takes place in the wide open south clearing.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, swayCur: 0, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
 const TL_LOOP = 58;
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
@@ -4403,7 +4418,8 @@ function tlSetFire(on) {
   if (!FX_FIRE || TL.fire === on) return;
   TL.fire = on;
   FX_FIRE.glass.material = on ? fireMat : M('frame');
-  fireLight.visible = on;
+  fireLight.visible = on || TL.on;
+  fireLight.intensity = on ? 7 : 0;
   smoke.forEach(sp => { if (!sp.userData.origin) sp.visible = on; });
 }
 function tlSetGrill(on) {
@@ -4418,7 +4434,8 @@ function tlSetTV(ch) {
   const d = actOf(tvScreen);
   if (d) { d.ch = ch; d.on = ch > 0; }
   tvScreen.visible = ch > 0;
-  tvLight.visible = ch > 0;
+  tvLight.visible = ch > 0 || TL.on;
+  tvLight.intensity = ch > 0 ? 2.6 : 0;
   if (ch > 0) drawTV(ch, fxT);
 }
 function tlSetFan(spd) {
@@ -4502,13 +4519,14 @@ function tlApplyEnv(dt, immediate) {
   renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
   scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
   if (scene.fog) scene.fog.color.copy(scene.background);
-  // Keep indoor rooms warmly lit whenever occupied so indoor activity is clearly visible through windows
+  // Keep indoor rooms warmly lit whenever occupied so indoor activity is clearly visible through windows;
+  // keep L.visible = true throughout timeline so Three.js never recompiles shaders mid-animation!
   const extK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0)) : 0;
   const intK = TL.occupied ? Math.max(0.55, extK) : 0;
   for (const { L, cd } of nightRig) {
     const k = L.castShadow ? extK : intK;
-    L.visible = k > 0.02;
-    if (L.visible) L.intensity = cd * NIGHTSET.dim * k;
+    L.visible = true;
+    L.intensity = k > 0.01 ? cd * NIGHTSET.dim * k : 0;
   }
   lampMat.emissiveIntensity = 2.6 * intK;
   paperMat.emissiveIntensity = 1.2 * intK;
@@ -4523,7 +4541,7 @@ function tlApplyEnv(dt, immediate) {
 }
 function tlSetMoment(i) {
   if (TL.cur >= 0 && TL.built[TL.cur]) TL.built[TL.cur].group.visible = false;
-  if (TL.glow) TL.glow.visible = false;
+  if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   TL.cur = i;
   if (i < 0) {
     showCap('');
@@ -4542,7 +4560,7 @@ function tlSetMoment(i) {
   tlSetGrill(!!m.grill);
   tlSetTV(m.tv || 0);
   tlSetFan(m.fan || 0);
-  if (TL.glow) { TL.glow.visible = !!m.glow; TL.glow.intensity = m.glow ? 8 : 0; }
+  if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = m.glow ? 8 : 0; }
   if (m.car === 'arrive') setCarColor(0xF3F3F1);
   else if (m.car === 'turnover') setCarColor(SECOND_CAR);
   showCap(m.caption);
@@ -4628,7 +4646,7 @@ function tlStepCar(dt) {
   const driving = TL.carD > 0.01 && TL.carD < 0.98 && mode !== 'parked' && mode !== 'away';
   const night = TL.sunCur < 7 || TL.sunCur >= 16.3;
   const lights = driving && night && CAR.car.visible;
-  CAR.beams.forEach(sl => { sl.visible = lights; sl.intensity = lights ? 40 : 0; });
+  CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = lights ? 40 : 0; });
   CAR.lamp.emissiveIntensity = lights ? 2.5 : 0;
   if (CAR.car.visible !== prevVis || Math.abs(TL.carD - prevD) > 0.0005) {
     if (CAR.car.visible !== prevVis || !LITE || ++shTick % 3 === 0) markShadows();
@@ -4636,30 +4654,31 @@ function tlStepCar(dt) {
 }
 const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3();
 function tlStepCamera(dt, immediate) {
-  if (performance.now() - TL.lastInteract <= 4000) return;
+  const idle = TL.lastInteract ? (performance.now() - TL.lastInteract) / 1000 : 99;
+  if (idle < 3.5) return;
+  const r = Math.min(1, (idle - 3.5) / 3.5), ramp = r * r * (3 - 2 * r);
   const base = homePos(), off = base.clone().sub(HOME.target);
-  const m = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
-  const grillBias = m && m.grill ? -0.36 : 0;
-  const sway = Math.sin(TL.t * Math.PI * 2) * 0.44 + grillBias;
+  // Single continuous cosine curve over the year: faces SE in winter (for the driveway arrival/departure)
+  // and glides smoothly to SW in spring/summer/early fall (framing the West Deck grill, birch patio, and south lawn)
+  const targetSway = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30;
+  if (immediate) TL.swayCur = targetSway;
+  else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
   const zoom = 0.78, lowY = 0.44;
   const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
-  const c = Math.cos(sway), s = Math.sin(sway);
+  const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
   _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
   _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
-  if (immediate) {
-    camera.position.copy(_tlCamGoal); controls.target.copy(_tlCamTarget);
-  } else {
-    const k = Math.min(1, dt * 2.8);
-    camera.position.lerp(_tlCamGoal, k); controls.target.lerp(_tlCamTarget, k);
-  }
+  const k = immediate ? 0.25 : Math.min(1, dt * 1.45) * ramp;
+  camera.position.lerp(_tlCamGoal, k);
+  controls.target.lerp(_tlCamTarget, k);
   camera.lookAt(controls.target);
   if (state.walls === 'cutaway') updateWalls();
 }
 function tlTick(dt) {
   if (WALK.on || TOUR.on) { exitTimeline(); return; }
   const actNow = tlActiveMoment();
-  const targetSpeed = actNow >= 0 ? 1.0 : 1.75;
-  TL.speed += (targetSpeed - TL.speed) * Math.min(1, dt * 4);
+  const targetSpeed = actNow >= 0 ? 1.0 : 1.35;
+  TL.speed += (targetSpeed - TL.speed) * Math.min(1, dt * 2.5);
   if (TL.playing) TL.t = (TL.t + dt * TL.speed / TL_LOOP) % 1;
   tlApplyEnv(dt, false);
   const act = tlActiveMoment();
@@ -4675,7 +4694,7 @@ function enterTimeline() {
   if (WALK.on) exitWalk();
   if (TOUR.on) exitTour();
   const tvD = tvScreen ? actOf(tvScreen) : null;
-  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
+  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
   if (!TL.built) {
     TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
     TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
@@ -4684,21 +4703,27 @@ function enterTimeline() {
     MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
   }
   for (const B of TL.built) B.group.visible = false;
-  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
+  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
   Object.assign(state, { walls: 'up', floors: 'both', roof: true, explode: 0, labels: false, night: false }); applyState();
+  // Pre-activate all timeline light sources once on entry (with 0 intensity when unused) so WebGL never recompiles shaders mid-loop
+  for (const { L } of nightRig) { L.visible = true; if (L.castShadow) L.shadow.needsUpdate = true; }
+  if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
+  fireLight.visible = true; fireLight.intensity = 0;
+  tvLight.visible = true; tvLight.intensity = 0;
+  if (GRILL.light) { GRILL.light.visible = true; GRILL.light.intensity = 0; }
+  CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = 0; });
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
   document.getElementById('btn-timeline').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
   tlSetMoment(0);
   tlStepCar(0);
-  tlStepCamera(0, true);
 }
 function exitTimeline() {
   if (!TL.on) return;
   TL.on = false; TL.playing = false; TL.cur = -1;
   for (const B of TL.built || []) B.group.visible = false;
-  if (TL.glow) TL.glow.visible = false;
+  if (TL.glow) { TL.glow.visible = false; TL.glow.intensity = 0; }
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
   tlSetFire(TL.saved ? TL.saved.fire : false);
@@ -4718,7 +4743,8 @@ function exitTimeline() {
   if (TL.saved) {
     Object.assign(state, TL.saved.state);
     seasonOn = null; nightOn = !state.night; applyState();
-    camera.position.copy(TL.saved.pos); controls.target.copy(TL.saved.target); controls.enabled = true; controls.update();
+    controls.enabled = true;
+    flyTo(TL.saved.pos.clone(), TL.saved.target.clone(), 0.9);
   }
   markShadows();
   document.getElementById('tlbar').hidden = true;
