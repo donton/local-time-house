@@ -2618,23 +2618,19 @@ fixtures();
   G.loft.add(P);
 })();
 
-// Room light sources for night mode (point lights, warm): one per lit zone at the centroid of its fixtures.
+// Room light sources for night mode (point lights, warm): 6 consolidated zone lights (down from 15) for fast fragment shading.
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela]
-  ['ground', 8.3, 11.0, 5.2, 16], ['ground', 8.515, 6.25, 8.53, 10], ['ground', 5.5, 4.4, 1.6, 4],   // kitchen D6s, pendant, tape
-  ['ground', 18.9, 7.5, 14.0, 12],                                                                 // L1s under the loft / entry
-  ['ground', 9.5, 8.2, 21.5, 16],                                                                  // sunken living L4s
-  ['ground', 28.7, 7.6, 5.7, 12], ['ground', 35.0, 7.6, 5.9, 9],                                   // guest bed, guest bath
-  ['ground', 30.8, 7.6, 15.0, 9], ['ground', 43.5, 7.6, 8.5, 14],                                  // corridor, office
-  ['ground', 21.5, 6.6, 1.6, 4],                                                                   // stair sconce
-  ['loft', 32.5, LV.LOFT_CEIL - 0.6, 11.25, 16],                                                   // primary bedroom
-  ['loft', 44.5, LV.LOFT + 5.8, 9.9, 11],                                                          // upstairs bath
-  ['loft', 27.4, LV.LOFT + 4.4, 3.0, 5], ['loft', 35.8, LV.LOFT + 4.4, 3.0, 6],                    // MECH, laundry
-  ['loft', 22.6, 11.0, 4.0, 5],                                                                    // stair sconces
+  ['ground', 8.4, 8.8, 6.2, 24],                                                                    // kitchen + dining island
+  ['ground', 19.2, 7.5, 13.0, 15],                                                                  // entry + stair hall under loft
+  ['ground', 9.5, 8.2, 21.5, 18],                                                                   // sunken living wing
+  ['ground', 31.2, 7.6, 8.5, 18],                                                                   // guest bedroom, bath & corridor
+  ['ground', 43.5, 7.6, 8.5, 15],                                                                   // east office
+  ['loft', 34.5, LV.LOFT_CEIL - 0.8, 9.5, 24],                                                      // loft primary bedroom, bath & laundry
 ];
 const nightRig = [];
 for (const [grp, x, y, z, cd] of NIGHT_LIGHTS) {
-  const L = new THREE.PointLight(0xffcf96, 0, 7.5, 2); L.visible = false; L.position.set(x, y, z); G[grp].add(L);
+  const L = new THREE.PointLight(0xffcf96, 0, 11.5, 1.8); L.visible = false; L.position.set(x, y, z); G[grp].add(L);
   nightRig.push({ L, cd });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding
@@ -2955,12 +2951,14 @@ function lightsOut() {
   if (FX_FIRE) {
     FX_FIRE.glass.geometry.setAttribute('uv', new THREE.BoxGeometry(1, 1, 1).attributes.uv.clone());   // plain 0–1 UVs so the flames fill the glass
     fireLight.position.set(...FX_FIRE.at); FX_FIRE.group.add(fireLight);
-    for (let i = 0; i < 8; i++) {
-      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xbfb9b2, transparent: true, opacity: 0, depthWrite: false }));
-      sp.scale.setScalar(0.8); sp.visible = false; sp.position.set(...FX_FIRE.flue); sp.userData.t = i / 8; FX_FIRE.group.add(sp); smoke.push(sp);
+    for (let i = 0; i < 12; i++) {
+      const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xd4cfc7, transparent: true, opacity: 0, depthWrite: false }));
+      sp.scale.setScalar(0.95); sp.visible = false; sp.position.set(...FX_FIRE.flue);
+      sp.userData = { t: i / 12, rise: 10.5, drift: 2.2, s0: 0.85, s1: 3.1 };
+      FX_FIRE.group.add(sp); smoke.push(sp);
     }
     act(FX_FIRE.glass, { kind: 'fireplace', label: d => d.on ? 'Put out the fire' : 'Light the fire', run: d => {
-      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.visible = d.on; fireLight.intensity = d.on ? 7 : 0; smoke.forEach(sp => { sp.visible = d.on; }); } });
+      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.visible = d.on; fireLight.intensity = d.on ? 7 : 0; smoke.forEach(sp => { if (!sp.userData.origin) sp.visible = d.on; }); } });
   }
   if (FX_TV) {
     tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(FX_TV.w, FX_TV.h).rotateY(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tvTex }));
@@ -2990,12 +2988,14 @@ function lightsOut() {
 // --- toast (channel names etc.)
 let toastT = 0;
 function toast(msg) { const el = document.getElementById('act-toast'); el.textContent = msg; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => { el.hidden = true; }, 1600); }
-// --- picking
-const AR = new THREE.Raycaster(), AV = new THREE.Vector2();
+// --- picking (layer 0 only so TINY interior props are skipped; only car & grill from LAND instead of 520 trees/terrain)
+const AR = new THREE.Raycaster(), AV = new THREE.Vector2(); AR.layers.set(0);
+let PICK_ROOTS = null;
 const actOf = o => { while (o) { if (o.userData && o.userData.act) return o.userData.act; o = o.parent; } return null; };
 function pickAct(nx, ny, maxDist) {
   AV.set(nx, ny); AR.setFromCamera(AV, camera);
-  const hits = AR.intersectObjects([G.ground, G.loft, G.mainRoof, G.wingRoof, G.site, LAND], true);
+  if (!PICK_ROOTS) PICK_ROOTS = [G.ground, G.loft, G.mainRoof, G.wingRoof, G.site, ...(typeof CAR !== 'undefined' ? [CAR.car] : []), ...(typeof GRILL !== 'undefined' ? [GRILL.grp] : [])];
+  const hits = AR.intersectObjects(PICK_ROOTS, true);
   for (const h of hits) {
     if (!isShown(h.object) || h.object.isPoints || h.object.isLineSegments || FX_SHOWERS.some(S => S.steam === h.object)) continue;
     const a = actOf(h.object);
@@ -3019,7 +3019,7 @@ function useAct(a) {
 // orbit: hover label + pointer cursor
 let hoverQ = null;
 renderer.domElement.addEventListener('pointermove', e => {
-  if (WALK.on || TOUR.on || e.buttons) { document.getElementById('act-tip').hidden = true; return; }
+  if (WALK.on || TOUR.on || (typeof TL !== 'undefined' && TL.on) || e.buttons) { document.getElementById('act-tip').hidden = true; return; }
   hoverQ = [e.clientX, e.clientY];
 });
 function hoverCheck() {
@@ -3066,8 +3066,8 @@ function interactStep(dt) {
   smoke.forEach(sp => {
     if (!sp.visible) return; sp.userData.t = (sp.userData.t + dt * 0.22) % 1; const t = sp.userData.t;
     const o = sp.userData.origin || FX_FIRE.flue;
-    sp.position.set(o[0] + Math.sin(t * 6 + sp.id) * 0.35, o[1] + t * (sp.userData.rise || 7), o[2] + t * (sp.userData.drift || 1.5));
-    sp.scale.setScalar((sp.userData.s0 || 0.6) + t * (sp.userData.s1 || 2.4)); sp.material.opacity = 0.35 * Math.sin(Math.PI * t);
+    sp.position.set(o[0] + Math.sin(t * 6 + sp.id) * 0.45, o[1] + t * (sp.userData.rise || 10.5), o[2] + t * (sp.userData.drift || 2.2));
+    sp.scale.setScalar((sp.userData.s0 || 0.85) + t * (sp.userData.s1 || 3.1)); sp.material.opacity = (sp.userData.origin ? 0.36 : 0.50) * Math.sin(Math.PI * t);
   });
   for (const S of FX_SHOWERS) {
     if (!S.mesh) continue;
@@ -3094,7 +3094,7 @@ function interactStep(dt) {
     }
     f.pts.geometry.attributes.position.needsUpdate = true;
   }
-  if (WALK.on) walkAim(); else { document.getElementById('act-hint').hidden = true; hoverCheck(); }
+  if (WALK.on) walkAim(); else if (!TL.on) { document.getElementById('act-hint').hidden = true; hoverCheck(); }
   if (TL.on) tlTick(dt);
 }
 
@@ -3455,10 +3455,16 @@ const PATIO = (() => {
       else part((x1 - x0) / n * 0.7, 0.05, z1 - z0, x0 + (x1 - x0) * t, y, (z0 + z1) / 2);
     }
   };
-  // table 5'-3" × 2'-11", 2'-5" high
+  // table 5'-3" × 2'-11", 2'-5" high + warm glass-and-steel table lantern
   slats(-2.65, 2.65, -1.45, 1.45, 2.38, 12);
   for (const [x, z] of [[-2.45, -1.25], [2.45, -1.25], [-2.45, 1.25], [2.45, 1.25]]) part(0.07, 2.36, 0.07, x, 1.18, z);
   part(5.0, 0.06, 0.07, 0, 2.28, -1.25); part(5.0, 0.06, 0.07, 0, 2.28, 1.25);
+  const lanternMat = new THREE.MeshStandardMaterial({ color: 0xffe4b5, emissive: 0xffa838, emissiveIntensity: 0, roughness: 0.25 });
+  const lanternBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.08, 8), green); lanternBase.position.set(0.35, 2.44, -0.12); grp.add(lanternBase);
+  const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.36, 8), lanternMat); lanternGlass.position.set(0.35, 2.66, -0.12); grp.add(lanternGlass);
+  const lanternCap = new THREE.Mesh(new THREE.ConeGeometry(0.21, 0.12, 8), green); lanternCap.position.set(0.35, 2.90, -0.12); grp.add(lanternCap);
+  const lanternHalo = new THREE.Mesh(new THREE.CircleGeometry(1.35, 16).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb84d, transparent: true, opacity: 0.28, depthWrite: false }));
+  lanternHalo.position.set(0.35, 2.415, -0.12); lanternHalo.visible = false; grp.add(lanternHalo);
   // bench with back, north side
   slats(-2.6, 2.6, -3.35, -2.25, 1.5, 6); for (const x of [-2.4, 2.4]) { part(0.07, 1.5, 0.07, x, 0.75, -2.35); part(0.07, 2.9, 0.07, x, 1.45, -3.3); part(0.07, 0.05, 1.1, x, 2.15, -2.8); }
   for (let i = 0; i < 5; i++) part(5.2, 0.16, 0.04, 0, 1.75 + i * 0.25, -3.33);
@@ -3495,7 +3501,7 @@ const PATIO = (() => {
       const gm = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.4, 6).translate(0, 1.2, 0), PLANTS.grassMat); gm.position.set(rx, 0, rz); gm.rotation.y = rnd() * 3; grp.add(gm);
     }
   }
-  return { crowns, leaf };
+  return { crowns, leaf, brickMat, mortarMat, lanternMat, lanternHalo };
 })();
 /* Stainless steel & slate-gray gas grill on the West Deck outside the kitchen side door (Door 102). */
 const GRILL = (() => {
@@ -3574,6 +3580,7 @@ function applySeason(name) {
   PLANTS.grassMat.color.set({ summer: 0x7F9B4E, fall: 0xB49A5E, winter: 0xA39A86, spring: 0x86AC58 }[name]);
   PLANTS.fernMat.color.set({ summer: 0x4D7A38, fall: 0x8C6A3A, winter: 0x6A5A46, spring: 0x5E8A44 }[name]);
   PATIO.leaf.color.set((name === 'summer' || name === 'spring') ? 0x9DBF5A : 0xE0C04A); PATIO.crowns.forEach(c => { c.visible = name !== 'winter'; });
+  PATIO.brickMat.roughness = 0.9; PATIO.brickMat.metalness = 0; PATIO.mortarMat.roughness = 1;
   markShadows();
 }
 applySceneTheme();
@@ -4030,7 +4037,9 @@ function phoneStep(dt) {
   }
   $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on));
   if (WALK.on) { const ub = $$('usebtn'); ub.classList.toggle('ready', !!aimAct); ub.firstChild.textContent = aimAct ? aimAct.label(aimAct) : 'Nothing to use'; }
-  const show = !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
+  const far = !WALK.on && ((typeof TL !== 'undefined' && TL.on) || camera.position.distanceTo(controls.target) > 22);
+  if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
+  const show = !(typeof TL !== 'undefined' && TL.on) && !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
   if (!show) { SC.list = []; SC.dots = []; for (const sp of SPOTS) sp.style.display = 'none'; return; }
   // 1) the visibility scan: nearest few unfound things, ONE ray-test per frame, so there is never a hitch
   if (!SC.list.length) {
@@ -4067,8 +4076,6 @@ function phoneStep(dt) {
     sp._a = hit; sp.style.left = ((_v.x + 1) / 2 * innerWidth) + 'px'; sp.style.top = ((1 - _v.y) / 2 * innerHeight) + 'px'; sp.style.display = 'grid'; n++;
   }
   for (let i = n; i < SPOTS.length; i++) SPOTS[i].style.display = 'none';
-  // 3) phones: little things (jars, books, knobs) only render when you are close; far away they are invisible anyway
-  if (LITE) { const far = !WALK.on && camera.position.distanceTo(controls.target) > 20; if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); } }
 }
 
 /* =====================================================================
@@ -4107,7 +4114,7 @@ function governor(drew) {                                  // phones: trade reso
    into the house or car (with the front door opening for them), and the
    picnic takes place in the wide open south clearing.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, swayCur: 0, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, swayCur: 0, snowK: 1, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, fallLeaves: null, tracks: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
 const TL_LOOP = 58;
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
@@ -4218,7 +4225,7 @@ function poseFigure(fig, sit, sw) {
     u.torso.rotation.x = 0;
   }
 }
-// --- site-wide weather particles (snow, spring petals, summer fireflies, autumn leaves) + sprouting wildflowers
+// --- site-wide weather particles (snow, spring petals, summer fireflies, autumn leaves) + wildflowers + fallen leaf scatter + snow tire tracks
 function tlBuildEnvFx() {
   const N = LITE ? 110 : 220;
   const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
@@ -4233,7 +4240,7 @@ function tlBuildEnvFx() {
   const B = LITE ? 55 : 110;
   const bMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, flatShading: true }); exteriorLightsOnly(bMat);
   const bMesh = new THREE.InstancedMesh(TL_GEO.bloom, bMat, B);
-  bMesh.castShadow = false; bMesh.receiveShadow = false;
+  bMesh.castShadow = false; bMesh.receiveShadow = false; bMesh.visible = false;
   const bPts = [], bCols = [0xE8D26E, 0xD98BB5, 0x8E6FC9, 0xF4F1EA, 0xE2955A];
   const col = new THREE.Color();
   for (let i = 0; i < B; i++) {
@@ -4253,8 +4260,62 @@ function tlBuildEnvFx() {
   }
   if (bMesh.instanceColor) bMesh.instanceColor.needsUpdate = true;
   LAND.add(bMesh);
+  // Fallen autumn leaves accumulating on the birch patio, stepping-stone walk, West Deck steps, and roof skylights
+  const FL = LITE ? 85 : 165;
+  const flMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true }); exteriorLightsOnly(flMat);
+  const flMesh = new THREE.InstancedMesh(TL_GEO.leaf, flMat, FL);
+  flMesh.castShadow = false; flMesh.receiveShadow = false; flMesh.visible = false;
+  const flPts = [], flCols = [0xC3702C, 0xA6402C, 0xCF9B38, 0x8D5A33, 0xB23A32];
+  const roofSlopeY = z => LV.RIDGE - (z / 17.33) * (LV.RIDGE - LV.EAVE_S) + 0.08;
+  const skyBoxes = [[15.5, 21.0], [30.3, 36.0], [43.3, 45.1]];
+  for (let i = 0; i < FL; i++) {
+    let x, y, z, rx = 0, rz = 0;
+    if (i < FL * 0.42) {
+      const a = Math.random() * Math.PI * 2, r = 1.5 + Math.random() * 9.5;
+      x = PATIO_AT[0] + Math.cos(a) * r; z = PATIO_AT[1] + Math.sin(a) * r; y = LV.GRADE + 0.21;
+    } else if (i < FL * 0.72) {
+      x = 18 + Math.random() * 36; z = 29.5 + Math.random() * 6.5; y = LV.GRADE + 0.08;
+    } else if (i < FL * 0.85) {
+      x = -9.5 + Math.random() * 7.5; z = 11 + Math.random() * 8; y = LV.GRADE + 0.08;
+    } else {
+      const sb = skyBoxes[i % skyBoxes.length];
+      x = sb[0] + Math.random() * (sb[1] - sb[0]); z = 4.7 + Math.random() * 3.5;
+      y = roofSlopeY(z); rx = 0.23;
+    }
+    const s = 0.7 + Math.random() * 0.75;
+    flPts.push({ x, y, z, rx, ry: Math.random() * Math.PI * 2, rz, s, delay: (i % 25) / 25 });
+    flMesh.setColorAt(i, col.setHex(flCols[i % flCols.length]));
+  }
+  if (flMesh.instanceColor) flMesh.instanceColor.needsUpdate = true;
+  LAND.add(flMesh);
+  // Winter tire tracks along the gravel drive (revealed behind the car as it drives in through the snow)
+  const trSegs = 48, trPos = [], trIdx = [];
+  for (let i = 0; i <= trSegs; i++) {
+    const u = i / trSegs, pt = tlDrive.at(u);
+    const nx = Math.cos(pt.h), nz = -Math.sin(pt.h);
+    for (const side of [-2.1, 2.1]) {
+      for (const hw of [-0.36, 0.36]) {
+        const px = pt.x + nx * (side + hw), pz = pt.z + nz * (side + hw);
+        trPos.push(px, terrainY(px, pz) + 0.02, pz);
+      }
+    }
+    if (i < trSegs) {
+      for (let t = 0; t < 2; t++) {
+        const b0 = i * 4 + t * 2, b1 = (i + 1) * 4 + t * 2;
+        trIdx.push(b0, b0 + 1, b1, b0 + 1, b1 + 1, b1);
+      }
+    }
+  }
+  const trGeo = new THREE.BufferGeometry();
+  trGeo.setAttribute('position', new THREE.Float32BufferAttribute(trPos, 3));
+  trGeo.setIndex(trIdx); trGeo.computeVertexNormals();
+  const trMat = new THREE.MeshStandardMaterial({ color: 0xb6bec8, roughness: 0.9, transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -1 });
+  exteriorLightsOnly(trMat);
+  const trMesh = new THREE.Mesh(trGeo, trMat); trMesh.receiveShadow = true; trMesh.visible = false; LAND.add(trMesh);
   TL.wx = { mesh, pts, N, kind: null };
   TL.blooms = { mesh: bMesh, pts: bPts, lastK: -1 };
+  TL.fallLeaves = { mesh: flMesh, pts: flPts, lastK: -1 };
+  TL.tracks = { mesh: trMesh, geo: trGeo, mat: trMat, segs: trSegs };
 }
 const _wxO = new THREE.Object3D(), _wxC = new THREE.Color();
 const WX_PAL = {
@@ -4324,6 +4385,27 @@ function tlStepEnvFx(dt, day) {
       Bl.mesh.instanceMatrix.needsUpdate = true;
     }
   }
+  // Fallen autumn leaves accumulating on the patio, path, clearing edge, and roof skylights in September–November
+  let fallK = 0;
+  if (day >= 248 && day < 302) fallK = (day - 248) / 54;
+  else if (day >= 302 && day < 324) fallK = 1;
+  else if (day >= 324 && day < 342) fallK = 1 - (day - 324) / 18;
+  const Fl = TL.fallLeaves;
+  if (Fl && Math.abs(fallK - Fl.lastK) > 0.01) {
+    Fl.lastK = fallK;
+    Fl.mesh.visible = fallK > 0.01;
+    if (Fl.mesh.visible) {
+      for (let i = 0; i < Fl.pts.length; i++) {
+        const lf = Fl.pts[i];
+        const k = Math.max(0.0001, Math.min(1, (fallK - lf.delay * 0.45) / 0.55)) * lf.s;
+        _wxO.position.set(lf.x, lf.y, lf.z);
+        _wxO.rotation.set(lf.rx, lf.ry, lf.rz);
+        _wxO.scale.set(k * 1.15, k * 0.6, k * 1.15);
+        _wxO.updateMatrix(); Fl.mesh.setMatrixAt(i, _wxO.matrix);
+      }
+      Fl.mesh.instanceMatrix.needsUpdate = true;
+    }
+  }
 }
 // --- continuous seasonal landscape & roof-snow interpolation (never snaps)
 const _tc1 = new THREE.Color(), _tc2 = new THREE.Color(), _tc3 = new THREE.Color();
@@ -4353,6 +4435,7 @@ function tlApplyContinuousSeasons(day) {
   if (day < 52 || day >= 352) snowK = 1;
   else if (day >= 52 && day < 82) snowK = 1 - ease((day - 52) / 30);
   else if (day >= 328 && day < 352) snowK = ease((day - 328) / 24);
+  TL.snowK = snowK;
   if (MATS.snow) {
     MATS.snow.transparent = snowK < 0.99;
     MATS.snow.opacity = snowK;
@@ -4363,6 +4446,11 @@ function tlApplyContinuousSeasons(day) {
     m.scale.y = 1;
     m.position.y = -(1 - snowK) * 0.16;
   });
+  // Wet bluestone patio shimmer right after snowmelt during spring thaw (late Feb – mid April)
+  const wetK = day >= 56 && day < 112 ? Math.sin(((day - 56) / 56) * Math.PI) : 0;
+  PATIO.brickMat.roughness = 0.9 - 0.68 * wetK;
+  PATIO.brickMat.metalness = 0.38 * wetK;
+  PATIO.mortarMat.roughness = 1.0 - 0.55 * wetK;
   // Update season button highlight without triggering discrete applySeason()
   const month = Math.min(11, Math.floor(TL.t * 12)), sName = TL_SEASON_OF_MONTH[month];
   if (TL.seasonCur !== sName) {
@@ -4506,7 +4594,7 @@ function tlApplyEnv(dt, immediate) {
   const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
   const D = 27, ce = Math.cos(el);
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
-  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.015) { if (!LITE || ++shTick % 4 === 0) markShadows(); }
+  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.015) { if (immediate || ++shTick % 4 === 0) markShadows(); }
   const sElev = Math.min(1, Math.sin(el) * 1.6);
   const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
   sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.44) * dk;
@@ -4531,6 +4619,10 @@ function tlApplyEnv(dt, immediate) {
   lampMat.emissiveIntensity = 2.6 * intK;
   paperMat.emissiveIntensity = 1.2 * intK;
   creamMat.emissiveIntensity = 1.4 * intK;
+  const lanternK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.2) / 1.4)) : 0;
+  PATIO.lanternMat.emissiveIntensity = 3.2 * lanternK;
+  PATIO.lanternHalo.visible = lanternK > 0.04;
+  PATIO.lanternHalo.material.opacity = 0.28 * lanternK;
   const glass = MATS.glass;
   if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = 0.28 * extK; }
   for (const v of CUT.variants) {
@@ -4648,8 +4740,17 @@ function tlStepCar(dt) {
   const lights = driving && night && CAR.car.visible;
   CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = lights ? 40 : 0; });
   CAR.lamp.emissiveIntensity = lights ? 2.5 : 0;
+  if (TL.tracks) {
+    const showTracks = TL.snowK > 0.04 && TL.carD < 0.97;
+    TL.tracks.mesh.visible = showTracks;
+    if (showTracks) {
+      const startSeg = Math.max(0, Math.min(TL.tracks.segs - 1, Math.floor(TL.carD * TL.tracks.segs)));
+      TL.tracks.geo.setDrawRange(startSeg * 12, (TL.tracks.segs - startSeg) * 12);
+      TL.tracks.mat.opacity = 0.55 * TL.snowK;
+    }
+  }
   if (CAR.car.visible !== prevVis || Math.abs(TL.carD - prevD) > 0.0005) {
-    if (CAR.car.visible !== prevVis || !LITE || ++shTick % 3 === 0) markShadows();
+    if (CAR.car.visible !== prevVis || ++shTick % 4 === 0) markShadows();
   }
 }
 const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3();
@@ -4689,19 +4790,21 @@ function tlTick(dt) {
   if (!TL.scrubbing) { const sc = document.getElementById('tl-scrub'); if (sc) sc.value = String(Math.round(TL.t * 1000)); }
   wake();
 }
+function tlEnsureBuilt() {
+  if (TL.built) return;
+  TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
+  TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
+  tlBuildEnvFx();
+  const marks = document.getElementById('tl-marks');
+  MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
+}
 function enterTimeline() {
   if (TL.on) { exitTimeline(); return; }
   if (WALK.on) exitWalk();
   if (TOUR.on) exitTour();
   const tvD = tvScreen ? actOf(tvScreen) : null;
   TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
-  if (!TL.built) {
-    TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
-    TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
-    tlBuildEnvFx();
-    const marks = document.getElementById('tl-marks');
-    MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
-  }
+  tlEnsureBuilt();
   for (const B of TL.built) B.group.visible = false;
   TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
   Object.assign(state, { walls: 'up', floors: 'both', roof: true, explode: 0, labels: false, night: false }); applyState();
@@ -4726,6 +4829,9 @@ function exitTimeline() {
   if (TL.glow) { TL.glow.visible = false; TL.glow.intensity = 0; }
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
+  if (TL.fallLeaves) { TL.fallLeaves.mesh.visible = false; TL.fallLeaves.lastK = -1; }
+  if (TL.tracks) TL.tracks.mesh.visible = false;
+  PATIO.lanternMat.emissiveIntensity = 0; PATIO.lanternHalo.visible = false;
   tlSetFire(TL.saved ? TL.saved.fire : false);
   tlSetGrill(TL.saved ? TL.saved.grill : false);
   tlSetTV(TL.saved ? TL.saved.tv : 0);
@@ -4767,7 +4873,7 @@ renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = pe
 renderer.domElement.addEventListener('wheel', () => { TL.lastInteract = performance.now(); }, { passive: true });
 
 function animating() {                                     // things that move on their own
-  return (FAN.speed && FAN.spin) || fireLight.visible || (tvScreen && tvScreen.visible) || smoke.some(sp => sp.visible) || skyFx.some(f => f.on) || LIGHTS_OUT.busy
+  return (FAN.speed && FAN.spin) || (fireLight.visible && fireLight.intensity > 0) || (tvScreen && tvScreen.visible) || smoke.some(sp => sp.visible) || skyFx.some(f => f.on) || LIGHTS_OUT.busy
     || FX_SHOWERS.some(S => S.mesh && (S.mesh.visible || S.fog > 0.01)) || TL.on;
 }
 let lastDraw = 0;
@@ -4783,15 +4889,51 @@ renderer.setAnimationLoop(() => {
   renderer.render(scene, camera); labelRenderer.render(scene, camera);
 });
 applyState();
+// Classify small interior props onto layer 1 (TINY) and disable their shadows on ALL devices, then batch static meshes by material
 const TINY = [];
-if (LITE) {
+{
   root.traverse(o => {
     if (!o.isMesh || o.isInstancedMesh || actOf(o)) return;
-    o.geometry.computeBoundingBox(); const b = o.geometry.boundingBox;
-    if (Math.max(b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z) < 0.5) { o.castShadow = false; o.layers.set(1); TINY.push(o); }
+    if (!o.geometry.boundingBox) o.geometry.computeBoundingBox();
+    const b = o.geometry.boundingBox, maxDim = Math.max(b.max.x - b.min.x, b.max.y - b.min.y, b.max.z - b.min.z);
+    if (maxDim < 1.6) o.castShadow = false;
+    if (maxDim < 0.85) { o.receiveShadow = false; o.layers.set(1); TINY.push(o); }
   });
   camera.layers.enable(1);
+  // Merge static non-interactive, non-cutaway meshes sharing a material inside each floor/roof group to cut draw calls by ~70%
+  const cutSet = new Set();
+  for (const el of CUT.els) { cutSet.add(el.m); if (el.cap) cutSet.add(el.cap); }
+  const snowSet = new Set(snowParts);
+  for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
+    const grp = G[key], buckets = new Map();
+    for (const m of grp.children.slice()) {
+      if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || cutSet.has(m) || snowSet.has(m) || actOf(m)) continue;
+      if (FX_FIRE && m === FX_FIRE.glass) continue;
+      if (m === tvScreen) continue;
+      const g = m.geometry;
+      const attrSig = Object.keys(g.attributes).sort().join(',');
+      const bKey = `${m.material.uuid}|${m.userData.room || ''}|${m.castShadow ? 1 : 0}|${m.receiveShadow ? 1 : 0}|${m.layers.mask}|${m.userData.passable ? 1 : 0}|${g.index ? 1 : 0}|${attrSig}`;
+      let list = buckets.get(bKey);
+      if (!list) { list = []; buckets.set(bKey, list); }
+      list.push(m);
+    }
+    for (const list of buckets.values()) {
+      if (list.length < 2) continue;
+      const geos = list.map(m => { m.updateMatrix(); const cg = m.geometry.clone(); cg.applyMatrix4(m.matrix); return cg; });
+      const merged = mergeGeometries(geos, false);
+      if (!merged) continue;
+      const ref = list[0], bm = new THREE.Mesh(merged, ref.material);
+      bm.castShadow = ref.castShadow; bm.receiveShadow = ref.receiveShadow; bm.layers.mask = ref.layers.mask;
+      if (ref.userData.room) bm.userData.room = ref.userData.room;
+      if (ref.userData.passable) bm.userData.passable = true;
+      bm.userData.nocut = true;
+      grp.add(bm);
+      for (const m of list) grp.remove(m);
+    }
+  }
+  markShadows();
 }
+setTimeout(tlEnsureBuilt, 80);
 addEventListener('visibilitychange', () => wake(10)); addEventListener('pointerdown', () => wake(10), true); addEventListener('pointerup', () => wake(10), true);
 window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY, wake, TL };
 </script>
