@@ -4729,23 +4729,29 @@ function makePerson(who, kid, seed) {
   const legL = add(TL_GEO.leg, c.pants, -0.28, 1.25, 0), legR = add(TL_GEO.leg, c.pants, 0.28, 1.25, 0);
   const torso = add(TL_GEO.torso, c.shirt, 0, 3.45, 0);
   const armL = add(TL_GEO.arm, c.shirt, -0.72, 3.45, 0), armR = add(TL_GEO.arm, c.shirt, 0.72, 3.45, 0);
-  add(TL_GEO.head, c.skin, 0, 4.68, 0); add(TL_GEO.hair, c.hair, 0, 4.98, 0);
+  const head = add(TL_GEO.head, c.skin, 0, 4.68, 0), hair = add(TL_GEO.hair, c.hair, 0, 4.98, 0);
   g.scale.setScalar(kid ? 0.72 : 1.1);
-  g.userData = { legL, legR, armL, armR, torso };
+  g.userData = { legL, legR, armL, armR, torso, head, hair };
   return g;
 }
 function poseFigure(fig, sit, sw) {
   const u = fig.userData;
   if (sit) {
-    u.legL.rotation.x = -1.35; u.legL.position.y = 0.9;
-    u.legR.rotation.x = -1.35; u.legR.position.y = 0.9;
-    u.armL.rotation.x = -0.25; u.armR.rotation.x = -0.25;
-    u.torso.rotation.x = -0.12;
+    u.legL.rotation.x = -1.45; u.legL.position.set(-0.28, 1.05, 0.75);
+    u.legR.rotation.x = -1.45; u.legR.position.set(0.28, 1.05, 0.75);
+    u.torso.position.set(0, 1.95, -0.25); u.torso.rotation.x = -0.10;
+    u.armL.position.set(-0.72, 1.95, -0.25); u.armL.rotation.x = -0.35;
+    u.armR.position.set(0.72, 1.95, -0.25); u.armR.rotation.x = -0.35;
+    u.head.position.set(0, 3.18, -0.35);
+    u.hair.position.set(0, 3.48, -0.35);
   } else {
-    u.legL.rotation.x = sw; u.legL.position.y = 1.25;
-    u.legR.rotation.x = -sw; u.legR.position.y = 1.25;
-    u.armL.rotation.x = -sw * 0.7; u.armR.rotation.x = sw * 0.7;
-    u.torso.rotation.x = 0;
+    u.legL.rotation.x = sw; u.legL.position.set(-0.28, 1.25, 0);
+    u.legR.rotation.x = -sw; u.legR.position.set(0.28, 1.25, 0);
+    u.torso.position.set(0, 3.45, 0); u.torso.rotation.x = 0;
+    u.armL.position.set(-0.72, 3.45, 0); u.armL.rotation.x = -sw * 0.7;
+    u.armR.position.set(0.72, 3.45, 0); u.armR.rotation.x = sw * 0.7;
+    u.head.position.set(0, 4.68, 0);
+    u.hair.position.set(0, 4.98, 0);
   }
 }
 // --- site-wide weather particles (snow, spring petals, summer fireflies, autumn leaves) + wildflowers + fallen leaf scatter + snow tire tracks
