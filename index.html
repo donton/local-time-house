@@ -339,6 +339,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   <button id="mb-explore" type="button" aria-pressed="true"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M14 8l-2 4.5L7.5 14l2-4.5z"/></svg>Explore</button>
   <button id="mb-walk" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="12" cy="4.5" r="1.8"/><path d="M11 9l-2.5 4.5 3 2.5v4M11 9l3.5 1.8 1.5 3.4M8.5 13.5L6 18"/></svg>Walk</button>
   <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M9.3 7.5l5.2 3.5-5.2 3.5z"/></svg>Tour</button>
+  <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><rect x="3" y="5" width="16" height="14" rx="2"/><path d="M3 9.5h16M7.5 3v4M14.5 3v4"/></svg>Year</button>
   <button id="mb-found" type="button" class="starbtn"><svg viewBox="0 0 22 22"><path d="M11 3l2.4 5 5.4.7-4 3.7 1 5.4L11 15l-4.8 2.8 1-5.4-4-3.7 5.4-.7z"/></svg><b id="m-found">0 / 12</b></button>
   <button id="mb-more" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M3 7h16M3 15h16"/><circle cx="8" cy="7" r="2.3" fill="var(--card)"/><circle cx="14" cy="15" r="2.3" fill="var(--card)"/></svg>More</button>
 </nav>
@@ -2505,7 +2506,9 @@ scene.add(root);
 // Field of view (vertical degrees): narrow for the orbit view; much wider when you're inside (walk mode, indoor tour stops).
 const FOV = { orbit: 46, inside: 80 };
 const camera = new THREE.PerspectiveCamera(FOV.orbit, window.innerWidth / window.innerHeight, 0.12, 1200);
+const phoneFov = f => (camera.aspect < 0.9 ? (f <= 50 ? 56 : 86) : f);
 const setFov = f => { camera.fov = f; camera.updateProjectionMatrix(); };
+camera.fov = phoneFov(FOV.orbit); camera.updateProjectionMatrix();
 const HOME = { pos: new THREE.Vector3(16.5, 26, 23.5), target: new THREE.Vector3(0.6, -0.4, 1.4) };
 // Pull the camera back on narrow (portrait) screens so the whole house fits.
 function homePos() {
@@ -4155,13 +4158,13 @@ function enterWalk() {
   buildColliders();
   const start = toW(19.7, 0, 24);                                                // on the entry deck, facing Door 101
   WALK.pos.set(start.x, 0, start.z); WALK.feet = floorAt(start.x, start.z, 1.0); WALK.yaw = 0; WALK.pitch = -0.04;
-  WALK.on = true; controls.enabled = false; setFov(FOV.inside);
+  WALK.on = true; controls.enabled = false; setFov(phoneFov(FOV.inside));
   document.getElementById('walkhud').hidden = false;
   document.body.classList.add('walking');
 }
 function exitWalk() {
   if (!WALK.on || TOUR.walking) return;
-  WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = WALK.look.x = WALK.look.y = 0; setFov(FOV.orbit);
+  WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = WALK.look.x = WALK.look.y = 0; setFov(phoneFov(FOV.orbit));
   document.getElementById('walkhud').hidden = true; document.body.classList.remove('walking');
   Object.assign(state, WALK.saved.state, { night: state.night, sun: state.sun }); applyState();   // keep the light set during the walk
   camera.position.copy(WALK.saved.pos); controls.target.copy(WALK.saved.target); controls.enabled = true; controls.update();
@@ -4331,12 +4334,16 @@ function tourGo(i) {
     tourWalkOff(); WALK.on = false;
     const fy = floorAt(st.x, st.z, (w.y + 3) * FT), p1 = new THREE.Vector3(st.x, fy + EYE, st.z), nx = tw(w.path[1][0], w.path[1][1]);
     TOUR.fly = { t: 0, dur: 2.2, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1: new THREE.Vector3(nx.x, fy + EYE, nx.z),
-      f0: camera.fov, f1: FOV.inside, after: () => beginWalk(s, true) };
+      f0: camera.fov, f1: phoneFov(FOV.inside), after: () => beginWalk(s, true) };
     controls.enabled = false; return;
   }
   tourWalkOff();
   const p1 = world ? homePos() : toW(...s.pos), q1 = world ? HOME.target.clone() : toW(...s.look);
-  TOUR.fly = { t: 0, dur: 2.4, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1, f0: camera.fov, f1: FOV.orbit };
+  if (!world && camera.aspect < 0.9) {
+    const pull = Math.min(1.65, Math.max(1, 0.85 / camera.aspect));
+    p1.sub(q1).multiplyScalar(pull).add(q1);
+  }
+  TOUR.fly = { t: 0, dur: 2.4, p0: camera.position.clone(), q0: controls.target.clone(), p1, q1, f0: camera.fov, f1: phoneFov(FOV.orbit) };
   controls.enabled = false;
 }
 function enterTour() {
@@ -4348,7 +4355,7 @@ function enterTour() {
 function exitTour() {
   if (!TOUR.on) return;
   tourWalkOff();
-  TOUR.on = false; document.body.classList.remove('touring'); TOUR.fly = null; TOUR.play = false; controls.minDistance = 3; setFov(FOV.orbit); showCap('');
+  TOUR.on = false; document.body.classList.remove('touring'); TOUR.fly = null; TOUR.play = false; controls.minDistance = 3; setFov(phoneFov(FOV.orbit)); showCap('');
   document.getElementById('tourbar').hidden = true; document.getElementById('tour-play').textContent = 'Play';
   Object.assign(state, TOUR.saved.state); applyState();
   camera.position.copy(TOUR.saved.pos); controls.target.copy(TOUR.saved.target); controls.enabled = true; controls.update();
@@ -4457,12 +4464,13 @@ $$('msheet-close').addEventListener('click', closeSheet);
 $$('mb-more').addEventListener('click', () => sheetPane === 'more' ? closeSheet() : openSheet('more'));
 $$('mb-found').addEventListener('click', () => sheetPane === 'found' ? closeSheet() : openSheet('found'));
 $$('mb-explore').addEventListener('click', () => {
-  closeSheet(); const wasExploring = !WALK.on && !TOUR.on;
-  if (WALK.on) exitWalk(); if (TOUR.on) exitTour();
+  closeSheet(); const wasExploring = !WALK.on && !TOUR.on && !TL.on;
+  if (WALK.on) exitWalk(); if (TOUR.on) exitTour(); if (TL.on) exitTimeline();
   if (wasExploring) { Object.assign(state, { floors: 'both', walls: 'cutaway', roof: false }); applyState(); flyTo(homePos(), HOME.target.clone()); }
 });
 $$('mb-walk').addEventListener('click', () => { closeSheet(); if (WALK.on) exitWalk(); else { FLY.cur = null; enterWalk(); toast('Left stick moves · right stick looks · tap Use'); } });
 $$('mb-tour').addEventListener('click', () => { closeSheet(); FLY.cur = null; if (TOUR.on) exitTour(); else enterTour(); });
+$$('mb-year').addEventListener('click', () => { closeSheet(); FLY.cur = null; enterTimeline(); });
 $$('chip-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
 $$('chip-floors').addEventListener('click', () => { state.floors = { both: 'ground', ground: 'loft', loft: 'both' }[state.floors] || 'both'; applyState(); });
 // move the panel's controls into the sheet on phones (and back on desktop)
@@ -4589,7 +4597,9 @@ function phoneStep(dt) {
 addEventListener('resize', () => {
   wake();
   if (!window.innerWidth || !window.innerHeight) return;
-  camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix();
+  camera.aspect = window.innerWidth / window.innerHeight;
+  if (!TOUR.fly) camera.fov = phoneFov(WALK.on ? FOV.inside : FOV.orbit);
+  camera.updateProjectionMatrix();
   if (!Number.isFinite(camera.position.x)) { camera.position.copy(homePos()); controls.target.copy(HOME.target); }
   renderer.setSize(window.innerWidth, window.innerHeight); labelRenderer.setSize(window.innerWidth, window.innerHeight);
 });
@@ -5321,6 +5331,7 @@ function enterTimeline() {
   tvLight.visible = true; tvLight.intensity = 0;
   if (GRILL.light) { GRILL.light.visible = true; GRILL.light.intensity = 0; }
   CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = 0; });
+  document.body.classList.add('timeline');
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
   document.getElementById('btn-timeline').textContent = 'Exit timeline';
@@ -5330,6 +5341,7 @@ function enterTimeline() {
 }
 function exitTimeline() {
   if (!TL.on) return;
+  document.body.classList.remove('timeline');
   TL.on = false; TL.playing = false; TL.cur = -1;
   for (const B of TL.built || []) B.group.visible = false;
   if (TL.glow) { TL.glow.visible = false; TL.glow.intensity = 0; }
