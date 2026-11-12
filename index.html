@@ -3513,9 +3513,9 @@ const PATIO = (() => {
   });
   bricks.receiveShadow = bed.receiveShadow = true; grp.add(bed, bricks);
 
-  // 1. DINING TERRACE (Lobe 1 at x = -4.2, z = -0.3)
+  // 1. DINING TERRACE (Lobe 2 at x = 5.2, z = 0.3)
   const diningGrp = new THREE.Group();
-  diningGrp.position.set(-4.2, 0, -0.3);
+  diningGrp.position.set(5.2, 0, 0.3);
   grp.add(diningGrp);
 
   const green = new THREE.MeshStandardMaterial({ color: 0x4C5B36, roughness: 0.55, metalness: 0.35 }); exteriorLightsOnly(green);
@@ -3683,9 +3683,9 @@ const PATIO = (() => {
   // 4 chairs placed in a welcoming ring at radius 3.3 ft facing the fire bowl
   const chairAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
   chairAngles.forEach(a => {
-    const cxPos = 5.2 + Math.cos(a) * 3.3;
-    const czPos = 0.3 + Math.sin(a) * 3.3;
-    const rotFacing = Math.atan2(5.2 - cxPos, 0.3 - czPos);
+    const cxPos = -4.2 + Math.cos(a) * 3.3;
+    const czPos = -0.3 + Math.sin(a) * 3.3;
+    const rotFacing = Math.atan2(-4.2 - cxPos, -0.3 - czPos);
     buildWoodChair(cxPos, czPos, rotFacing);
   });
 
