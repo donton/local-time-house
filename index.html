@@ -3636,8 +3636,8 @@ const PATIO = (() => {
 
 /* =====================================================================
    WEST DECK — HAY Palissade Lounge & Sunset Viewing
-   Two dark-blue Palissade-style low lounge chairs with channeled pads,
-   a matching dark-blue slatted low coffee table facing the woods on the
+   Two mid-tone Nordic slate-blue Palissade-style low lounge chairs with channeled pads,
+   a matching slate-blue slatted low coffee table facing the woods on the
    long edge of the patio, equipped with a bowl of strawberries, wine glasses,
    insulated canteen, and candle lantern, plus a single architectural planter
    and the stainless grill centered and rotated on the north edge of the patio.
@@ -3648,10 +3648,10 @@ const WEST_DECK = (() => {
   grp.position.set(0, -0.167, 0);
   LAND.add(grp);
 
-  // Dark blue HAY Palissade palette & outdoor materials
-  const pbMetal = new THREE.MeshStandardMaterial({ color: 0x243E56, roughness: 0.44, metalness: 0.22 });
-  const pbCushion = new THREE.MeshStandardMaterial({ color: 0x1B3045, roughness: 0.94 });
-  const pbStitch = new THREE.MeshStandardMaterial({ color: 0x122030, roughness: 0.95 });
+  // Balanced mid-tone Scandinavian slate blue HAY Palissade palette & outdoor materials
+  const pbMetal = new THREE.MeshStandardMaterial({ color: 0x4A7596, roughness: 0.44, metalness: 0.22 });
+  const pbCushion = new THREE.MeshStandardMaterial({ color: 0x3C6584, roughness: 0.94 });
+  const pbStitch = new THREE.MeshStandardMaterial({ color: 0x2C4B64, roughness: 0.95 });
   const potCharcoal = new THREE.MeshStandardMaterial({ color: 0x2A2928, roughness: 0.92 });
   const soilMat = new THREE.MeshStandardMaterial({ color: 0x2B221B, roughness: 0.98 });
   const fernLeaf = new THREE.MeshStandardMaterial({ color: 0x486938, roughness: 0.85, flatShading: true });
@@ -4119,7 +4119,7 @@ const TOUR_STOPS = [
   { name: 'Kitchen', shut: [{ rx: /front door/i, axis: 'z', lt: 13.8 }], walk: { y: 0, path: [[19.7, 14.2], [18.2, 13.2], [14.2, 14.6]], look: [4.5, 4, 2.5] },
     cap: 'Reform kitchen in burgundy and oak. Try the corner cabinet (the whole shelf swivels out) and the fridge.' },
   { name: 'West deck', open: [/side door/i], walk: { y: 0, path: [[14.2, 14.6], [10.5, 15.2], [4.0, 15.2], [1.4, 14.7], [-1.8, 14.7], [-4.5, 14.2]], look: [-14, 6, 6] },
-    cap: 'Out the kitchen\u2019s side door onto the west deck: dark-blue Palissade lounge chairs and table facing the woods, with the grill centered at the north edge.' },
+    cap: 'Out the kitchen\u2019s side door onto the west deck: slate-blue Palissade lounge chairs and table facing the woods, with the grill centered at the north edge.' },
   { name: 'Conversation pit', shut: [{ rx: /side door/i, axis: 'x', gt: 4.5 }], walk: { y: 0, path: [[-4.5, 14.2], [-1.8, 14.7], [1.4, 14.7], [4.0, 15.2], [10.5, 15.2], [14.2, 14.6], [15.0, 18.4]], look: [6.5, 0.5, 24.5] },
     cap: 'The sunken pit: fireplace, TV, and the sectional. Light the fire.' },
   { name: 'Guest bedroom', walk: { y: 0, path: [[15.0, 18.4], [15.6, 14.8], [20.8, 14.8], [24.4, 15.0], [26.5, 15.0], [26.5, 12.6], [26.5, 10.2]], look: [30, 4, 6] },
