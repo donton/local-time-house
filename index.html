@@ -3471,11 +3471,11 @@ const PATIO = (() => {
 
 /* =====================================================================
    WEST DECK — HAY Palissade Lounge & Sunset Viewing
-   Two powder-blue Palissade-style low lounge chairs with channeled pads,
-   a matching powder-blue slatted low coffee table facing the woods on the
+   Two dark-blue Palissade-style low lounge chairs with channeled pads,
+   a matching dark-blue slatted low coffee table facing the woods on the
    long edge of the patio, equipped with a bowl of strawberries, wine glasses,
    insulated canteen, and candle lantern, plus a single architectural planter
-   and the stainless grill moved to the north edge of the patio.
+   and the stainless grill centered and rotated on the north edge of the patio.
    ===================================================================== */
 const WEST_DECK = (() => {
   const grp = new THREE.Group();
@@ -3483,9 +3483,10 @@ const WEST_DECK = (() => {
   grp.position.set(0, -0.167, 0);
   LAND.add(grp);
 
-  // Powder blue HAY Palissade palette & outdoor materials
-  const pbMetal = new THREE.MeshStandardMaterial({ color: 0x8FAEC2, roughness: 0.44, metalness: 0.22 });
-  const pbCushion = new THREE.MeshStandardMaterial({ color: 0x7E9EB3, roughness: 0.94 });
+  // Dark blue HAY Palissade palette & outdoor materials
+  const pbMetal = new THREE.MeshStandardMaterial({ color: 0x243E56, roughness: 0.44, metalness: 0.22 });
+  const pbCushion = new THREE.MeshStandardMaterial({ color: 0x1B3045, roughness: 0.94 });
+  const pbStitch = new THREE.MeshStandardMaterial({ color: 0x122030, roughness: 0.95 });
   const potCharcoal = new THREE.MeshStandardMaterial({ color: 0x2A2928, roughness: 0.92 });
   const soilMat = new THREE.MeshStandardMaterial({ color: 0x2B221B, roughness: 0.98 });
   const fernLeaf = new THREE.MeshStandardMaterial({ color: 0x486938, roughness: 0.85, flatShading: true });
@@ -3497,7 +3498,7 @@ const WEST_DECK = (() => {
   const berryLeafMat = new THREE.MeshStandardMaterial({ color: 0x446B2C, roughness: 0.8 });
   const glassMat = new THREE.MeshStandardMaterial({ color: 0xEDF4F8, roughness: 0.12, metalness: 0.08, transparent: true, opacity: 0.52 });
   const roseWineMat = new THREE.MeshStandardMaterial({ color: 0xD86874, roughness: 0.25, transparent: true, opacity: 0.82 });
-  const canteenBody = new THREE.MeshStandardMaterial({ color: 0x243C52, roughness: 0.38, metalness: 0.35 });
+  const canteenBody = new THREE.MeshStandardMaterial({ color: 0x384D3A, roughness: 0.42, metalness: 0.28 });
   const canteenSteel = new THREE.MeshStandardMaterial({ color: 0xD2D6DA, roughness: 0.28, metalness: 0.85 });
   const darkSteel = new THREE.MeshStandardMaterial({ color: 0x222325, roughness: 0.55, metalness: 0.45 });
 
@@ -3505,7 +3506,7 @@ const WEST_DECK = (() => {
   const lanternHalo = new THREE.Mesh(new THREE.CircleGeometry(1.6, 16).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xFFA038, transparent: true, opacity: 0.32, depthWrite: false }));
   lanternHalo.position.set(-4.5, 0.005, 9.5); lanternHalo.visible = false; grp.add(lanternHalo);
 
-  for (const m of [pbMetal, pbCushion, potCharcoal, soilMat, fernLeaf, grassMat, ceramicMat, strawberryMat, berryLeafMat, glassMat, roseWineMat, canteenBody, canteenSteel, darkSteel]) {
+  for (const m of [pbMetal, pbCushion, pbStitch, potCharcoal, soilMat, fernLeaf, grassMat, ceramicMat, strawberryMat, berryLeafMat, glassMat, roseWineMat, canteenBody, canteenSteel, darkSteel]) {
     exteriorLightsOnly(m);
   }
 
@@ -3517,8 +3518,8 @@ const WEST_DECK = (() => {
     return o;
   };
 
-  // 1. HAY Palissade Low Lounge Chair in Powder Blue
-  // Modeled with bent tubular sled frame, contoured vertical steel slats, and channeled cushion pad.
+  // 1. HAY Palissade Low Lounge Chair in Dark Blue
+  // Modeled with tubular sled side frames, angled seat slats & reclining backrest slats, and channeled cushion pads.
   const buildPalissadeChair = (cx, cz, rotY) => {
     const chair = new THREE.Group();
     chair.position.set(cx, 0, cz);
@@ -3527,54 +3528,79 @@ const WEST_DECK = (() => {
 
     const cb = (w, h, d, x, y, z, m) => b(w, h, d, x, y, z, m, chair);
 
-    // Side sled legs and armrests (left & right at sx = ±1.08)
-    for (const sx of [-1.08, 1.08]) {
-      // Bottom sled runner
-      cb(0.065, 0.065, 2.2, sx, 0.035, 0.0, pbMetal);
-      // Front upright leg curving into seat
-      cb(0.065, 1.15, 0.065, sx, 0.58, 0.95, pbMetal);
+    // Side sled legs and armrests (left & right at sx = ±1.04)
+    for (const sx of [-1.04, 1.04]) {
+      // Bottom sled runner on deck
+      cb(0.065, 0.065, 1.48, sx, 0.04, 0.0, pbMetal);
+      // Front vertical upright leg
+      cb(0.065, 1.34, 0.065, sx, 0.70, 0.65, pbMetal);
       // Rear upright leg
-      cb(0.065, 0.95, 0.065, sx, 0.48, -0.85, pbMetal);
-      // Continuous armrest tube sloping back
-      cb(0.075, 0.065, 2.05, sx, 1.48, 0.08, pbMetal);
-      // Rear arm support down to rear leg
-      cb(0.065, 0.65, 0.065, sx, 1.20, -0.85, pbMetal);
+      cb(0.065, 1.38, 0.065, sx, 0.72, -0.65, pbMetal);
+      // Sled armrest connecting rear upright to front upright
+      cb(0.075, 0.065, 1.30, sx, 1.40, 0.0, pbMetal);
     }
-    // Cross stretcher tubes under seat and behind back
-    cb(2.10, 0.065, 0.065, 0, 1.08, 0.92, pbMetal);
-    cb(2.10, 0.065, 0.065, 0, 0.88, -0.65, pbMetal);
-    cb(2.10, 0.065, 0.065, 0, 2.38, -0.85, pbMetal);
+    // Cross stretcher tubes connecting left and right sides
+    cb(2.02, 0.065, 0.065, 0, 1.10, 0.65, pbMetal);
+    cb(2.02, 0.065, 0.065, 0, 0.85, -0.55, pbMetal);
 
-    // Contoured slatted steel seat and back (9 parallel powder blue slats)
-    for (let i = 0; i < 9; i++) {
-      const sx = -0.88 + i * 0.22;
-      // Front curved bullnose edge
-      cb(0.14, 0.03, 0.16, sx, 1.12, 0.92, pbMetal);
-      // Gently inclined seat slat
-      const seatSlat = cb(0.14, 0.03, 1.42, sx, 1.02, 0.18, pbMetal);
-      seatSlat.rotation.x = 0.11;
-      // Ergonomic reclining backrest slat
-      const backSlat = cb(0.14, 0.03, 1.55, sx, 1.66, -0.72, pbMetal);
-      backSlat.rotation.x = -0.22;
-      // Top rolled finish
-      cb(0.14, 0.04, 0.08, sx, 2.40, -0.87, pbMetal);
+    // Contoured slatted steel seat (hinged at y = 0.85, z = -0.55, tilting up toward front)
+    const seatGrp = new THREE.Group();
+    seatGrp.position.set(0, 0.85, -0.55);
+    seatGrp.rotation.x = 0.245; // ~14 deg slope
+    chair.add(seatGrp);
+
+    for (let i = 0; i < 8; i++) {
+      const sx = -0.84 + i * 0.24;
+      const slat = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.035, 1.24), pbMetal);
+      slat.position.set(sx, 0, 0.62);
+      slat.castShadow = true; slat.receiveShadow = true;
+      seatGrp.add(slat);
+    }
+    // Front rounded bullnose edge
+    const bullnose = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.96, 12).rotateZ(Math.PI / 2), pbMetal);
+    bullnose.position.set(0, 0, 1.24);
+    bullnose.castShadow = true;
+    seatGrp.add(bullnose);
+
+    // Channeled seat pad in dark blue fabric
+    const seatPad = new THREE.Mesh(new THREE.BoxGeometry(1.88, 0.045, 1.18), pbCushion);
+    seatPad.position.set(0, 0.035, 0.61);
+    seatPad.castShadow = true; seatPad.receiveShadow = true;
+    seatGrp.add(seatPad);
+    for (let c = 1; c <= 3; c++) {
+      const groove = new THREE.Mesh(new THREE.BoxGeometry(1.90, 0.012, 0.025), pbStitch);
+      groove.position.set(0, 0.055, c * 0.30);
+      seatGrp.add(groove);
     }
 
-    // Iconic Palissade quilted/channeled cushion pad (powder blue outdoor fabric)
-    const cushionGrp = new THREE.Group();
-    chair.add(cushionGrp);
-    // Seat cushion channels (4 padded horizontal ribs)
-    for (let c = 0; c < 4; c++) {
-      const czPos = 0.72 - c * 0.36;
-      const cyPos = 1.12 - c * 0.04;
-      b(1.90, 0.07, 0.32, 0, cyPos, czPos, pbCushion, cushionGrp);
+    // Contoured slatted steel backrest (hinged at y = 0.85, z = -0.55, reclining back)
+    const backGrp = new THREE.Group();
+    backGrp.position.set(0, 0.85, -0.55);
+    backGrp.rotation.x = -0.367; // ~21 deg recline
+    chair.add(backGrp);
+
+    for (let i = 0; i < 8; i++) {
+      const sx = -0.84 + i * 0.24;
+      const slat = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.38, 0.035), pbMetal);
+      slat.position.set(sx, 0.69, 0);
+      slat.castShadow = true; slat.receiveShadow = true;
+      backGrp.add(slat);
     }
-    // Backrest cushion channels (4 padded horizontal ribs reclining back)
-    for (let c = 0; c < 4; c++) {
-      const cyPos = 1.25 + c * 0.34;
-      const czPos = -0.58 - c * 0.075;
-      const pad = b(1.90, 0.30, 0.07, 0, cyPos, czPos, pbCushion, cushionGrp);
-      pad.rotation.x = -0.22;
+    // Top rolled tube finish
+    const topRoll = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.96, 12).rotateZ(Math.PI / 2), pbMetal);
+    topRoll.position.set(0, 1.38, 0);
+    topRoll.castShadow = true;
+    backGrp.add(topRoll);
+
+    // Channeled backrest pad in dark blue fabric
+    const backPad = new THREE.Mesh(new THREE.BoxGeometry(1.88, 1.32, 0.045), pbCushion);
+    backPad.position.set(0, 0.68, 0.035);
+    backPad.castShadow = true; backPad.receiveShadow = true;
+    backGrp.add(backPad);
+    for (let c = 1; c <= 3; c++) {
+      const groove = new THREE.Mesh(new THREE.BoxGeometry(1.90, 0.025, 0.012), pbStitch);
+      groove.position.set(0, c * 0.33, 0.055);
+      backGrp.add(groove);
     }
   };
 
@@ -3582,7 +3608,7 @@ const WEST_DECK = (() => {
   buildPalissadeChair(-4.5, 7.0, -Math.PI / 2);
   buildPalissadeChair(-4.5, 12.0, -Math.PI / 2);
 
-  // 2. HAY Palissade Low Coffee Table in Powder Blue
+  // 2. HAY Palissade Low Coffee Table in Dark Blue
   const table = new THREE.Group();
   table.position.set(-4.5, 0, 9.5);
   grp.add(table);
@@ -3590,19 +3616,19 @@ const WEST_DECK = (() => {
   const tb = (w, h, d, x, y, z, m) => b(w, h, d, x, y, z, m, table);
 
   // 4 slender tubular legs
-  for (const lx of [-0.78, 0.78]) {
-    for (const lz of [-1.05, 1.05]) {
+  for (const lx of [-0.68, 0.68]) {
+    for (const lz of [-0.95, 0.95]) {
       tb(0.065, 1.22, 0.065, lx, 0.61, lz, pbMetal);
     }
   }
   // Peripheral apron tubes
-  for (const lx of [-0.78, 0.78]) tb(0.065, 0.065, 2.10, lx, 1.18, 0, pbMetal);
-  for (const lz of [-1.05, 1.05]) tb(1.56, 0.065, 0.065, 0, 1.18, lz, pbMetal);
+  for (const lx of [-0.68, 0.68]) tb(0.065, 0.065, 1.90, lx, 1.18, 0, pbMetal);
+  for (const lz of [-0.95, 0.95]) tb(1.36, 0.065, 0.065, 0, 1.18, lz, pbMetal);
 
-  // Slatted powder blue tabletop (6 parallel longitudinal slats)
+  // Slatted dark blue tabletop (6 parallel longitudinal slats)
   for (let s = 0; s < 6; s++) {
-    const sx = -0.65 + s * 0.26;
-    tb(0.20, 0.035, 2.22, sx, 1.24, 0, pbMetal);
+    const sx = -0.58 + s * 0.23;
+    tb(0.19, 0.035, 2.05, sx, 1.24, 0, pbMetal);
   }
 
   // Accessories on table (matching reference photo):
@@ -3636,7 +3662,7 @@ const WEST_DECK = (() => {
   makeWineGlass(0.25, 0.45);
   makeWineGlass(0.46, 0.15);
 
-  // C. Deep navy insulated water bottle / canteen with stainless cap
+  // C. Insulated water bottle / canteen with stainless cap
   const canteen = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.62, 16), canteenBody);
   canteen.position.set(-0.42, 1.57, 0.38); canteen.castShadow = true; table.add(canteen);
   const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.12, 14), canteenSteel);
@@ -3704,10 +3730,10 @@ const WEST_DECK = (() => {
   return { grp, setNight, setNightK, lanternMat, lanternHalo };
 })();
 
-/* Stainless steel & slate-gray gas grill on the West Deck at the north edge of the patio. */
+/* Stainless steel & slate-gray gas grill centered on the north edge of the West Deck patio facing south. */
 const GRILL = (() => {
-  const gx = -6.75, gy = -0.167, gz = 1.5;
-  const grp = new THREE.Group(); grp.position.set(gx, gy, gz); LAND.add(grp);
+  const gx = -4.34, gy = -0.167, gz = 0.60;
+  const grp = new THREE.Group(); grp.position.set(gx, gy, gz); grp.rotation.y = -Math.PI / 2; LAND.add(grp);
   const stTop = M('steelTop'), stBody = M('steel'), chr = M('chrome'), hoodM = M('fridgeDoor');
   const coalM = new THREE.MeshStandardMaterial({ color: 0x3b2a22, emissive: 0xff5a14, emissiveIntensity: 0, roughness: 0.9 });
   const foodA = new THREE.MeshStandardMaterial({ color: 0x7A3A28, roughness: 0.7 }), foodB = new THREE.MeshStandardMaterial({ color: 0xE0B93A, roughness: 0.6 });
@@ -3928,7 +3954,7 @@ const TOUR_STOPS = [
   { name: 'Kitchen', shut: [{ rx: /front door/i, axis: 'z', lt: 13.8 }], walk: { y: 0, path: [[19.7, 14.2], [18.2, 13.2], [14.2, 14.6]], look: [4.5, 4, 2.5] },
     cap: 'Reform kitchen in burgundy and oak. Try the corner cabinet (the whole shelf swivels out) and the fridge.' },
   { name: 'West deck', open: [/side door/i], walk: { y: 0, path: [[14.2, 14.6], [10.5, 15.2], [4.0, 15.2], [1.4, 14.7], [-1.8, 14.7], [-4.5, 14.2]], look: [-14, 6, 6] },
-    cap: 'Out the kitchen\u2019s side door onto the west deck: powder-blue Palissade lounge chairs and table facing the woods, with the grill at the north edge.' },
+    cap: 'Out the kitchen\u2019s side door onto the west deck: dark-blue Palissade lounge chairs and table facing the woods, with the grill centered at the north edge.' },
   { name: 'Conversation pit', shut: [{ rx: /side door/i, axis: 'x', gt: 4.5 }], walk: { y: 0, path: [[-4.5, 14.2], [-1.8, 14.7], [1.4, 14.7], [4.0, 15.2], [10.5, 15.2], [14.2, 14.6], [15.0, 18.4]], look: [6.5, 0.5, 24.5] },
     cap: 'The sunken pit: fireplace, TV, and the sectional. Light the fire.' },
   { name: 'Guest bedroom', walk: { y: 0, path: [[15.0, 18.4], [15.6, 14.8], [20.8, 14.8], [24.4, 15.0], [26.5, 15.0], [26.5, 12.6], [26.5, 10.2]], look: [30, 4, 6] },
