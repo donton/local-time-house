@@ -2463,7 +2463,7 @@ buildWingRoof(G.wingRoof);
    ===================================================================== */
 const stage = document.getElementById('stage');
 const LITE = matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1024px)').matches;   // phones: lighter rendering
-const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: !LITE });
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: false });
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, LITE ? 1.25 : 1.5));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true; renderer.shadowMap.type = LITE ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
@@ -2937,7 +2937,9 @@ function updateWalls() {
     }
     if (cut === el.cut) continue;
     el.cut = cut; markShadows();
-    for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
+    if (nightOn || (typeof TL !== 'undefined' && TL.on && TL.duskCur > 0.02)) {
+      for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
+    } else sconceShadowDirty = true;
     if (el.hide) el.m.visible = !cut;
     else { el.m.material = cut ? clipVariant(el) : el.base; el.cap.visible = cut; }
   }
@@ -2967,12 +2969,12 @@ function drawFire(ctx, w, h, t) {
   ctx.fillStyle = '#3a2214'; ctx.fillRect(w * 0.18, h * 0.86, w * 0.64, h * 0.08);   // logs
 }
 const fireMat = new THREE.MeshBasicMaterial({ map: fireTex });
-const fireLight = new THREE.PointLight(0xff8a3c, 0, 7, 2); fireLight.visible = false;
+const fireLight = new THREE.PointLight(0xff8a3c, 0, 7, 2); fireLight.visible = true;
 const smoke = [];
 // --- TV: a screen in front of the panel, four channels
 const tvCan = document.createElement('canvas'); tvCan.width = 256; tvCan.height = 148;
 const tvTex = new THREE.CanvasTexture(tvCan); tvTex.colorSpace = THREE.SRGBColorSpace;
-const tvLight = new THREE.PointLight(0x9fb8ff, 0, 8, 2); tvLight.visible = false;
+const tvLight = new THREE.PointLight(0x9fb8ff, 0, 8, 2); tvLight.visible = true;
 let tvScreen = null;
 const TV_CH = ['', 'Fireplace channel', 'Catskills at dusk', 'Color bars', 'The big game'];
 function drawTV(ch, t) {
@@ -3052,7 +3054,7 @@ function lightsOut() {
       FX_FIRE.group.add(sp); smoke.push(sp);
     }
     act(FX_FIRE.glass, { kind: 'fireplace', label: d => d.on ? 'Put out the fire' : 'Light the fire', run: d => {
-      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.visible = d.on; fireLight.intensity = d.on ? 7 : 0; smoke.forEach(sp => { if (!sp.userData.origin) sp.visible = d.on; }); } });
+      FX_FIRE.glass.material = d.on ? fireMat : M('frame'); fireLight.intensity = d.on ? 7 : 0; smoke.forEach(sp => { if (!sp.userData.origin) sp.visible = d.on; }); } });
   }
   if (FX_TV) {
     tvScreen = new THREE.Mesh(new THREE.PlaneGeometry(FX_TV.w, FX_TV.h).rotateY(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: tvTex }));
@@ -3060,7 +3062,7 @@ function lightsOut() {
     tvLight.position.set(FX_TV.center[0] - 1.6, FX_TV.center[1] - 0.3, FX_TV.center[2]); FX_TV.group.add(tvLight);
     const grp = new THREE.Group(); FX_TV.group.add(grp); FX_TV.group.remove(FX_TV.box); grp.add(FX_TV.box); FX_TV.group.remove(tvScreen); grp.add(tvScreen);
     act(grp, { kind: 'tv', ch: 0, label: d => d.ch === 0 ? 'Turn on the TV' : d.ch === TV_CH.length - 1 ? 'Turn off the TV' : 'Next channel', run: d => {
-      d.ch = (d.ch + 1) % TV_CH.length; d.on = d.ch > 0; tvScreen.visible = d.on; tvLight.visible = d.on; tvLight.intensity = d.on ? 2.6 : 0; if (d.on) { drawTV(d.ch, 0); toast(TV_CH[d.ch]); } } });
+      d.ch = (d.ch + 1) % TV_CH.length; d.on = d.ch > 0; tvScreen.visible = d.on; tvLight.intensity = d.on ? 2.6 : 0; if (d.on) { drawTV(d.ch, 0); toast(TV_CH[d.ch]); } } });
   }
   for (const S of FX_SHOWERS) {
     const n = 320, [hx, hy, hz] = S.head;
@@ -3157,7 +3159,7 @@ function interactStep(dt) {
   }
   if (fireOn) fireLight.intensity = 7 + Math.sin(fxT * 13) * 1.2 + Math.sin(fxT * 31) * 0.8;
   if (tvAct) tvLight.intensity = 2.6 + Math.sin(fxT * 7) * 0.4;
-  if (typeof PATIO !== 'undefined' && PATIO.patioFireLight && PATIO.patioFireLight.visible) PATIO.patioFireLight.intensity = 5.2 + Math.sin(fxT * 11) * 0.9 + Math.sin(fxT * 27) * 0.6;
+  if (typeof PATIO !== 'undefined' && PATIO.patioFireLight && PATIO.patioFireLight.intensity > 0) PATIO.patioFireLight.intensity = 5.2 + Math.sin(fxT * 11) * 0.9 + Math.sin(fxT * 27) * 0.6;
   smoke.forEach(sp => {
     if (!sp.visible) return; sp.userData.t = (sp.userData.t + dt * 0.22) % 1; const t = sp.userData.t;
     const o = sp.userData.origin || FX_FIRE.flue;
@@ -3199,6 +3201,7 @@ function interactStep(dt) {
 const state = { floors: 'both', walls: 'up', sun: 14, roof: true, labels: false, explode: 0, night: false, season: 'fall' };
 let seasonOn = null;
 var siteReady = false;   // set once the landscape (section 12) exists
+let _lastShadowSig = '';
 function applyState() {
   wake();
   const showG = state.floors !== 'loft', showL = state.floors !== 'ground';
@@ -3209,6 +3212,7 @@ function applyState() {
   G.loft.position.y = e * 9;
   G.wingRoof.position.y = e * 9;
   G.mainRoof.position.y = e * 20;
+  document.getElementById('labels').style.display = state.labels ? '' : 'none';
   labels.forEach(l => { l.visible = state.labels && (l.userData.floor === 'loft' ? showL : showG); });
   if (selected) { const r = roomById[selected]; if ((r.floor === 'loft' && !showL) || (r.floor === 'ground' && !showG)) select(null); else hiGroup.position.y = (r.floor === 'loft' ? G.loft : G.ground).position.y; }
   ['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(state.floors === k)));
@@ -3229,7 +3233,8 @@ function applyState() {
   const wn = document.getElementById('walk-night'); if (wn) wn.setAttribute('aria-pressed', String(state.night));
   const cn = document.getElementById('chip-night'); if (cn) { cn.setAttribute('aria-pressed', String(state.night)); document.getElementById('chip-floors').textContent = 'Floors: ' + { both: 'Both', ground: 'Ground', loft: 'Loft' }[state.floors]; }
   updateWalls();                                                                  // last, after night mode has set the glass
-  markShadows();
+  const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}`;
+  if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }
 }
 ['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).addEventListener('click', () => { state.floors = k; applyState(); }));
 document.getElementById('tg-roof').addEventListener('change', e => { state.roof = e.target.checked; if (state.roof) state.walls = 'up'; applyState(); });
@@ -4009,7 +4014,7 @@ const GRILL = (() => {
   b(1.12, 0.16, 1.88, 0.66, 0.66, 0, stTop, lidPv);
   b(0.07, 0.07, 1.45, 1.52, 0.24, 0, chr, lidPv);
   for (const sz of [-0.65, 0.65]) b(0.12, 0.06, 0.06, 1.46, 0.24, sz, chr, lidPv);
-  const light = new THREE.PointLight(0xff7a2e, 0, 7, 2); light.position.set(0, 3.2, 0); light.visible = false; grp.add(light);
+  const light = new THREE.PointLight(0xff7a2e, 0, 7, 2); light.position.set(0, 3.2, 0); light.visible = true; grp.add(light);
   const gSmoke = [];
   for (let i = 0; i < 6; i++) {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xd8d4ce, transparent: true, opacity: 0, depthWrite: false }));
@@ -4021,7 +4026,7 @@ const GRILL = (() => {
     tweenTo(lidPv.rotation, 'z', on ? 1.08 : 0, 0.65);
     coalM.emissiveIntensity = on ? 2.2 : 0;
     food.visible = on;
-    light.visible = on || (typeof TL !== 'undefined' && TL.on); light.intensity = on ? 3.8 : 0;
+    light.intensity = on ? 3.8 : 0;
     gSmoke.forEach(sp => { sp.visible = on; });
   };
   const actDef = act(grp, { kind: 'grill', label: d => d.on ? 'Turn off the grill' : 'Light the grill', run: d => setOn(d.on) });
@@ -4065,14 +4070,43 @@ const EYE = 5.5 * FT, STEP = 1.05 * FT, RAD = 0.95 * FT;
 const toW = (x, y, z) => new THREE.Vector3((x - 24) * FT, y * FT, (z - 13.5) * FT);
 let solids = [], grounds = [];
 const wrc = new THREE.Raycaster();
+const _rcCand = [];
 function buildColliders() {
   solids = []; grounds = [];
-  root.traverse(o => { if (o.isMesh && o.visible && isShown(o) && !o.userData.passable && o.material !== lampMat && o.parent !== hiGroup) solids.push(o); });
-  grounds = solids.concat(LAND.children.filter(o => o.isMesh && !o.isInstancedMesh));
+  root.updateMatrixWorld(true);
+  root.traverse(o => {
+    if (o.isMesh && o.visible && isShown(o) && !o.userData.passable && o.material !== lampMat && o.parent !== hiGroup) {
+      o.userData._wdyn = !!actOf(o);
+      if (!o.userData._wbox) o.userData._wbox = new THREE.Box3();
+      o.userData._wbox.setFromObject(o);
+      solids.push(o);
+    }
+  });
+  const landMeshes = LAND.children.filter(o => o.isMesh && !o.isInstancedMesh);
+  for (const o of landMeshes) {
+    o.userData._wdyn = false;
+    if (!o.userData._wbox) o.userData._wbox = new THREE.Box3();
+    o.userData._wbox.setFromObject(o);
+  }
+  grounds = solids.concat(landMeshes);
 }
 function castFirst(list, origin, dir, far) {
+  const ex = origin.x + dir.x * far, ey = origin.y + dir.y * far, ez = origin.z + dir.z * far;
+  const minX = Math.min(origin.x, ex) - 0.05, maxX = Math.max(origin.x, ex) + 0.05;
+  const minY = Math.min(origin.y, ey) - 0.05, maxY = Math.max(origin.y, ey) + 0.05;
+  const minZ = Math.min(origin.z, ez) - 0.05, maxZ = Math.max(origin.z, ez) + 0.05;
+  _rcCand.length = 0;
+  for (let i = 0; i < list.length; i++) {
+    const o = list[i];
+    if (!o.visible) continue;
+    const b = o.userData._wbox;
+    if (o.userData._wdyn) b.setFromObject(o);
+    if (b && (b.max.x < minX || b.min.x > maxX || b.max.y < minY || b.min.y > maxY || b.max.z < minZ || b.min.z > maxZ)) continue;
+    _rcCand.push(o);
+  }
+  if (!_rcCand.length) return null;
   wrc.set(origin, dir); wrc.far = far;
-  for (const h of wrc.intersectObjects(list, false)) if (h.object.visible) return h;
+  for (const h of wrc.intersectObjects(_rcCand, false)) if (h.object.visible) return h;
   return null;
 }
 const DOWN = new THREE.Vector3(0, -1, 0);
@@ -5351,15 +5385,17 @@ function animating() {                                     // things that move o
 }
 let lastDraw = 0;
 renderer.setAnimationLoop(() => {
-  frame(Math.min(0.05, clock.getDelta()));
+  const dt = Math.min(0.05, clock.getDelta());
+  const busy = DIRTY > 0 || WALK.on || TOUR.on || FLY.cur || TWEENS.length || shadowFrames > 0 || animating();
+  if (!busy) return;                                       // nothing changed: leave the GPU idle
+  frame(dt);
   if (LITE) {
-    const busy = DIRTY > 0 || WALK.on || TOUR.on || FLY.cur || TWEENS.length || shadowFrames > 0 || animating();
-    if (!busy) return;                                     // nothing changed: leave the GPU idle (that is what keeps the phone cool)
     const now = performance.now(); if (now - lastDraw < FRAME_MS - 3) return; lastDraw = now;
-    if (DIRTY > 0) DIRTY--;
     governor(true);
   }
-  renderer.render(scene, camera); labelRenderer.render(scene, camera);
+  if (DIRTY > 0) DIRTY--;
+  renderer.render(scene, camera);
+  if (state.labels) labelRenderer.render(scene, camera);
 });
 applyState();
 // Classify small interior props onto layer 1 (TINY) and disable their shadows on ALL devices, then batch static meshes by material
@@ -5404,9 +5440,43 @@ const TINY = [];
       for (const m of list) grp.remove(m);
     }
   }
+  function batchGroupDeep(grp, skipSet) {
+    grp.updateMatrixWorld(true);
+    const invGrp = new THREE.Matrix4().copy(grp.matrixWorld).invert();
+    const buckets = new Map(), candidates = [];
+    grp.traverse(m => {
+      if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || skipSet.has(m) || actOf(m)) return;
+      candidates.push(m);
+    });
+    for (const m of candidates) {
+      const g = m.geometry, attrSig = Object.keys(g.attributes).sort().join(',');
+      const bKey = `${m.material.uuid}|${m.castShadow ? 1 : 0}|${m.receiveShadow ? 1 : 0}|${m.layers.mask}|${g.index ? 1 : 0}|${attrSig}`;
+      let list = buckets.get(bKey);
+      if (!list) { list = []; buckets.set(bKey, list); }
+      list.push(m);
+    }
+    const localM = new THREE.Matrix4();
+    for (const list of buckets.values()) {
+      if (list.length < 2) continue;
+      const geos = list.map(m => {
+        localM.multiplyMatrices(invGrp, m.matrixWorld);
+        const cg = m.geometry.clone(); cg.applyMatrix4(localM); return cg;
+      });
+      const merged = mergeGeometries(geos, false);
+      if (!merged) continue;
+      const ref = list[0], bm = new THREE.Mesh(merged, ref.material);
+      bm.castShadow = ref.castShadow; bm.receiveShadow = ref.receiveShadow; bm.layers.mask = ref.layers.mask;
+      grp.add(bm);
+      for (const m of list) if (m.parent) m.parent.remove(m);
+    }
+  }
+  const landSkip = new Set([...(typeof PATIO !== 'undefined' && PATIO.crowns ? PATIO.crowns : []), typeof PATIO !== 'undefined' && PATIO.lanternHalo, typeof WEST_DECK !== 'undefined' && WEST_DECK.lanternHalo].filter(Boolean));
+  if (typeof PATIO !== 'undefined' && PATIO.grp) batchGroupDeep(PATIO.grp, landSkip);
+  if (typeof WEST_DECK !== 'undefined' && WEST_DECK.grp) batchGroupDeep(WEST_DECK.grp, landSkip);
   markShadows();
+  renderer.compile(scene, camera);
 }
 setTimeout(tlEnsureBuilt, 80);
-addEventListener('visibilitychange', () => wake(10)); addEventListener('pointerdown', () => wake(10), true); addEventListener('pointerup', () => wake(10), true);
+addEventListener('visibilitychange', () => wake(10)); addEventListener('pointerdown', () => wake(10), true); addEventListener('pointerup', () => wake(10), true); addEventListener('keydown', () => wake(6), true);
 window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY, wake, TL };
 </script>
