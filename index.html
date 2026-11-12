@@ -4029,89 +4029,239 @@ function governor(drew) {                                  // phones: trade reso
   if (Math.abs(pr - GOV.pr) > 0.01) { GOV.pr = pr; renderer.setPixelRatio(pr); renderer.setSize(window.innerWidth, window.innerHeight); wake(); }
 }
 /* =====================================================================
-   16. TIMELINE — "A Year at Local Time House". A 2-minute loop through
-   the year: seasons, sun and night follow the calendar, playback eases
-   to slow motion at scripted moments, and low-poly figures + the car act
-   out arrivals, picnics, kids playing, a turnover day and the owners'
-   own stay. ADD A MOMENT: append one object to MOMENTS — no other code
-   changes needed. No dogs, no real people: all figures are generic.
+   16. TIMELINE — "A Year at Local Time House". A snappy ~56-second loop
+   through the year: seasons, sun, night, tree canopies, sprouting spring
+   wildflowers, and site-wide weather (falling snow, blossom petals,
+   summer fireflies, tumbling autumn leaves) evolve continuously while the
+   camera gently pans around the house. ADD A MOMENT: append one object to
+   MOMENTS — no other code changes needed. No dogs, no real people.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, cam: null, lastInteract: 0, sunCur: 14, hourTarget: 14, occupied: false, seasonCur: null, nightApplied: null, built: null, glow: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
-const TL_LOOP = 120;                       // seconds per year at 1x
+const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, cam: null, panAz: 0, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: false, fire: false, fireSaved: false, seasonCur: null, nightApplied: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL_LOOP = 56;                        // snappy base loop (~45-50s effective with fast-forward between moments)
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
-const GUEST_CAR = 0x5A6B7A;                // the rental guests' car (the white one is the owners')
-// ADD A MOMENT: append { id, title, caption, t (0..1 through the year), dur (fraction of the year the moment lasts),
-//   hour (time of day), camera: 'wide' | 'cutaway', camAz (radians to swing the wide orbit), occupied (house lit at night),
-//   car: 'parked' | 'away' | 'arrive' | 'depart' | 'turnover', glow (one window glowing), ball (kids' ball),
-//   props: [{ kind: 'blanket' | 'basket', at: [x, y, z], rot }],
-//   cast: [{ who: 'ownerA' | 'ownerB' | 'guest', kid?: true, path: [[x, y, z], ...] (plan feet), delay (0..1 into the moment),
-//   span (0..1 of the moment the walk takes), loop?: true (walk the path over and over), hideAtEnd?: true, sit?: true, face }] }
+const SECOND_CAR = 0x5A6B7A;
 const MOMENTS = [
-  { id: 'winter-arrival', title: 'First guests arrive in the snow', caption: 'Late January — first guests arrive in the snow', t: 25 / 365, dur: 0.045, hour: 16, camera: 'wide', camAz: 0.5, occupied: true, car: 'arrive',
+  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow', t: 20 / 365, dur: 0.085, hour: 16.5, camera: 'wide', camAz: 0.45, occupied: true, fire: true, car: 'arrive',
     cast: [
-      { who: 'ownerA', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.15, span: 0.5, hideAtEnd: true },
-      { who: 'ownerB', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.3, span: 0.5, hideAtEnd: true },
+      { who: 'a', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.15, span: 0.55, hideAtEnd: true },
+      { who: 'b', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.28, span: 0.55, hideAtEnd: true },
+      { who: 'a', path: [[14, -1.5, 22]], delay: 0.72, span: 0.01, face: -0.7 },
     ] },
-  { id: 'spring-picnic', title: 'The first picnic', caption: 'Late April — the first picnic of the year', t: 115 / 365, dur: 0.04, hour: 12, camera: 'wide', camAz: -0.4, occupied: false, car: 'parked',
-    props: [{ kind: 'blanket', at: [35, -2.25, 24.7], rot: 0.4 }, { kind: 'basket', at: [36.2, -2.25, 25.4] }],
+  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — spring thaw and first blooms', t: 82 / 365, dur: 0.08, hour: 10, camera: 'wide', camAz: 0.05, occupied: false, car: 'parked',
     cast: [
-      { who: 'guest', path: [[33.5, -2.25, 24]], sit: true, face: 1.2 },
-      { who: 'guest', path: [[36.5, -2.25, 25.4]], sit: true, face: -1.9 },
+      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [34, -2.25, 26]], delay: 0.05, span: 0.65, face: 0.4 },
+      { who: 'g', path: [[-11, -2.25, 37], [-14, -2.25, 40]], delay: 0.15, span: 0.55, face: -0.8 },
     ] },
-  { id: 'summer-kids', title: 'Kids on the lawn', caption: 'Mid July — kids on the lawn', t: 195 / 365, dur: 0.045, hour: 17, camera: 'wide', camAz: 0.9, occupied: false, car: 'parked', ball: true,
+  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch under the birches', t: 132 / 365, dur: 0.085, hour: 13, camera: 'wide', camAz: -0.55, occupied: false, car: 'parked',
+    props: [{ kind: 'basket', at: [-15, -0.05, 41] }],
+    cast: [
+      { who: 'g', path: [[-16.2, -2.25, 39.2]], sit: true, face: 0.55 },
+      { who: 'g', path: [[-13.8, -2.25, 42.8]], sit: true, face: -2.55 },
+      { who: 'g', path: [[28, -2.25, 25], [38, -2.25, 24], [28, -2.25, 25]], loop: true, delay: 0, span: 0.85 },
+    ] },
+  { id: 'summer-lawn', title: 'Afternoon on the lawn', caption: 'Early July — afternoon on the south lawn', t: 185 / 365, dur: 0.09, hour: 16.5, camera: 'wide', camAz: 0.75, occupied: false, car: 'parked', ball: true,
     props: [{ kind: 'blanket', at: [33, -2.25, 26.5], rot: -0.3 }, { kind: 'basket', at: [34.2, -2.25, 27.2] }],
     cast: [
-      { who: 'guest', path: [[32, -2.25, 26]], sit: true, face: 0.8 },
-      { who: 'guest', path: [[34, -2.25, 27]], sit: true, face: -0.6 },
-      { who: 'guest', kid: true, path: [[36, -2.25, 23], [42, -2.25, 25], [36, -2.25, 23]], loop: true, delay: 0, span: 0.5 },
-      { who: 'guest', kid: true, path: [[42, -2.25, 25], [36, -2.25, 23], [42, -2.25, 25]], loop: true, delay: 0.25, span: 0.5 },
+      { who: 'g', path: [[32, -2.25, 26]], sit: true, face: 0.8 },
+      { who: 'g', path: [[34, -2.25, 27]], sit: true, face: -0.6 },
+      { who: 'g', kid: true, path: [[36, -2.25, 23], [43, -2.25, 25], [36, -2.25, 23]], loop: true, delay: 0, span: 0.45 },
+      { who: 'g', kid: true, path: [[43, -2.25, 25], [36, -2.25, 23], [43, -2.25, 25]], loop: true, delay: 0.22, span: 0.45 },
     ] },
-  { id: 'turnover', title: 'Turnover day', caption: 'Late August — one stay ends, another begins', t: 235 / 365, dur: 0.05, hour: 10, camera: 'wide', camAz: -0.9, occupied: false, car: 'turnover',
+  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — one stay ends, another begins', t: 228 / 365, dur: 0.09, hour: 11, camera: 'wide', camAz: 0.25, occupied: false, car: 'turnover',
     cast: [
-      { who: 'guest', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0, span: 0.32, hideAtEnd: true },
-      { who: 'guest', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0.08, span: 0.32, hideAtEnd: true },
-      { who: 'guest', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.55, span: 0.32, hideAtEnd: true },
-      { who: 'guest', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.62, span: 0.32, hideAtEnd: true },
+      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0, span: 0.34, hideAtEnd: true },
+      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0.07, span: 0.34, hideAtEnd: true },
+      { who: 'g', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.54, span: 0.34, hideAtEnd: true },
+      { who: 'g', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.61, span: 0.34, hideAtEnd: true },
     ] },
-  { id: 'owners-fall', title: 'The owners are home', caption: 'Mid October — the owners are home', t: 288 / 365, dur: 0.045, hour: 18, camera: 'cutaway', occupied: true, car: 'arrive',
+  { id: 'fall-patio', title: 'Golden hour on the patio', caption: 'Late September — golden hour in the woods', t: 268 / 365, dur: 0.08, hour: 18.25, camera: 'wide', camAz: -0.45, occupied: true, car: 'parked',
     cast: [
-      { who: 'ownerA', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.08, span: 0.35, hideAtEnd: true },
-      { who: 'ownerB', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.2, span: 0.35, hideAtEnd: true },
-      { who: 'ownerA', path: [[10, 0, 6]], delay: 0.5, span: 0.01, face: 2.6 },
-      { who: 'ownerB', path: [[14, -1.5, 22]], delay: 0.5, span: 0.01, face: -0.7 },
+      { who: 'g', path: [[-16.2, -2.25, 39.2]], sit: true, face: 0.55 },
+      { who: 'g', path: [[19.5, 0, 19], [20.5, -1.2, 29], [5, -2.25, 35], [-12.5, -2.25, 40.5]], delay: 0.05, span: 0.65, face: -1.4 },
     ] },
-  { id: 'winter-quiet', title: 'The house asleep', caption: 'Mid December — the house asleep, one window glowing', t: 348 / 365, dur: 0.04, hour: 20, camera: 'wide', camAz: 0.2, occupied: false, car: 'away', glow: true },
+  { id: 'fall-fireside', title: 'Fireside evening', caption: 'Late October — fireside evening as autumn leaves fall', t: 302 / 365, dur: 0.09, hour: 17.75, camera: 'cutaway', camAz: 0.3, occupied: true, fire: true, car: 'arrive',
+    cast: [
+      { who: 'a', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.05, span: 0.38, hideAtEnd: true },
+      { who: 'b', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.14, span: 0.38, hideAtEnd: true },
+      { who: 'a', path: [[10, 0, 6], [10, 0, 9.5], [10, 0, 6]], loop: true, delay: 0.44, span: 0.5, face: 2.6 },
+      { who: 'b', path: [[14, -1.5, 22]], delay: 0.44, span: 0.01, face: -0.7 },
+    ] },
+  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 348 / 365, dur: 0.08, hour: 20, camera: 'wide', camAz: 0.15, occupied: false, car: 'away', glow: true },
 ];
 // --- low-poly figures: shared geometries + a small material cache, never allocated per frame
 const TL_GEO = {
   head: new THREE.BoxGeometry(0.62, 0.55, 0.55), hair: new THREE.BoxGeometry(0.64, 0.22, 0.57),
   torso: new THREE.BoxGeometry(1.05, 1.9, 0.55), arm: new THREE.BoxGeometry(0.34, 1.8, 0.4), leg: new THREE.BoxGeometry(0.42, 2.5, 0.45),
   blanket: new THREE.BoxGeometry(5, 0.12, 4), basket: new THREE.BoxGeometry(1.1, 0.7, 0.8), ball: new THREE.SphereGeometry(0.55, 10, 8),
+  flake: new THREE.DodecahedronGeometry(0.28, 0), leaf: new THREE.BoxGeometry(0.48, 0.08, 0.36), bloom: new THREE.IcosahedronGeometry(0.42, 0),
 };
 const TL_MATS = new Map();
-function tlMat(hex) { let m = TL_MATS.get(hex); if (!m) { m = new THREE.MeshStandardMaterial({ color: hex, roughness: 0.85 }); TL_MATS.set(hex, m); } return m; }
-const OWNERS = {
-  ownerA: { shirt: 0x5B2B20, pants: 0x2E2A26, skin: 0xC98E6A, hair: 0x2A2018 },
-  ownerB: { shirt: 0xE8E0D2, pants: 0x4A4640, skin: 0xD9A986, hair: 0x3A2A1A },
+function tlMat(hex) { let m = TL_MATS.get(hex); if (!m) { m = new THREE.MeshStandardMaterial({ color: hex, roughness: 0.85, flatShading: true }); TL_MATS.set(hex, m); } return m; }
+const CAST_PAIR = {
+  a: { shirt: 0x5B2B20, pants: 0x2E2A26, skin: 0xC98E6A, hair: 0x2A2018 },
+  b: { shirt: 0xE8E0D2, pants: 0x4A4640, skin: 0xD9A986, hair: 0x3A2A1A },
 };
-const GUEST_SHIRTS = [0x3B6E8C, 0x5E8C4A, 0xC9702E, 0x8A5A8C, 0xB23A32, 0xE8B23C];
-const GUEST_PANTS = [0x2E2A26, 0x3A3F45, 0x4A4640];
+const SHIRT_PAL = [0x3B6E8C, 0x5E8C4A, 0xC9702E, 0x8A5A8C, 0xB23A32, 0xE8B23C];
+const PANT_PAL = [0x2E2A26, 0x3A3F45, 0x4A4640];
 const SKINS = [0xC98E6A, 0xD9A986, 0x8C5A3B, 0xE8C39A];
 const HAIRS = [0x2A2018, 0x3A2A1A, 0x555555, 0x8C6A3A];
 function makePerson(who, kid, seed) {
-  const c = OWNERS[who] || { shirt: GUEST_SHIRTS[seed % GUEST_SHIRTS.length], pants: GUEST_PANTS[seed % GUEST_PANTS.length], skin: SKINS[seed % SKINS.length], hair: HAIRS[seed % HAIRS.length] };
+  const c = CAST_PAIR[who] || { shirt: SHIRT_PAL[seed % SHIRT_PAL.length], pants: PANT_PAL[seed % PANT_PAL.length], skin: SKINS[seed % SKINS.length], hair: HAIRS[seed % HAIRS.length] };
   const g = new THREE.Group();
   const add = (geo, hex, x, y, z) => { const m = new THREE.Mesh(geo, tlMat(hex)); m.castShadow = false; m.receiveShadow = false; m.position.set(x, y, z); g.add(m); return m; };
   const legL = add(TL_GEO.leg, c.pants, -0.28, 1.25, 0), legR = add(TL_GEO.leg, c.pants, 0.28, 1.25, 0);
   const torso = add(TL_GEO.torso, c.shirt, 0, 3.45, 0);
-  add(TL_GEO.arm, c.shirt, -0.72, 3.45, 0); add(TL_GEO.arm, c.shirt, 0.72, 3.45, 0);
+  const armL = add(TL_GEO.arm, c.shirt, -0.72, 3.45, 0), armR = add(TL_GEO.arm, c.shirt, 0.72, 3.45, 0);
   add(TL_GEO.head, c.skin, 0, 4.68, 0); add(TL_GEO.hair, c.hair, 0, 4.98, 0);
   g.scale.setScalar(kid ? 0.72 : 1.1);
-  g.userData = { legL, legR, torso };
+  g.userData = { legL, legR, armL, armR, torso };
   return g;
 }
 function seatFigure(fig) { const u = fig.userData; u.legL.rotation.x = -1.35; u.legL.position.y = 0.9; u.legR.rotation.x = -1.35; u.legR.position.y = 0.9; u.torso.rotation.x = -0.12; }
+// --- site-wide weather particles (snow, spring petals, summer fireflies, autumn leaves) + sprouting wildflowers
+function tlBuildEnvFx() {
+  const N = LITE ? 110 : 220;
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+  const mesh = new THREE.InstancedMesh(TL_GEO.leaf, mat, N);
+  mesh.castShadow = false; mesh.receiveShadow = false; mesh.frustumCulled = false; mesh.visible = false;
+  const pts = [];
+  for (let i = 0; i < N; i++) {
+    const a = Math.random() * Math.PI * 2, r = 4 + Math.pow(Math.random(), 0.75) * 85;
+    pts.push({ x: CX + Math.cos(a) * r, y: Math.random() * 44, z: CZ + Math.sin(a) * r, ph: Math.random() * Math.PI * 2, sp: 0.75 + Math.random() * 0.55, c: i });
+  }
+  LAND.add(mesh);
+  // Wildflower clusters that sprout in spring, thrive in summer, fade in fall
+  const B = LITE ? 55 : 110;
+  const bMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, flatShading: true }); exteriorLightsOnly(bMat);
+  const bMesh = new THREE.InstancedMesh(TL_GEO.bloom, bMat, B);
+  bMesh.castShadow = false; bMesh.receiveShadow = false;
+  const bPts = [], bCols = [0xE8D26E, 0xD98BB5, 0x8E6FC9, 0xF4F1EA, 0xE2955A];
+  const col = new THREE.Color();
+  for (let i = 0; i < B; i++) {
+    let x, z;
+    if (i < B * 0.35) {                                // along stepping stones & south lawn edge
+      x = 18 + Math.random() * 34; z = 19.2 + Math.random() * 15.5;
+    } else if (i < B * 0.6) {                          // around patio & SW corner
+      const a = Math.random() * Math.PI * 2, r = 6.5 + Math.random() * 7;
+      x = PATIO_AT[0] + Math.cos(a) * r; z = PATIO_AT[1] + Math.sin(a) * r;
+    } else {                                           // meadow ring
+      const a = Math.random() * Math.PI * 2, r = 42 + Math.random() * 14;
+      x = CX + Math.cos(a) * r; z = CZ + Math.sin(a) * r;
+    }
+    const s = 0.65 + Math.random() * 0.65;
+    bPts.push({ x, y: terrainY(x, z) + 0.32 * s, z, s, delay: (i % 20) / 20 });
+    bMesh.setColorAt(i, col.setHex(bCols[i % bCols.length]));
+  }
+  if (bMesh.instanceColor) bMesh.instanceColor.needsUpdate = true;
+  LAND.add(bMesh);
+  TL.wx = { mesh, pts, N, kind: null };
+  TL.blooms = { mesh: bMesh, pts: bPts, lastK: -1 };
+}
+const _wxO = new THREE.Object3D(), _wxC = new THREE.Color();
+const WX_PAL = {
+  snow: [0xFFFFFF, 0xEBF2F7, 0xF4F7FA],
+  petals: [0xF7D8E2, 0xFFF5F8, 0xF2B8C6, 0xEDE7DC],
+  fireflies: [0xFFE875, 0xFFD24C, 0xFFF2A6],
+  leaves: [0xC3702C, 0xA6402C, 0xCF9B38, 0x8D5A33, 0xB23A32],
+};
+function tlStepEnvFx(dt, day) {
+  if (!TL.wx) return;
+  // Determine weather particle mode & intensity across the 365-day year
+  let kind = 'snow', rate = 1;
+  if (day >= 65 && day < 160) { kind = 'petals'; rate = day < 85 ? (day - 65) / 20 : day > 145 ? (160 - day) / 15 : 1; }
+  else if (day >= 160 && day < 245) { kind = 'fireflies'; rate = 0.75; }
+  else if (day >= 245 && day < 328) { kind = 'leaves'; rate = day < 260 ? 0.6 : 1; }
+  else { kind = 'snow'; rate = (day >= 328 || day < 52) ? 1 : Math.max(0, (65 - day) / 13); }
+  const W = TL.wx;
+  W.mesh.visible = rate > 0.02;
+  if (W.mesh.visible) {
+    if (W.kind !== kind) {
+      W.kind = kind;
+      const pal = WX_PAL[kind];
+      for (let i = 0; i < W.N; i++) W.mesh.setColorAt(i, _wxC.setHex(pal[i % pal.length]));
+      if (W.mesh.instanceColor) W.mesh.instanceColor.needsUpdate = true;
+    }
+    const activeCount = Math.floor(W.N * rate);
+    for (let i = 0; i < W.N; i++) {
+      const p = W.pts[i];
+      if (i >= activeCount) { _wxO.scale.setScalar(0.0001); _wxO.updateMatrix(); W.mesh.setMatrixAt(i, _wxO.matrix); continue; }
+      p.ph += dt * p.sp * 2.2;
+      if (kind === 'fireflies') {
+        p.y = 1.5 + Math.sin(p.ph * 0.9) * 3.2;
+        const pulse = Math.max(0.01, Math.sin(p.ph * 1.7 + p.c) * 0.55);
+        _wxO.position.set(p.x + Math.cos(p.ph * 0.6) * 1.4, LV.GRADE + p.y, p.z + Math.sin(p.ph * 0.6) * 1.4);
+        _wxO.rotation.set(0, 0, 0); _wxO.scale.setScalar(pulse);
+      } else {
+        const fallSpeed = kind === 'leaves' ? 6.5 : kind === 'petals' ? 4.2 : 5.2;
+        p.y -= dt * fallSpeed * p.sp;
+        if (p.y < -2.1) p.y = 38 + (p.c % 9);
+        const sway = kind === 'snow' ? 1.1 : 2.6;
+        _wxO.position.set(p.x + Math.sin(p.ph) * sway, p.y, p.z + Math.cos(p.ph * 0.8) * sway);
+        _wxO.rotation.set(p.ph * 1.3, p.ph * 0.9, p.ph * 0.7);
+        if (kind === 'snow') _wxO.scale.set(0.45, 2.2, 0.45);
+        else if (kind === 'petals') _wxO.scale.set(0.75, 0.75, 0.75);
+        else _wxO.scale.set(1.25, 1.0, 1.25);
+      }
+      _wxO.updateMatrix(); W.mesh.setMatrixAt(i, _wxO.matrix);
+    }
+    W.mesh.instanceMatrix.needsUpdate = true;
+  }
+  // Wildflowers sprout in spring (days 70..125), full in late spring/summer (125..245), fade in fall (245..295)
+  let bloomK = 0;
+  if (day >= 70 && day < 125) bloomK = (day - 70) / 55;
+  else if (day >= 125 && day < 245) bloomK = 1;
+  else if (day >= 245 && day < 295) bloomK = 1 - (day - 245) / 50;
+  const Bl = TL.blooms;
+  if (Math.abs(bloomK - Bl.lastK) > 0.01) {
+    Bl.lastK = bloomK;
+    Bl.mesh.visible = bloomK > 0.01;
+    if (Bl.mesh.visible) {
+      for (let i = 0; i < Bl.pts.length; i++) {
+        const b = Bl.pts[i];
+        const k = Math.max(0.0001, Math.min(1, (bloomK - b.delay * 0.35) / 0.65)) * b.s;
+        _wxO.position.set(b.x, LV.GRADE + (k * 0.35), b.z);
+        _wxO.rotation.set(0, i * 1.1, 0);
+        _wxO.scale.set(k, k * 1.2, k);
+        _wxO.updateMatrix(); Bl.mesh.setMatrixAt(i, _wxO.matrix);
+      }
+      Bl.mesh.instanceMatrix.needsUpdate = true;
+    }
+  }
+}
+// --- continuous tree canopy scale & color evolution across the year
+function tlApplyCanopyGrowth(day) {
+  // fullness: 0 in deep winter, buds out days 65..135, 1.0 in summer (135..255), drops leaves days 255..330
+  let full = 0;
+  if (day >= 65 && day < 135) full = (day - 65) / 70;
+  else if (day >= 135 && day < 255) full = 1.0;
+  else if (day >= 255 && day < 330) full = 1.0 - (day - 255) / 75;
+  const pal = day < 145 ? SEASONS.spring.leaves : day < 250 ? SEASONS.summer.leaves : SEASONS.fall.leaves;
+  const fallBlend = day >= 235 && day < 275 ? (day - 235) / 40 : 0;
+  decid.forEach((t, i) => {
+    const treeFull = Math.max(0, Math.min(1, (full - (1 - t.k) * 0.28) / 0.72));
+    const s = treeFull < 0.03 ? 0.0001 : (0.25 + 0.75 * treeFull);
+    const w = (5.5 + t.k * 6.5) * s, h = (t.h * 0.26) * s;
+    canopies.getMatrixAt(i, mtx); mtx.decompose(ps, q, sc);
+    sc.set(w, h, w); mtx.compose(ps, q, sc); canopies.setMatrixAt(i, mtx);
+    const idx = Math.floor(t.k * 97);
+    if (fallBlend > 0) {
+      _tc1.setHex(SEASONS.summer.leaves[idx % SEASONS.summer.leaves.length]);
+      _tc2.setHex(SEASONS.fall.leaves[idx % SEASONS.fall.leaves.length]);
+      canopies.setColorAt(i, _tc1.lerp(_tc2, fallBlend));
+    } else if (pal.length) {
+      canopies.setColorAt(i, _tc1.setHex(pal[idx % pal.length]));
+    }
+  });
+  canopies.instanceMatrix.needsUpdate = true;
+  if (canopies.instanceColor) canopies.instanceColor.needsUpdate = true;
+  // Patio birch crowns scale smoothly too
+  const bScale = Math.max(0.0001, full);
+  PATIO.crowns.forEach(c => {
+    c.visible = full > 0.04;
+    c.scale.set(7 * bScale, 6 * bScale, 7 * bScale);
+  });
+}
 // --- waypoint polyline in plan feet (with a heading per point)
 function tlPoly(pts) {
   const segs = []; let total = 0;
@@ -4131,6 +4281,13 @@ const _tlDriveExt = [...DRIVE];
 { const [ax, az] = DRIVE[DRIVE.length - 2], [bx, bz] = DRIVE[DRIVE.length - 1]; const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz) || 1; _tlDriveExt.push([bx + dx / L * 90, bz + dz / L * 90]); }
 const tlDrive = tlPoly(_tlDriveExt.map(([x, z]) => [x, terrainY(x, z) + 0.05, z]));
 function setCarColor(hex) { CAR.paint.color.set(hex); TL.carColor = hex; }
+function tlSetFire(on) {
+  if (!FX_FIRE || TL.fire === on) return;
+  TL.fire = on;
+  FX_FIRE.glass.material = on ? fireMat : M('frame');
+  fireLight.visible = on;
+  smoke.forEach(sp => { sp.visible = on; });
+}
 function tlBuildMoment(m, idx) {
   const group = new THREE.Group(); LAND.add(group); group.visible = false;
   const walkers = [];
@@ -4141,7 +4298,7 @@ function tlBuildMoment(m, idx) {
     const fig = makePerson(c.who, !!c.kid, idx * 7 + k);
     if (c.sit) seatFigure(fig);
     fig.visible = false; group.add(fig);
-    walkers.push({ fig, poly: tlPoly(c.path), delay: c.delay || 0, span: c.span || 0.01, loop: !!c.loop, hideAtEnd: !!c.hideAtEnd, kid: !!c.kid, face: c.face || 0, bob: 0 });
+    walkers.push({ fig, poly: tlPoly(c.path), delay: c.delay || 0, span: c.span || 0.01, loop: !!c.loop, hideAtEnd: !!c.hideAtEnd, sit: !!c.sit, kid: !!c.kid, face: c.face || 0, bob: 0 });
   }
   let ball = null;
   if (m.ball && !LITE) { ball = new THREE.Mesh(TL_GEO.ball, tlMat(0xF2F3F1)); ball.castShadow = false; ball.visible = false; group.add(ball); }
@@ -4162,19 +4319,24 @@ function tlDarkSky(on) {
 function tlApplyEnv(dt, immediate) {
   const day = TL.t * 365, month = Math.min(11, Math.floor(TL.t * 12));
   const season = TL_SEASON_OF_MONTH[month];
-  const BOUNDS = [[59, 'winter', 'spring'], [151, 'spring', 'summer'], [243, 'summer', 'fall'], [334, 'fall', 'winter']];
+  const BOUNDS = [[65, 'winter', 'spring'], [155, 'spring', 'summer'], [245, 'summer', 'fall'], [330, 'fall', 'winter']];
   let sA = season, sB = null, f = 0;
-  for (const [b, a, c] of BOUNDS) { if (Math.abs(day - b) < 7) { sA = a; sB = c; f = (day - (b - 7)) / 14; break; } }
+  for (const [b, a, c] of BOUNDS) { if (Math.abs(day - b) < 16) { sA = a; sB = c; f = (day - (b - 16)) / 32; break; } }
   if (TL.seasonCur !== sA) { state.season = sA; applyState(); TL.seasonCur = sA; }
-  if (sB) { groundMat.color.lerpColors(_tc1.set(SEASONS[sA].ground), _tc2.set(SEASONS[sB].ground), f); clearMat.color.lerpColors(_tc1.set(SEASONS[sA].clearing), _tc2.set(SEASONS[sB].clearing), f); }
+  if (sB) {
+    groundMat.color.lerpColors(_tc1.set(SEASONS[sA].ground), _tc2.set(SEASONS[sB].ground), f);
+    clearMat.color.lerpColors(_tc1.set(SEASONS[sA].clearing), _tc2.set(SEASONS[sB].clearing), f);
+  }
+  tlApplyCanopyGrowth(day);
+  tlStepEnvFx(dt, day);
   if (immediate) TL.sunCur = TL.hourTarget;
-  else TL.sunCur += (TL.hourTarget - TL.sunCur) * Math.min(1, dt * 0.4);
+  else TL.sunCur += (TL.hourTarget - TL.sunCur) * Math.min(1, dt * 1.4);
   if (Math.abs(TL.sunCur - state.sun) > 0.02) {
     state.sun = Math.max(6, Math.min(19.5, TL.sunCur)); applySun();
     for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.value = String(state.sun); }
     for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunTimeLabel(state.sun); }
   }
-  const wantNight = TL.sunCur < 7 || TL.sunCur >= 19.5;
+  const wantNight = TL.sunCur < 7 || TL.sunCur >= 18.2;
   const key = wantNight ? (TL.occupied ? 'lit' : 'dark') : 'day';
   if (key !== TL.nightApplied) {
     TL.nightApplied = key;
@@ -4189,25 +4351,33 @@ function tlSetMoment(i) {
   if (TL.cur >= 0 && TL.built[TL.cur]) TL.built[TL.cur].group.visible = false;
   if (TL.glow) TL.glow.visible = false;
   TL.cur = i;
-  if (i < 0) { showCap(''); const nx = tlNextMoment(); TL.hourTarget = nx ? nx.hour : TL.sunCur; TL.occupied = false; return; }
+  if (i < 0) {
+    showCap('');
+    const nx = tlNextMoment();
+    TL.hourTarget = nx ? nx.hour : TL.sunCur;
+    TL.occupied = nx ? !!nx.occupied : false;
+    tlSetFire(false);
+    return;
+  }
   const m = MOMENTS[i], B = TL.built[i];
   B.group.visible = true;
   for (const w of B.walkers) { w.fig.visible = false; w.bob = 0; }
   if (B.ball) { B.ball.visible = false; TL.ballPh = 0; }
   TL.hourTarget = m.hour; TL.occupied = !!m.occupied;
-  if (TL.glow) { TL.glow.visible = !!m.glow; TL.glow.intensity = m.glow ? 6 : 0; }
+  tlSetFire(!!m.fire);
+  if (TL.glow) { TL.glow.visible = !!m.glow; TL.glow.intensity = m.glow ? 8 : 0; }
   if (m.car === 'parked') TL.carD = 0;
   else if (m.car === 'away') TL.carD = 1;
   else if (m.car === 'arrive') { TL.carD = 1; setCarColor(0xF3F3F1); }
   else if (m.car === 'depart') TL.carD = 0;
-  else if (m.car === 'turnover') { TL.carD = 0; setCarColor(GUEST_CAR); }
+  else if (m.car === 'turnover') { TL.carD = 0; setCarColor(SECOND_CAR); }
   showCap(m.caption);
-  if (performance.now() - TL.lastInteract > 4000) {
-    const q = m.camera === 'cutaway' ? toW(12, 1.5, 12) : HOME.target.clone();
-    let p;
-    if (m.camera === 'cutaway') p = q.clone().add(new THREE.Vector3(6.5, 5, 9.5));
-    else { const base = homePos(), off = base.clone().sub(HOME.target), c = Math.cos(m.camAz || 0), s = Math.sin(m.camAz || 0); p = HOME.target.clone().add(new THREE.Vector3(off.x * c + off.z * s, off.y, -off.x * s + off.z * c)); }
-    TL.cam = { t: 0, dur: 2, p0: camera.position.clone(), q0: controls.target.clone(), p1: p, q1: q };
+  if (performance.now() - TL.lastInteract > 3500) {
+    const base = homePos(), off = base.clone().sub(HOME.target);
+    const az = m.camAz || 0, c = Math.cos(az), s = Math.sin(az);
+    const p = HOME.target.clone().add(new THREE.Vector3(off.x * c + off.z * s, off.y, -off.x * s + off.z * c));
+    TL.panAz = az;
+    TL.cam = { t: 0, dur: 1.35, p0: camera.position.clone(), q0: controls.target.clone(), p1: p, q1: HOME.target.clone(), az0: az };
     controls.enabled = false;
   }
 }
@@ -4220,21 +4390,26 @@ function tlStepActors(dt) {
     else p = Math.max(0, Math.min(1, p));
     if (p <= 0) { w.fig.visible = false; continue; }
     const pt = w.poly.at(p);
-    const moving = p > 0 && p < 1;
-    if (moving) w.bob += dt * 7;
+    const moving = !w.poly.single && (w.loop || (p > 0 && p < 1));
+    if (moving) w.bob += dt * 9.5;
     w.fig.visible = true;
-    w.fig.position.set(pt.x, pt.y + (moving ? Math.abs(Math.sin(w.bob)) * 0.08 : 0), pt.z);
+    w.fig.position.set(pt.x, pt.y + (moving ? Math.abs(Math.sin(w.bob)) * 0.12 : 0), pt.z);
     w.fig.rotation.y = w.poly.single ? w.face : pt.h;
+    if (!w.sit) {
+      const u = w.fig.userData, sw = moving ? Math.sin(w.bob) * 0.55 : 0;
+      u.legL.rotation.x = sw; u.legR.rotation.x = -sw;
+      u.armL.rotation.x = -sw * 0.7; u.armR.rotation.x = sw * 0.7;
+    }
     if (!w.loop && p >= 1 && w.hideAtEnd) w.fig.visible = false;
   }
   if (B.ball) {
     const kids = B.walkers.filter(w => w.kid && w.fig.visible);
     if (kids.length >= 2) {
-      TL.ballPh += dt * 0.5; const f = TL.ballPh % 1;
+      TL.ballPh += dt * 0.85; const f = TL.ballPh % 1;
       const a = kids[0].fig.position, b = kids[1].fig.position;
       B.ball.visible = true;
       B.ball.position.lerpVectors(a, b, f);
-      B.ball.position.y = Math.max(a.y, b.y) + 1.0 + Math.sin(f * Math.PI) * 1.8;
+      B.ball.position.y = Math.max(a.y, b.y) + 1.0 + Math.sin(f * Math.PI) * 2.1;
     } else B.ball.visible = false;
   }
 }
@@ -4245,36 +4420,50 @@ function tlStepCar(dt) {
   let target = TL.carD;
   if (mode === 'parked') target = 0;
   else if (mode === 'away') target = 1;
-  else if (mode === 'arrive') target = 1 - ease(Math.min(1, ph / 0.7));
-  else if (mode === 'depart') target = ease(Math.min(1, ph / 0.7));
+  else if (mode === 'arrive') target = 1 - ease(Math.min(1, ph / 0.55));
+  else if (mode === 'depart') target = ease(Math.min(1, ph / 0.55));
   else if (mode === 'turnover') {
-    if (ph < 0.5) target = ease(ph / 0.5);
-    else target = 1 - ease((ph - 0.5) / 0.5);
+    if (ph < 0.48) target = ease(ph / 0.48);
+    else { if (TL.carColor !== 0xF3F3F1) setCarColor(0xF3F3F1); target = 1 - ease((ph - 0.48) / 0.52); }
   }
   if (TL.scrubbing) TL.carD = target;
-  else TL.carD += (target - TL.carD) * Math.min(1, dt * 2.5);
+  else TL.carD += (target - TL.carD) * Math.min(1, dt * 4.2);
   const pt = tlDrive.at(TL.carD);
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
   const parked = TL.carD < 0.02;
   CAR.plug.visible = parked; CAR.cable.visible = parked;
   const driving = Math.abs(target - TL.carD) > 0.002 && mode !== 'parked' && mode !== 'away';
-  const night = TL.sunCur < 7 || TL.sunCur >= 19.5;
+  const night = TL.sunCur < 7 || TL.sunCur >= 17.2;
   const lights = driving && night;
   CAR.beams.forEach(sl => { sl.visible = lights; sl.intensity = lights ? 40 : 0; });
   CAR.lamp.emissiveIntensity = lights ? 2.5 : 0;
 }
 function tlStepCamera(dt) {
-  if (!TL.cam) return;
-  const Cm = TL.cam; Cm.t += dt; const k = ease(Math.min(1, Cm.t / Cm.dur));
-  camera.position.lerpVectors(Cm.p0, Cm.p1, k); controls.target.lerpVectors(Cm.q0, Cm.q1, k); camera.lookAt(controls.target);
-  if (Cm.t >= Cm.dur) { TL.cam = null; controls.enabled = true; controls.update(); }
+  if (performance.now() - TL.lastInteract <= 3500) return;
+  const base = homePos(), off = base.clone().sub(HOME.target);
+  if (TL.cam) {
+    const Cm = TL.cam; Cm.t += dt; const k = ease(Math.min(1, Cm.t / Cm.dur));
+    camera.position.lerpVectors(Cm.p0, Cm.p1, k); controls.target.lerpVectors(Cm.q0, Cm.q1, k); camera.lookAt(controls.target);
+    if (Cm.t >= Cm.dur) { TL.cam = null; controls.enabled = true; controls.update(); }
+    if (state.walls === 'cutaway') updateWalls();
+    return;
+  }
+  // Gentle continuous wide pan while playing so the scene never sits static
+  if (TL.playing) {
+    TL.panAz += dt * 0.065;
+    const c = Math.cos(TL.panAz), s = Math.sin(TL.panAz);
+    camera.position.set(HOME.target.x + off.x * c + off.z * s, HOME.target.y + off.y, HOME.target.z - off.x * s + off.z * c);
+    controls.target.copy(HOME.target);
+    camera.lookAt(controls.target);
+    if (state.walls === 'cutaway') updateWalls();
+  }
 }
 function tlTick(dt) {
   if (WALK.on || TOUR.on) { exitTimeline(); return; }
-  let slow = false;
-  for (const m of MOMENTS) { const ahead = (m.t - TL.t + 1) % 1, inside = (TL.t - m.t + 1) % 1; if (ahead < 0.06 || inside < m.dur) { slow = true; break; } }
-  const targetSpeed = slow ? 0.25 : 1;
-  TL.speed += (targetSpeed - TL.speed) * Math.min(1, dt * 1.5);
+  const actNow = tlActiveMoment();
+  // Snappy pacing: 1x during active moments, 1.85x fast-forward between moments (never slow-mo)
+  const targetSpeed = actNow >= 0 ? 1.0 : 1.85;
+  TL.speed += (targetSpeed - TL.speed) * Math.min(1, dt * 4);
   if (TL.playing) TL.t = (TL.t + dt * TL.speed / TL_LOOP) % 1;
   tlApplyEnv(dt, false);
   const act = tlActiveMoment();
@@ -4289,32 +4478,42 @@ function enterTimeline() {
   if (TL.on) { exitTimeline(); return; }
   if (WALK.on) exitWalk();
   if (TOUR.on) exitTour();
-  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex() };
+  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible };
   if (!TL.built) {
     TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
     TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
+    tlBuildEnvFx();
     const marks = document.getElementById('tl-marks');
     MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
   }
   for (const B of TL.built) B.group.visible = false;
-  TL.on = true; TL.playing = true; TL.t = 0; TL.speed = 1; TL.cur = -1; TL.sunCur = state.sun; TL.hourTarget = MOMENTS[0].hour; TL.occupied = false; TL.nightApplied = null; TL.seasonCur = null; TL.ballPh = 0;
+  // Start right at the first moment (Late January arrival) so there is zero dead air
+  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.nightApplied = null; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
   Object.assign(state, { walls: 'cutaway', floors: 'both', roof: false, explode: 0, labels: false }); applyState();
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
   document.getElementById('btn-timeline').textContent = 'Exit timeline';
-  showCap('');
+  tlApplyEnv(0, true);
+  tlSetMoment(0);
 }
 function exitTimeline() {
   if (!TL.on) return;
   TL.on = false; TL.playing = false; TL.cur = -1; TL.cam = null;
   for (const B of TL.built || []) B.group.visible = false;
   if (TL.glow) TL.glow.visible = false;
+  if (TL.wx) TL.wx.mesh.visible = false;
+  if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
+  tlSetFire(TL.saved ? TL.saved.fire : false);
   TL.carD = 0; const pt = tlDrive.at(0);
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
   setCarColor(TL.saved ? TL.saved.carColor : 0xF3F3F1);
   CAR.plug.visible = true; CAR.cable.visible = true;
   CAR.beams.forEach(sl => { sl.visible = false; sl.intensity = 0; }); CAR.lamp.emissiveIntensity = 0;
-  if (TL.saved) { Object.assign(state, TL.saved.state); applyState(); camera.position.copy(TL.saved.pos); controls.target.copy(TL.saved.target); controls.enabled = true; controls.update(); }
+  if (TL.saved) {
+    Object.assign(state, TL.saved.state);
+    seasonOn = null; applyState();
+    camera.position.copy(TL.saved.pos); controls.target.copy(TL.saved.target); controls.enabled = true; controls.update();
+  }
   document.getElementById('tlbar').hidden = true;
   document.getElementById('btn-timeline').textContent = 'A year at Local Time House';
   showCap('');
@@ -4326,6 +4525,7 @@ document.getElementById('tl-scrub').addEventListener('input', e => {
   TL.scrubbing = true; TL.playing = false; document.getElementById('tl-play').textContent = '▶';
   TL.t = +e.target.value / 1000; tlApplyEnv(0, true);
   const a = tlActiveMoment(); if (a !== TL.cur) tlSetMoment(a);
+  tlStepActors(0);
   tlStepCar(0);
 });
 document.getElementById('tl-scrub').addEventListener('change', () => { TL.scrubbing = false; });
