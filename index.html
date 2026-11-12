@@ -19,35 +19,41 @@
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap" media="print" onload="this.media='all'">
 <style>
-/* Layout: full-bleed 3D viewport; a drafting-sheet control card floats top-left, room detail card bottom-right. */
+/* Layout: full-bleed 3D viewport; a flat brand-colored bottom dock + top-right room detail card. */
 :root {
-  --bg: #e9e6df;          /* page + scene backdrop: warm drafting paper */
-  --scene: #e4e1d9;
-  --card: rgba(250, 248, 244, 0.94);
-  --ink: #1f1c19;
-  --muted: #6b645b;
-  --rule: #d4cec3;
-  --accent: #7a2a2a;      /* burgundy, from the roof */
-  --accent-ink: #fbf8f3;
-  --chip: #f1ede6;
-  --sheet: #f6f3ec;
-  --logo: #3F121A;                 /* the logo's own burgundy */
+  --bg: #F3F0EA;          /* brand warm cream */
+  --scene: #eae5dc;
+  --card: rgba(243, 240, 234, 0.96);
+  --ink: #181516;         /* brand charcoal */
+  --muted: #5d5752;
+  --rule: #d8d1c5;
+  --accent: #520000;      /* brand deep burgundy */
+  --accent-ink: #F3F0EA;
+  --blue: #A9C4D6;        /* brand slate blue */
+  --olive: #666519;       /* brand olive moss */
+  --chip: #eae5dc;
+  --sheet: #F3F0EA;
+  --logo: #520000;
+  --active-bg: #181516;
+  --active-ink: #F3F0EA;
   --font-brand: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #1a1918; --scene: #1d1c1b; --card: rgba(36, 34, 32, 0.94); --ink: #efe9e1; --muted: #a59d92;
-    --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; --logo: #E4B7B0; color-scheme: dark;
+    --bg: #181516; --scene: #1d1a1b; --card: rgba(24, 21, 22, 0.95); --ink: #F3F0EA; --muted: #a69f96;
+    --rule: #353031; --accent: #8c2626; --accent-ink: #F3F0EA; --blue: #A9C4D6; --olive: #b8b648; --chip: #262223; --sheet: #211d1e; --logo: #F3F0EA;
+    --active-bg: #3b3536; --active-ink: #F3F0EA; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #1a1918; --scene: #1d1c1b; --card: rgba(36, 34, 32, 0.94); --ink: #efe9e1; --muted: #a59d92;
-  --rule: #3c3833; --accent: #c7726a; --accent-ink: #1a1514; --chip: #2d2a27; --sheet: #262321; --logo: #E4B7B0; color-scheme: dark;
+  --bg: #181516; --scene: #1d1a1b; --card: rgba(24, 21, 22, 0.95); --ink: #F3F0EA; --muted: #a69f96;
+  --rule: #353031; --accent: #8c2626; --accent-ink: #F3F0EA; --blue: #A9C4D6; --olive: #b8b648; --chip: #262223; --sheet: #211d1e; --logo: #F3F0EA;
+  --active-bg: #3b3536; --active-ink: #F3F0EA; color-scheme: dark;
 }
 html, body { height: 100%; }
 [hidden] { display: none !important; }
@@ -57,57 +63,111 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 #labels { position: fixed; inset: 0; pointer-events: none; }
 
 .card {
-  position: fixed; background: var(--card); border: 1px solid var(--rule); border-radius: 6px;
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.08);
+  position: fixed; background: var(--card); border: 1px solid var(--rule); border-radius: 10px;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 28px rgba(24,21,22,0.10), 0 1px 2px rgba(24,21,22,0.06);
 }
 #panel {
-  top: calc(12px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
-  width: 272px; max-height: calc(100% - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
-  overflow: auto; display: flex; flex-direction: column;
+  left: 50%; transform: translateX(-50%);
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px)); top: auto;
+  width: min(1040px, calc(100% - 32px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)));
+  display: flex; flex-direction: column; overflow: visible;
 }
-.titleblock { padding: 14px 10px 12px 16px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-.tb-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
-.collapse { flex: none; width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 4px; background: var(--chip); color: var(--ink); cursor: pointer; padding: 0; }
-.collapse svg { transition: transform 0.2s ease; }
+.titleblock { padding: 8px 12px 8px 14px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; gap: 12px; cursor: pointer; user-select: none; }
+.tb-text { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.tb-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.collapse { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 1px solid var(--rule); border-radius: 6px; background: var(--chip); color: var(--ink); cursor: pointer; padding: 0; transition: background 0.15s ease, border-color 0.15s ease; }
+.collapse:hover { background: var(--rule); }
+.collapse svg { transition: transform 0.2s ease; transform: rotate(180deg); }
 .collapse:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#panel.collapsed .collapse svg { transform: rotate(180deg); }
+#panel.collapsed .collapse svg { transform: rotate(0deg); }
 #panel.collapsed #panel-body { display: none; }
 #panel.collapsed .titleblock { border-bottom: 0; }
-.titleblock h1 { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 400; font-size: 28px; line-height: 1; letter-spacing: -0.01em; text-wrap: balance; }
-.logo { flex: none; width: 30px; height: auto; fill: var(--logo); }
-.brandmark { flex: none; width: 30px; height: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06)); }
-.wordmark { height: 20px; width: auto; max-width: 172px; display: block; object-fit: contain; }
+.titleblock h1 { margin: 0; display: flex; align-items: center; gap: 8px; font-family: var(--font-brand); font-weight: 400; font-size: 24px; line-height: 1; letter-spacing: -0.01em; }
+.logo { flex: none; width: 26px; height: auto; fill: var(--logo); }
+.brandmark { flex: none; width: 22px; height: auto; display: block; }
+.wordmark { flex: none; width: auto; height: 15px; display: block; object-fit: contain; }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) .wordmark { filter: invert(0.92) brightness(1.2); }
   :root:not([data-theme="light"]) .brandmark { filter: brightness(1.35) contrast(1.1); }
 }
 :root[data-theme="dark"] .wordmark { filter: invert(0.92) brightness(1.2); }
 :root[data-theme="dark"] .brandmark { filter: brightness(1.35) contrast(1.1); }
-.titleblock .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
-.controls { padding: 12px 16px; display: grid; gap: 14px; }
-.row { display: grid; gap: 6px; }
-.lbl { font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-.seg { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.seg button { flex: 1 1 0; min-width: 0; font: 500 12.5px var(--font-body); padding: 7px 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; text-align: center; white-space: nowrap; }
-.seg button + button { border-left: 1px solid var(--rule); }
-.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-.toggles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
-.tog { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 7px 9px; border: 1px solid var(--rule); border-radius: 4px; cursor: pointer; user-select: none; }
-.tog input { accent-color: var(--accent); margin: 0; }
-.slider { display: flex; align-items: center; gap: 10px; }
-.slider input { flex: 1; accent-color: var(--accent); }
-.slider output { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
-.actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-.btn { font: 500 12.5px var(--font-body); padding: 8px 10px; border-radius: 4px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); cursor: pointer; }
-.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
-.btn:focus-visible, .seg button:focus-visible, .tog:focus-within, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-#status { font-size: 12px; color: var(--muted); min-height: 1em; }
-.hint { font-size: 11.5px; color: var(--muted); padding: 0 16px 12px; }
+.titleblock .meta { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--muted); border-left: 1px solid var(--rule); padding-left: 10px; }
+
+/* Hero experience modes */
+.hero-modes { padding: 10px 14px 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; border-bottom: 1px solid var(--rule); }
+.mode-btn { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 8px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); cursor: pointer; text-align: left; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease; }
+.mode-btn:hover { border-color: var(--blue); }
+.mode-btn:active { transform: translateY(0.5px); }
+.mode-btn svg { flex: none; width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.mode-btn .m-tx { display: grid; gap: 1px; min-width: 0; }
+.mode-btn .m-tx b { font: 600 13px/1.15 var(--font-body); white-space: nowrap; }
+.mode-btn .m-tx span { font: 400 11px/1.2 var(--font-body); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mode-btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.mode-btn.primary:hover { filter: brightness(1.1); border-color: var(--accent); }
+.mode-btn.primary .m-tx span { color: rgba(243, 240, 234, 0.78); }
+
+.controls { padding: 9px 14px 11px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; }
+.row { display: grid; gap: 4px; flex: 0 1 auto; }
+.row.sep { border-left: 1px solid var(--rule); padding-left: 12px; }
+.lbl { font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.seg { display: flex; gap: 2px; padding: 2px; background: var(--chip); border: 1px solid var(--rule); border-radius: 7px; }
+.seg button { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 500 12px var(--font-body); padding: 5px 8px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; text-align: center; white-space: nowrap; transition: background 0.15s ease, color 0.15s ease; }
+.seg button svg { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); font-weight: 600; }
+.toggles { display: flex; gap: 6px; align-items: center; }
+.tog { position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; font: 500 12px var(--font-body); padding: 6px 10px; border: 1px solid var(--rule); border-radius: 7px; background: var(--chip); color: var(--ink); cursor: pointer; user-select: none; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; white-space: nowrap; }
+.tog:hover { border-color: var(--blue); }
+.tog input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+.tog::before { content: ""; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--muted); transition: background 0.15s ease, border-color 0.15s ease; flex: none; }
+.tog.icon-tog::before { display: none; }
+.tog svg { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tog:has(input:checked) { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); font-weight: 600; }
+.tog:has(input:checked)::before { background: var(--blue); border-color: var(--blue); }
+.slider { display: flex; align-items: center; gap: 8px; min-width: 138px; }
+.slider input[type="range"] { -webkit-appearance: none; appearance: none; flex: 1; height: 4px; border-radius: 999px; background: var(--rule); outline: none; cursor: pointer; }
+.slider input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.28); cursor: pointer; transition: transform 0.12s ease; }
+.slider input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+.slider input[type="range"]::-moz-range-thumb { width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid var(--card); box-shadow: 0 1px 3px rgba(0,0,0,0.28); cursor: pointer; }
+.slider output { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 32px; text-align: right; font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.btn { font: 500 12px var(--font-body); padding: 6px 11px; border-radius: 6px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); cursor: pointer; white-space: nowrap; transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease; }
+.btn:hover { border-color: var(--blue); }
+.btn:active { transform: translateY(0.5px); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.subtle { background: transparent; color: var(--muted); }
+.btn.subtle:hover { color: var(--ink); background: var(--chip); }
+.btn:focus-visible, .mode-btn:focus-visible, .seg button:focus-visible, .tog:focus-within, .found:focus-visible, #more-btn:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#status { font-size: 11.5px; color: var(--olive); min-height: 0; }
+#status:empty { display: none; }
+.found-wrap, .more-wrap { position: relative; }
+.found { font-family: var(--font-mono); font-size: 11px; color: var(--olive); background: rgba(102, 101, 25, 0.10); border: 1px solid rgba(102, 101, 25, 0.24); padding: 3px 10px; border-radius: 999px; white-space: nowrap; cursor: pointer; }
+.found:hover, .found[aria-expanded="true"] { background: var(--olive); border-color: var(--olive); color: var(--accent-ink); }
+:root[data-theme="dark"] .found { color: var(--blue); background: rgba(169, 196, 214, 0.12); border-color: rgba(169, 196, 214, 0.28); }
+:root[data-theme="dark"] .found:hover, :root[data-theme="dark"] .found[aria-expanded="true"] { background: var(--blue); border-color: var(--blue); color: var(--ink); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .found { color: var(--blue); background: rgba(169, 196, 214, 0.12); border-color: rgba(169, 196, 214, 0.28); }
+  :root:not([data-theme="light"]) .found:hover, :root:not([data-theme="light"]) .found[aria-expanded="true"] { background: var(--blue); border-color: var(--blue); color: #181516; }
+}
+
+/* Popovers (#more-pop & #found-pop) */
+#more-btn { display: inline-flex; align-items: center; gap: 5px; font: 500 12px var(--font-body); padding: 6px 10px; border-radius: 7px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); cursor: pointer; transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease; }
+#more-btn:hover { border-color: var(--blue); }
+#more-btn[aria-expanded="true"] { border-color: var(--active-bg); background: var(--active-bg); color: var(--active-ink); }
+#more-pop, #found-pop { position: absolute; right: 0; bottom: calc(100% + 10px); width: 280px; padding: 12px 14px; background: var(--card); border: 1px solid var(--rule); border-radius: 10px; box-shadow: 0 12px 34px rgba(24,21,22,0.18); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); display: grid; gap: 11px; z-index: 12; }
+#found-pop { width: 312px; max-height: 360px; overflow: auto; gap: 10px; }
+#found-pop .found-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#found-pop .found-head b { font: 600 13px var(--font-body); white-space: nowrap; }
+#found-pop .found-head .surprise { width: auto; flex: none; margin: 0; padding: 5px 10px; font-size: 12px; }
+#more-pop .slider { min-width: 0; }
+#more-pop .more-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; border-top: 1px solid var(--rule); padding-top: 9px; }
+#more-pop .more-tips { font-size: 11px; line-height: 1.4; color: var(--muted); border-top: 1px solid var(--rule); padding-top: 8px; margin: 0; }
 
 #info {
-  right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  width: 300px; max-height: 60%; overflow: auto; padding: 14px 16px; display: grid; gap: 10px;
+  right: max(16px, env(safe-area-inset-right, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto;
+  width: 300px; max-height: 55%; overflow: auto; padding: 14px 16px; display: grid; gap: 10px;
 }
 #info h2 { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
 #info .dims { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
@@ -132,7 +192,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .act-toast { top: 22%; }
 #reticle { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,0.9); box-shadow: 0 0 0 1.5px rgba(0,0,0,0.45); z-index: 4; pointer-events: none; display: none; }
 body.walking #reticle { display: block; }
-.found { font-family: var(--font-mono); font-size: 11px; color: var(--accent); white-space: nowrap; }
+#walk-found { font-family: var(--font-mono); font-size: 11px; color: var(--accent); white-space: nowrap; }
 .walk-light { display: flex; align-items: center; gap: 8px; }
 .walk-light input { width: 120px; accent-color: var(--accent); }
 .walk-light output { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 58px; font-variant-numeric: tabular-nums; }
@@ -143,14 +203,12 @@ body.walking #reticle { display: block; }
 .tour-label { display: grid; text-align: center; min-width: 140px; }
 .tour-label b { font-family: var(--font-display); font-weight: 600; font-size: 15px; }
 .tour-label span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
-body.walking #panel, body.walking #info { display: none; }
+body.walking #panel, body.timeline #panel, body.building #panel, body.touring #panel, body.walking #info, body.building #info { display: none; }
 @media (max-width: 640px) {
-  #panel { width: auto; right: max(16px, env(safe-area-inset-right, 0px)); max-height: 46%; }
-  #panel.collapsed { right: auto; }
-  #panel.collapsed .titleblock { padding: 8px 8px 8px 12px; }
-  #panel.collapsed h1 { font-size: 15px; }
+  #panel { width: calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); max-height: 44vh; }
+  #panel.collapsed .titleblock { padding: 8px 10px 8px 12px; }
   #info { left: max(16px, env(safe-area-inset-left, 0px)); width: auto; max-height: 38%; }
-  .hint { display: none; }
+  .panel-foot { display: none; }
 }
 /* ---------- phone layout: bottom bar, sheet, hotspots, touch walking ---------- */
 #mtitle, #mbar, #mchips, #msheet, #mintro, #joy, #look, #usebtn { display: none; }
@@ -164,49 +222,44 @@ body.m #mtitle { display: flex; align-items: center; gap: 8px; position: fixed; 
   font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 7px 12px 8px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
 body.m #mtitle .logo, body.m #mtitle .brandmark { width: 22px; }
 body.m #mtitle .wordmark { height: 16px; max-width: 140px; }
-body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle { display: none; }
-body.m #mbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
+body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle, body.m.building #mtitle { display: none; }
+body.m #mbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 body.m.walking #mbar, body.m.touring #mbar { display: none; }
-#mbar button { display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; min-height: 52px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font: 600 11px var(--font-body); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#mbar button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+#mbar button { display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; min-height: 52px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font: 600 10.5px var(--font-body); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#mbar button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 #mbar button[aria-pressed="true"] { color: var(--accent); background: var(--chip); }
 #mbar .starbtn { color: var(--accent); }
 #mbar .starbtn b { font: 600 11px var(--font-mono); }
-body.m #mchips { display: flex; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
-body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips { display: none; }
-#mchips button { padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 13px var(--font-body); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); touch-action: manipulation; }
-#mchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-body.m #msheet { display: block; position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: 46%; overflow: auto; overscroll-behavior: contain;
-  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 14px 14px 0 0; padding: 0 0 16px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 -8px 30px rgba(0,0,0,0.12); transform: translateY(110%); visibility: hidden; transition: transform 0.25s ease, visibility 0s 0.25s; }
-body.m #msheet.open { transform: none; visibility: visible; transition: transform 0.25s ease; }
-body.m.touring #msheet { display: none; }
+body.m #mchips { display: flex; gap: 7px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(74px + env(safe-area-inset-bottom, 0px)); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 2px 0; }
+body.m #mchips::-webkit-scrollbar { display: none; }
+body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips, body.m.building #mchips { display: none; }
+#mchips button { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 12.5px/1 var(--font-body); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.06); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+#mchips button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+#mchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+#mscrim { display: none; }
+body.m #mscrim { display: block; position: fixed; inset: 0; z-index: 8; background: rgba(20,18,16,0.22); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+body.m #mscrim.open { opacity: 1; pointer-events: auto; }
+body.m #msheet { display: block; position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: 70%; overflow: auto; overscroll-behavior: contain;
+  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 18px 18px 0 0; padding: 0 0 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  box-shadow: 0 -10px 32px rgba(0,0,0,0.14); transform: translateY(110%); visibility: hidden; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 0.28s; }
+body.m #msheet.open { transform: none; visibility: visible; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
+body.m.touring #msheet, body.m.touring #mscrim { display: none; }
 body.m.walking:not(.touring) #msheet { bottom: 0; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
 body.m.walking #walk-found { padding: 8px 10px; border: 1px solid var(--rule); border-radius: 6px; background: var(--chip); cursor: pointer; touch-action: manipulation; }
-#pane-more, #pane-found { padding: 0 16px; }
-.mgrip { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; position: sticky; top: 0; background: var(--sheet); z-index: 1; }
-.mgrip h2 { margin: 0; font: 700 16px var(--font-display); letter-spacing: 0.04em; text-transform: uppercase; }
-.mgrip button { width: 36px; height: 36px; border-radius: 8px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 18px; line-height: 1; }
-.msec { display: grid; gap: 12px; padding: 10px 0 14px; border-top: 1px solid var(--rule); }
-.msec:first-of-type { border-top: 0; }
-.msec > h3 { margin: 0; font: 700 11px var(--font-body); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
-body.m .seg button { padding: 12px 0; font-size: 14px; }
-body.m .tog { padding: 12px 10px; font-size: 14px; }
-body.m .btn { padding: 12px 10px; font-size: 14px; }
-body.m .toggles { grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
-body.m .slider input { height: 28px; }
-body.m .actions #btn-walk, body.m .actions #btn-tour { display: none; }
-body.m .actions { grid-template-columns: 1fr 1fr; }
-.mtry { display: grid; gap: 8px; }
-.mtry .surprise { width: 100%; padding: 14px; border-radius: 10px; border: 0; background: var(--accent); color: var(--accent-ink); font: 700 15px var(--font-body); }
-.mtry ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-.mtry li { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border: 1px solid var(--rule); border-radius: 8px; background: var(--chip); }
-.mtry li .ck { width: 22px; height: 22px; border-radius: 50%; border: 1.5px solid var(--rule); display: grid; place-items: center; font-size: 13px; flex: none; color: var(--accent-ink); }
-.mtry li.done .ck { background: var(--accent); border-color: var(--accent); }
-.mtry li .tx { flex: 1; min-width: 0; display: grid; gap: 1px; }
-.mtry li .tx b { font: 600 14px var(--font-body); } .mtry li .tx span { font-size: 12px; color: var(--muted); }
-.mtry li button { padding: 7px 11px; border-radius: 6px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 12.5px var(--font-body); }
+#pane-more { padding: 4px 16px 0; display: grid; gap: 14px; }
+.mgrip { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px 10px; position: sticky; top: 0; background: var(--sheet); z-index: 1; border-bottom: 1px solid var(--rule); }
+.mgrip::before { content: ""; position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 34px; height: 4px; border-radius: 2px; background: var(--rule); }
+.mgrip h2 { margin: 0; font: 600 15px var(--font-body); letter-spacing: -0.01em; color: var(--ink); }
+.mgrip button { width: 32px; height: 32px; border-radius: 999px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 15px; line-height: 1; display: grid; place-items: center; }
+body.m .row.sep { border-left: 0; padding-left: 0; }
+body.m #msheet .row { display: grid; gap: 6px; }
+body.m #msheet .slider { gap: 10px; }
+body.m #msheet .slider input { height: 28px; flex: 1; }
+body.m #msheet .more-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: stretch; }
+body.m #msheet .more-row .tog, body.m #msheet .more-row .btn { justify-content: center; border-radius: 10px; min-height: 42px; padding: 10px 12px; font-size: 13.5px; width: 100%; }
+body.m #msheet .more-row .actions { display: contents; }
+body.m #msheet .more-tips { margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 body.m #info { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 body.m #mintro { display: block; position: fixed; z-index: 7; left: 12px; right: 12px; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px; border-radius: 10px; background: rgba(20,18,16,0.82); color: #fff; font: 500 14px/1.35 var(--font-body); text-align: center; transition: opacity 0.4s; }
 body.m #mintro.gone { opacity: 0; pointer-events: none; }
@@ -228,18 +281,19 @@ body.m.walking #look { display: block; position: fixed; z-index: 8; right: calc(
 body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-index: 8; right: calc(36px + env(safe-area-inset-right, 0px)); bottom: calc(184px + env(safe-area-inset-bottom, 0px)); width: 104px; height: 104px; padding: 8px; border-radius: 50%;
   border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: none; transition: background 0.15s, transform 0.15s; }
 body.m.walking #usebtn.ready { background: var(--accent); transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199,114,106,0.35); }
-body.m.walking #mintro, body.m.touring #mintro { display: none; }
+body.m.walking #mintro, body.m.touring #mintro, body.m.building #mintro { display: none; }
 #tourcap { left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(520px, calc(100% - 32px));
   padding: 10px 14px; text-align: center; font: 500 14px/1.38 var(--font-body); pointer-events: none; }
 body.m #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
-#tlbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; align-items: center; gap: 10px; width: min(680px, calc(100% - 32px)); padding: 10px 12px; }
-#tlbar .tl-track { position: relative; flex: 1; display: flex; align-items: center; }
-#tl-scrub { width: 100%; accent-color: var(--accent); }
-#tl-marks { position: absolute; left: 0; right: 0; top: 50%; height: 0; pointer-events: none; }
-#tl-marks i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--accent); border: 1.5px solid var(--card); }
-#tl-month { min-width: 76px; text-align: right; font: 600 13px var(--font-body); white-space: nowrap; }
-#tl-play, #tl-exit { border: 0; background: transparent; font: 700 15px var(--font-body); color: var(--ink); cursor: pointer; padding: 4px 6px; }
-body.m #tlbar { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+#tlbar, #bdbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; align-items: center; gap: 10px; width: min(680px, calc(100% - 32px)); padding: 10px 12px; }
+#tlbar[hidden], #bdbar[hidden] { display: none !important; }
+#tlbar .tl-track, #bdbar .tl-track { position: relative; flex: 1; display: flex; align-items: center; }
+#tl-scrub, #bd-scrub { width: 100%; accent-color: var(--accent); cursor: pointer; }
+#tl-marks, #bd-marks { position: absolute; left: 0; right: 0; top: 50%; height: 0; pointer-events: none; }
+#tl-marks i, #bd-marks i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--accent); border: 1.5px solid var(--card); }
+#tl-month, #bd-month { min-width: 78px; text-align: right; font: 600 13px var(--font-body); white-space: nowrap; }
+#tl-play, #tl-exit, #bd-play, #bd-exit { border: 0; background: transparent; font: 700 15px var(--font-body); color: var(--ink); cursor: pointer; padding: 4px 6px; }
+body.m #tlbar, body.m #bdbar { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 body.m.touring.walking #joy, body.m.touring.walking #look { bottom: calc(112px + env(safe-area-inset-bottom, 0px)); }
 body.m.touring.walking #usebtn { bottom: calc(262px + env(safe-area-inset-bottom, 0px)); }
 body.m.touring #tourbar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; transform: none; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 8px; }
@@ -257,76 +311,126 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
       <h1><img class="brandmark" src="brandmark.png" alt="" width="30" height="27"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="90"></h1>
       <div class="meta"><span>Andes, NY</span></div>
     </div>
-    <button id="panel-toggle" class="collapse" type="button" aria-expanded="true" aria-controls="panel-body" aria-label="Hide controls">
-      <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
+    <div class="tb-actions">
+      <button id="panel-toggle" class="collapse" type="button" aria-expanded="true" aria-controls="panel-body" aria-label="Hide controls">
+        <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4 10l4-4 4 4" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
   </div>
   <div id="panel-body">
-  <div class="controls">
-    <div class="row">
-      <span class="lbl" id="floors-lbl">Floors</span>
-      <div class="seg" role="group" aria-labelledby="floors-lbl">
-        <button id="fl-ground" type="button" aria-pressed="false">Ground</button>
-        <button id="fl-loft" type="button" aria-pressed="false">Loft</button>
-        <button id="fl-both" type="button" aria-pressed="true">Both</button>
+    <div class="hero-modes">
+      <button id="btn-walk" class="mode-btn" type="button">
+        <svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="12" cy="4.5" r="1.8"/><path d="M11 9l-2.5 4.5 3 2.5v4M11 9l3.5 1.8 1.5 3.4M8.5 13.5L6 18"/></svg>
+        <div class="m-tx"><b>Walk through</b><span>Stroll room to room</span></div>
+      </button>
+      <button id="btn-tour" class="mode-btn" type="button">
+        <svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M14.2 7.8l-2 4.6-4.4 1.8 2-4.6z"/></svg>
+        <div class="m-tx"><b>Guided tour</b><span>9 curated stops</span></div>
+      </button>
+      <button id="btn-timeline" class="mode-btn" type="button">
+        <svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="2.2"/><path d="M11 8.8c-1.4-2.3-1-4.8 0-4.8s1.4 2.5 0 4.8zm2.1 1.5c1.8-2 4.2-2.4 4.5-1.4s-1.7 2.5-4.5 1.4zm-.8 2.5c2.6.7 3.9 2.7 3.1 3.6s-2.5-.5-3.1-3.6zm-2.6 0c-.6 3.1-2.3 4.5-3.1 3.6s.5-2.9 3.1-3.6zm-.8-2.5c-2.8 1.1-4.8-.4-4.5-1.4s2.7-.6 4.5 1.4z"/></svg>
+        <div class="m-tx"><b>A year here</b><span>Life across four seasons</span></div>
+      </button>
+      <button id="btn-build" class="mode-btn" type="button">
+        <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M13.5 5.2l3.3 3.3M5 17l7.5-7.5M11.2 6.8l2-2a1.8 1.8 0 0 1 2.5 0l1.5 1.5a1.8 1.8 0 0 1 0 2.5l-2 2M15.8 6.2l2.2-1.2 1 1-1.2 2.2M3.5 18.5h15"/></svg>
+        <div class="m-tx"><b>Build the house</b><span>Sep → May, slab to move-in</span></div>
+      </button>
+    </div>
+    <div class="controls">
+      <div class="row">
+        <span class="lbl" id="floors-lbl">Floors</span>
+        <div class="seg" role="group" aria-labelledby="floors-lbl">
+          <button id="fl-ground" type="button" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" opacity="0.35"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>
+            1
+          </button>
+          <button id="fl-both" type="button" aria-pressed="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" fill="currentColor"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>
+            2
+          </button>
+        </div>
+      </div>
+      <div class="row sep">
+        <span class="lbl" id="walls-lbl">Shell</span>
+        <div class="seg" role="group" aria-labelledby="walls-lbl">
+          <button id="wl-roof" type="button" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 7.5L8 3l6 4.5M3.5 6.5V13h9V6.5"/></svg>
+            Roof
+          </button>
+          <button id="wl-up" type="button" aria-pressed="false">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V5M3 5h10"/></svg>
+            Walls
+          </button>
+          <button id="wl-cutaway" type="button" aria-pressed="true">
+            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V9L7 5z"/></svg>
+            Cutaway
+          </button>
+        </div>
+      </div>
+      <div class="row sep">
+        <span class="lbl" id="season-lbl">Season</span>
+        <button id="btn-season" class="tog icon-tog" type="button" aria-labelledby="season-lbl" title="Click to cycle season">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 3C8.5 3 4.5 6 4.5 10.5c0 .7.1 1.3.3 1.8L3 14M4.8 12.2c.5.2 1.1.3 1.7.3C11 12.5 13 8.5 13 3zM5 11.5L10.5 6"/></svg>
+          Fall
+        </button>
+      </div>
+      <div class="toggles">
+        <label class="tog icon-tog"><input id="tg-night" type="checkbox"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/></svg> Night</label>
+      </div>
+      <div class="more-wrap">
+        <button id="more-btn" type="button" aria-expanded="false" aria-controls="more-pop">
+          <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M2 4.5h12M2 11.5h12"/><circle cx="5.5" cy="4.5" r="1.5" fill="var(--card)"/><circle cx="10.5" cy="11.5" r="1.5" fill="var(--card)"/></svg>
+          More
+        </button>
+        <div id="more-pop" hidden>
+          <div class="row">
+            <label class="lbl" for="suntime">Sun</label>
+            <div class="slider"><input id="suntime" type="range" min="6" max="19.5" step="0.25" value="14"><output id="suntime-out" for="suntime" style="width:58px">2:00 PM</output></div>
+          </div>
+          <div class="row">
+            <label class="lbl" for="explode">Explode floors</label>
+            <div class="slider"><input id="explode" type="range" min="0" max="1" step="0.01" value="0"><output id="explode-out" for="explode">0%</output></div>
+          </div>
+          <div class="more-row">
+            <label class="tog"><input id="tg-labels" type="checkbox"> Room labels</label>
+            <div class="actions"><button id="btn-reset" class="btn subtle" type="button">Reset view</button></div>
+          </div>
+          <div id="status" role="status"></div>
+          <p class="more-tips">Drag to orbit · right-drag to pan · scroll to zoom · click rooms or glowing objects (doors, cabinets, fridge, fireplace, TV, fan, shower, car).</p>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <span class="lbl" id="walls-lbl">Walls</span>
-      <div class="seg" role="group" aria-labelledby="walls-lbl">
-        <button id="wl-up" type="button" aria-pressed="false">Up</button>
-        <button id="wl-cutaway" type="button" aria-pressed="true">Cutaway</button>
-        <button id="wl-down" type="button" aria-pressed="false">Down</button>
-      </div>
-    </div>
-    <div class="toggles">
-      <label class="tog"><input id="tg-roof" type="checkbox"> Roof</label>
-      <label class="tog"><input id="tg-labels" type="checkbox"> Labels</label>
-      <label class="tog"><input id="tg-night" type="checkbox"> Night</label>
-    </div>
-    <div class="row">
-      <label class="lbl" for="explode">Explode floors</label>
-      <div class="slider"><input id="explode" type="range" min="0" max="1" step="0.01" value="0"><output id="explode-out" for="explode">0%</output></div>
-    </div>
-    <div class="row">
-      <label class="lbl" for="suntime">Sun</label>
-      <div class="slider"><input id="suntime" type="range" min="6" max="19.5" step="0.25" value="14"><output id="suntime-out" for="suntime" style="width:58px">2:00 PM</output></div>
-    </div>
-    <div class="row">
-      <span class="lbl" id="season-lbl">Season</span>
-      <div class="seg" role="group" aria-labelledby="season-lbl">
-        <button id="se-fall" type="button" aria-pressed="true">Fall</button>
-        <button id="se-winter" type="button" aria-pressed="false">Winter</button>
-        <button id="se-spring" type="button" aria-pressed="false">Spring</button>
-        <button id="se-summer" type="button" aria-pressed="false">Summer</button>
-      </div>
-    </div>
-    <div class="actions">
-      <button id="btn-walk" class="btn" type="button">Walk through</button>
-      <button id="btn-tour" class="btn" type="button">Guided tour</button>
-      <button id="btn-timeline" class="btn" type="button">A year at Local Time House</button>
-      <button id="btn-reset" class="btn" type="button">Reset view</button>
-    </div>
-    <div id="status" role="status"></div>
-  </div>
-  <p class="hint">Drag to orbit · space-drag, right-drag or two-finger to pan · scroll to zoom · click a room for details. Things you can click light up your cursor: doors, cabinets and drawers, the dishwasher, fridge, fireplace, TV, fan, shower, the switch by the front door and the car. <span id="found-badge" class="found">★ 0 / 9 found</span></p>
   </div>
 </aside>
 <script>
 (function () {
   var panel = document.getElementById('panel'), btn = document.getElementById('panel-toggle');
+  var moreBtn = document.getElementById('more-btn'), morePop = document.getElementById('more-pop');
   var saved = null;
   try { saved = localStorage.getItem('lth-panel'); } catch (e) {}
+  function setMore(open) {
+    if (!morePop || !moreBtn) return;
+    morePop.hidden = !open;
+    moreBtn.setAttribute('aria-expanded', String(open));
+  }
   function set(open) {
     panel.classList.toggle('collapsed', !open);
     btn.setAttribute('aria-expanded', String(open));
     btn.setAttribute('aria-label', open ? 'Hide controls' : 'Show controls');
+    if (!open) setMore(false);
   }
   set(saved ? saved === 'open' : !window.matchMedia('(max-width: 640px)').matches);
   panel.querySelector('.titleblock').addEventListener('click', function () {
     var open = panel.classList.contains('collapsed');
     set(open);
     try { localStorage.setItem('lth-panel', open ? 'open' : 'closed'); } catch (e) {}
+  });
+  if (moreBtn && morePop) {
+    moreBtn.addEventListener('click', function (e) { e.stopPropagation(); setMore(morePop.hidden); });
+    morePop.addEventListener('click', function (e) { e.stopPropagation(); });
+  }
+  document.addEventListener('click', function (e) {
+    if (morePop && !morePop.hidden && !e.target.closest('.more-wrap')) setMore(false);
   });
 })();
 </script>
@@ -341,27 +445,23 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <div id="mtitle"><img class="brandmark" src="brandmark.png" alt="" width="22" height="20"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="90"></div>
 <div id="mintro"><b>Tap anything.</b>Drag to look around · pinch to zoom · try the fridge</div>
 <div id="mchips">
-  <button id="chip-night" type="button" aria-pressed="false">☾ Night</button>
-  <button id="chip-floors" type="button">Floors: Both</button>
+  <button id="chip-floors" type="button" aria-label="Toggle floors"></button>
+  <button id="chip-shell" type="button" aria-label="Cycle shell view"></button>
+  <button id="chip-season" type="button" aria-label="Cycle season"></button>
+  <button id="chip-night" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/></svg>Night</button>
 </div>
 <nav id="mbar" aria-label="Modes">
   <button id="mb-explore" type="button" aria-pressed="true"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M14 8l-2 4.5L7.5 14l2-4.5z"/></svg>Explore</button>
   <button id="mb-walk" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="12" cy="4.5" r="1.8"/><path d="M11 9l-2.5 4.5 3 2.5v4M11 9l3.5 1.8 1.5 3.4M8.5 13.5L6 18"/></svg>Walk</button>
   <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M9.3 7.5l5.2 3.5-5.2 3.5z"/></svg>Tour</button>
-  <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><rect x="3" y="5" width="16" height="14" rx="2"/><path d="M3 9.5h16M7.5 3v4M14.5 3v4"/></svg>Year</button>
+  <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="2.2"/><path d="M11 8.8c-1.4-2.3-1-4.8 0-4.8s1.4 2.5 0 4.8zm2.1 1.5c1.8-2 4.2-2.4 4.5-1.4s-1.7 2.5-4.5 1.4zm-.8 2.5c2.6.7 3.9 2.7 3.1 3.6s-2.5-.5-3.1-3.6zm-2.6 0c-.6 3.1-2.3 4.5-3.1 3.6s.5-2.9 3.1-3.6zm-.8-2.5c-2.8 1.1-4.8-.4-4.5-1.4s2.7-.6 4.5 1.4z"/></svg>Year</button>
+  <button id="mb-build" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M13.5 5.2l3.3 3.3M5 17l7.5-7.5M11.2 6.8l2-2a1.8 1.8 0 0 1 2.5 0l1.5 1.5a1.8 1.8 0 0 1 0 2.5l-2 2M15.8 6.2l2.2-1.2 1 1-1.2 2.2M3.5 18.5h15"/></svg>Build</button>
   <button id="mb-more" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M3 7h16M3 15h16"/><circle cx="8" cy="7" r="2.3" fill="var(--card)"/><circle cx="14" cy="15" r="2.3" fill="var(--card)"/></svg>More</button>
 </nav>
+<div id="mscrim" aria-hidden="true"></div>
 <section id="msheet" aria-live="polite">
-  <div class="mgrip"><h2 id="msheet-title">Settings</h2><button id="msheet-close" type="button" aria-label="Close">✕</button></div>
-  <div id="pane-more">
-    <div class="msec" id="sec-view"><h3>View</h3></div>
-    <div class="msec" id="sec-time"><h3>Time of day</h3></div>
-    <div class="msec" id="sec-extras"><h3>Extras</h3></div>
-  </div>
-  <div id="pane-found" class="mtry" hidden>
-    <button id="btn-surprise" class="surprise" type="button">✨ Surprise me</button>
-    <ul id="try-list"></ul>
-  </div>
+  <div class="mgrip"><h2 id="msheet-title">Display &amp; View</h2><button id="msheet-close" type="button" aria-label="Close">✕</button></div>
+  <div id="pane-more"></div>
 </section>
 <div id="joy" aria-label="Walk stick"><i></i></div>
 <div id="look" aria-label="Look stick"><i></i></div>
@@ -379,7 +479,6 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
     <output id="walk-sun-out" for="walk-sun">2:00 PM</output>
     <button id="walk-night" class="btn" type="button" aria-pressed="false">Night</button>
   </div>
-  <span id="walk-found" class="found">★ 0 / 9 found</span>
   <button id="walk-exit" class="btn" type="button">Exit walk</button>
 </div>
 
@@ -389,6 +488,12 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   <div class="tl-track"><input id="tl-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Time of year"><div id="tl-marks"></div></div>
   <span id="tl-month">January</span>
   <button id="tl-exit" type="button" aria-label="Exit timeline">✕</button>
+</div>
+<div id="bdbar" class="card" hidden>
+  <button id="bd-play" type="button" aria-label="Play or pause construction">❚❚</button>
+  <div class="tl-track"><input id="bd-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Construction progress"><div id="bd-marks"></div></div>
+  <span id="bd-month">September</span>
+  <button id="bd-exit" type="button" aria-label="Exit build">✕</button>
 </div>
 <div id="tourbar" class="card hud" hidden>
   <button id="tour-prev" class="btn" type="button" aria-label="Previous stop">◀</button>
@@ -726,6 +831,7 @@ function addGeo(parent, geo, matName, opts = {}) {
   mesh.castShadow = opts.cast ?? !m.transparent;
   mesh.receiveShadow = true;
   if (opts.room) mesh.userData.room = opts.room;
+  if (opts.phase) mesh.userData.phase = opts.phase;
   if (opts.name) mesh.name = opts.name;
   if (NOCUT) mesh.userData.nocut = true;
   if (CUTAXIS) mesh.userData.cutAxis = CUTAXIS;
@@ -769,7 +875,9 @@ function slopedSlab(parent, [x0, x1], [zA, yA], [zB, yB], t, matName, opts) {
 /* Wall builder.
    w = { axis, u:[u0,u1], t:[w0,w1], y:[y0,y1], holes:[[u0,u1,y0,y1],...], layers:[{t:[a,b], m, y0?}], top?:fn(u) }
    Splits the wall around rectangular holes; pieces that reach the wall top follow top(u) when given. */
+const WALL_DEFS = [];
 function buildWall(parent, w) {
+  WALL_DEFS.push({ parentName: parent.name, axis: w.axis, u: [...w.u], t: [...w.t], y: [...w.y], holes: (w.holes || []).map(h => [...h]), top: w.top, isExt: w.layers.length > 1 });
   const holes = (w.holes || []).filter(h => h[1] > w.u[0] && h[0] < w.u[1] && h[3] > w.y[0] && h[2] < w.y[1]);
   const cuts = new Set([w.u[0], w.u[1]]);
   holes.forEach(h => { cuts.add(Math.max(w.u[0], h[0])); cuts.add(Math.min(w.u[1], h[1])); });
@@ -1257,17 +1365,17 @@ function buildGuestBunkBed(g) {
   // Lower Queen mattress: 60" wide (5.0 ft) × 80" long (6.67 ft)
   // Upper Twin mattress: 38" wide (3.17 ft) × 75" long (6.25 ft)
   const xWall = 32.86, zWall = 0.52;
-  const e = 0.12;
+  const e = 0.12, pw = 0.26, ph = 6.30;
 
-  // Lower Queen mattress bounds:
-  const qx1 = xWall - 0.05, qx0 = qx1 - 5.0; // [27.81, 32.81] - leaves window W05 (ends at 27.62) completely clear!
-  const qz0 = zWall + 0.18, qz1 = qz0 + 6.67; // [0.70, 7.37]
+  // Lower Queen mattress bounds (kept clear of north headboard posts and W05):
+  const qx1 = xWall - 0.10, qx0 = qx1 - 5.0;       // [27.76, 32.76] - W05 ends at 27.62
+  const qz0 = zWall + pw + 0.04, qz1 = qz0 + 6.67; // [0.82, 7.49]
 
   // Upper Twin mattress bounds (aligned against east wall):
-  const tx1 = xWall - 0.05, tx0 = tx1 - 3.17; // [29.64, 32.81]
-  const tz0 = zWall + 0.18, tz1 = tz0 + 6.25; // [0.70, 6.95]
+  const tx1 = xWall - 0.10, tx0 = tx1 - 3.17;      // [29.59, 32.76]
+  const tz0 = qz0, tz1 = tz0 + 6.25;               // [0.82, 7.07]
 
-  // --- 1. LOWER QUEEN BED (y = 0 to 1.70) ---
+  // --- 1. LOWER QUEEN BED (y = 0 to 1.76) ---
   // Platform base frame & side aprons in warm natural oak
   B([qx0 - e, xWall], [0, 0.95], [zWall, qz1 + e], 'oak');
   B([qx0 - e + 0.08, xWall - 0.04], [0, 0.25], [zWall + 0.08, qz1 + e - 0.08], 'millwork');
@@ -1280,27 +1388,31 @@ function buildGuestBunkBed(g) {
   B([qx0 + 0.25, qx0 + 0.25 + qpw], [1.68, 1.68 + qph], [qz0 + 0.15, qz0 + 0.15 + qpd], 'porcelain');
   B([qx1 - 0.25 - qpw, qx1 - 0.25], [1.68, 1.68 + qph], [qz0 + 0.15, qz0 + 0.15 + qpd], 'porcelain');
 
-  // --- 2. BUNK BED STRUCTURAL TIMBER POSTS (3.5" × 3.5" oak) ---
-  const pw = 0.28, ph = 6.30;
-  // North-East post (in northeast corner)
+  // --- 2. BUNK BED STRUCTURAL TIMBER POSTS (outer perimeter, clear of mattress) ---
+  const fz0 = qz1 + e, fz1 = fz0 + pw; // foot post z-span [7.61, 7.87] outside queen mattress
+  // North-East corner post (behind mattress against corner)
   B([xWall - pw, xWall], [0, ph], [zWall, zWall + pw], 'oak');
-  // North-West post (at headboard room-side of upper twin)
-  B([tx0 - pw, tx0], [0, ph], [zWall, zWall + pw], 'oak');
-  // South-East post (at foot of upper twin along east wall)
-  B([xWall - pw, xWall], [0, ph], [tz1, tz1 + pw], 'oak');
-  // South-West post (at foot of upper twin, room-side)
-  B([tx0 - pw, tx0], [0, ph], [tz1, tz1 + pw], 'oak');
-  // Lower queen outer corner post (at foot of queen bed, y: 0 to 1.15)
-  B([qx0 - e, qx0 - e + pw], [0, 1.15], [qz1 + e - pw, qz1 + e], 'oak');
+  // North-West lower corner post (headboard outer corner)
+  B([qx0 - e, qx0 - e + pw], [0, 3.80], [zWall, zWall + pw], 'oak');
+  // South-East full-height corner post (at foot of queen bed along east wall)
+  B([xWall - pw, xWall], [0, ph], [fz0, fz1], 'oak');
+  // South-West corner post (at foot of queen bed, supporting upper bunk crossbeam)
+  B([qx0 - e, qx0 - e + pw], [0, 4.45], [fz0, fz1], 'oak');
+  // Upper-bunk foot crossbeam spanning from SW queen post to SE wall post
+  B([qx0 - e, xWall], [4.25, 4.45], [fz0, fz1], 'oak');
+  // Upper-bunk North-West post (starts at headboard ledger, clear of lower pillows)
+  B([tx0 - pw, tx0], [3.65, ph], [zWall, zWall + pw], 'oak');
+  // Upper-bunk South-West post (starts on the foot crossbeam, clear of lower mattress)
+  B([tx0 - pw, tx0], [4.25, ph], [fz0, fz1], 'oak');
 
   // Headboard millwork panel on north wall
   B([qx0 - e, xWall], [0.95, 3.80], [zWall, zWall + 0.15], 'millwork');
   B([tx0 - pw, xWall], [4.40, 5.95], [zWall, zWall + 0.15], 'oak');
 
-  // --- 3. UPPER TWIN BUNK (y = 4.35 to 6.30) ---
-  // Heavy timber perimeter side rails & support deck
-  B([tx0 - pw, xWall], [4.25, 4.45], [zWall, tz1 + pw], 'oak');
-  B([tx0 - pw, tx0], [4.25, 4.70], [zWall, tz1 + pw], 'oak');
+  // --- 3. UPPER TWIN BUNK (y = 4.25 to 6.30) ---
+  // Heavy timber perimeter side rails & support deck (spanning cleanly to foot crossbeam)
+  B([tx0 - pw, xWall], [4.25, 4.45], [zWall, fz1], 'oak');
+  B([tx0 - pw, tx0], [4.25, 4.70], [zWall, fz1], 'oak');
   // Upper twin mattress
   B([tx0, tx1], [4.45, 5.15], [tz0, tz1], 'porcelain');
   // Upper twin duvet/throw
@@ -1309,26 +1421,24 @@ function buildGuestBunkBed(g) {
   B([tx0 + 0.50, tx1 - 0.50], [5.15, 5.45], [tz0 + 0.15, tz0 + 0.15 + qpd], 'porcelain');
 
   // Safety guardrails on room-side (x = tx0 - pw)
-  B([tx0 - pw, tx0 - pw + 0.09], [5.85, 6.00], [zWall + pw, tz1], 'oak'); // top rail
-  B([tx0 - pw, tx0 - pw + 0.09], [5.10, 5.25], [zWall + pw, tz1], 'oak'); // mid rail
-  for (let sz = zWall + pw + 1.2; sz < tz1; sz += 1.3) {
+  B([tx0 - pw, tx0 - pw + 0.09], [5.85, 6.00], [zWall + pw, fz0], 'oak'); // top rail
+  B([tx0 - pw, tx0 - pw + 0.09], [5.10, 5.25], [zWall + pw, fz0], 'oak'); // mid rail
+  for (let sz = zWall + pw + 1.2; sz < fz0; sz += 1.3) {
     B([tx0 - pw, tx0 - pw + 0.08], [4.45, 6.00], [sz, sz + 0.12], 'oak'); // vertical balusters
   }
 
-  // Safety guardrail on foot end (z = tz1 + pw, left of ladder)
-  B([tx0 - pw, xWall - 1.45], [5.85, 6.00], [tz1 + pw - 0.09, tz1 + pw], 'oak');
-  B([tx0 - pw, xWall - 1.45], [5.10, 5.25], [tz1 + pw - 0.09, tz1 + pw], 'oak');
+  // Safety guardrail on foot end (z = fz1, left of ladder)
+  B([tx0 - pw, xWall - 1.45], [5.85, 6.00], [fz1 - 0.09, fz1], 'oak');
+  B([tx0 - pw, xWall - 1.45], [5.10, 5.25], [fz1 - 0.09, fz1], 'oak');
 
-  // --- 4. BUILT-IN VERTICAL WOOD LADDER AT FOOT OF UPPER BUNK ---
-  // Integrated into foot of twin bunk (z = tz1 + pw), between x = xWall - 1.40 and xWall - 0.32
+  // --- 4. BUILT-IN VERTICAL WOOD LADDER AT FOOT OF BUNK (standing on the floor) ---
   const lx0 = xWall - 1.40, lx1 = xWall - 0.32;
-  // Two vertical timber ladder stringers
-  B([lx0, lx0 + 0.12], [0.95, 6.05], [tz1 + pw, tz1 + pw + 0.12], 'oak');
-  B([lx1 - 0.12, lx1], [0.95, 6.05], [tz1 + pw, tz1 + pw + 0.12], 'oak');
-  // 5 horizontal solid oak ladder rungs
-  for (let r = 0; r < 5; r++) {
-    const ry = 1.65 + r * 0.85;
-    B([lx0 + 0.10, lx1 - 0.10], [ry, ry + 0.10], [tz1 + pw + 0.01, tz1 + pw + 0.11], 'oak');
+  B([lx0, lx0 + 0.12], [0, 6.05], [fz1, fz1 + 0.12], 'oak');
+  B([lx1 - 0.12, lx1], [0, 6.05], [fz1, fz1 + 0.12], 'oak');
+  // 6 horizontal solid oak ladder rungs from floor to upper bunk
+  for (let r = 0; r < 6; r++) {
+    const ry = 0.85 + r * 0.85;
+    B([lx0 + 0.10, lx1 - 0.10], [ry, ry + 0.10], [fz1 + 0.01, fz1 + 0.11], 'oak');
   }
 }
 // Office layout: queen bed (60" × 80") with its head on the east against a headboard bookcase,
@@ -1414,7 +1524,7 @@ class Bag {
     for (const [mat, list] of this.m) {
       const geo = list.length === 1 ? list[0] : mergeGeometries(list, false);
       const mesh = new THREE.Mesh(geo, mat); mesh.receiveShadow = true; mesh.castShadow = false;
-      mesh.userData.room = 'kitchen'; if (keep) mesh.userData.keep = true; if (cutAxis) mesh.userData.cutAxis = cutAxis;
+      mesh.userData.room = 'kitchen'; mesh.userData.phase = 'furniture'; if (keep) mesh.userData.keep = true; if (cutAxis) mesh.userData.cutAxis = cutAxis;
       parent.add(mesh);
     }
     this.m.clear();
@@ -2001,14 +2111,14 @@ function buildKitchen(g) {
 
   // ---- Dining table 3'-0" × 6'-0" for six (owner: smaller than the 7'-6" A401.1 table), 3 chairs a side,
   //      centered in the 16'-0" × 16'-0" room under the pendant
-  const [TX, TZ] = DINING_CENTER, tz = d => TZ + d, tx = d => TX + d;
+  const [TX, TZ] = DINING_CENTER, tz = d => TZ + d, tx = d => TX + d, RF = { ...R, phase: 'furniture' };
   NOCUT = true;                                                                   // furniture: never cut by the wall cutaway
-  box(g, [tx(-1.5), tx(1.5)], [2.35, 2.5], [tz(-3.0), tz(3.0)], 'oak', R);
-  for (const d of [-2.6, 2.6]) box(g, [tx(-1.24), tx(1.24)], [0, 2.35], [tz(d) - 0.1, tz(d) + 0.1], 'oak', R);
+  box(g, [tx(-1.5), tx(1.5)], [2.35, 2.5], [tz(-3.0), tz(3.0)], 'oak', RF);
+  for (const d of [-2.6, 2.6]) box(g, [tx(-1.24), tx(1.24)], [0, 2.35], [tz(d) - 0.1, tz(d) + 0.1], 'oak', RF);
   for (const z of [-1.95, 0, 1.95].map(tz)) for (const [x0, x1] of [[tx(-2.21), tx(-1.5)], [tx(1.5), tx(2.22)]]) {
-    box(g, [x0, x1], [1.45, 1.55], [z - 0.62, z + 0.62], 'oak', R);
+    box(g, [x0, x1], [1.45, 1.55], [z - 0.62, z + 0.62], 'oak', RF);
     const bx = x0 < TX ? [x0, x0 + 0.1] : [x1 - 0.1, x1];
-    box(g, bx, [0, 2.8], [z - 0.62, z + 0.62], 'oak', R);
+    box(g, bx, [0, 2.8], [z - 0.62, z + 0.62], 'oak', RF);
   }
   NOCUT = false;
 }
@@ -2678,7 +2788,13 @@ function fixtures() {
     (F.D5 || []).forEach(f => sconce(f, true));
   }
 }
-fixtures();
+{
+  const n0 = { ground: G.ground.children.length, loft: G.loft.children.length, mainRoof: G.mainRoof.children.length };
+  fixtures();
+  for (const [k, i0] of Object.entries(n0)) {
+    for (let i = i0; i < G[k].children.length; i++) G[k].children[i].traverse(o => { if (o.isMesh) o.userData.phase = 'fixtures'; });
+  }
+}
 
 /* A 5'-6" figure for scale (from the owner's photo): red tee, wide light-wash jeans, white sneakers, round
    glasses, black tote on his right shoulder. Standing in the laundry in front of the MECH door (203), left of
@@ -2688,7 +2804,7 @@ fixtures();
   const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 });
   const SKIN = mat(0xE6B497), TEE = mat(0xD3302E), DENIM = mat(0x7593B8), SHOE = mat(0xEEEAE3), HAIR = mat(0x7B5230),
         BAG = mat(0x1C1C1E), RIM = new THREE.MeshStandardMaterial({ color: 0x2A1D17, roughness: 0.4 }), PRINT = mat(0xF2E6E4);
-  const add = (geo, m, x, y, z, s) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); if (s) o.scale.set(...s); o.castShadow = true; o.receiveShadow = true; o.userData.nocut = true; P.add(o); return o; };
+  const add = (geo, m, x, y, z, s) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); if (s) o.scale.set(...s); o.castShadow = true; o.receiveShadow = true; o.userData.nocut = true; o.userData.phase = 'furniture'; P.add(o); return o; };
   // sneakers
   for (const sx of [-0.3, 0.3]) add(new THREE.CapsuleGeometry(0.15, 0.5, 4, 12).rotateX(Math.PI / 2), SHOE, sx, 0.15, 0.12, [1.1, 0.95, 1]);
   // wide straight jeans, pooling slightly at the shoes
@@ -2946,16 +3062,17 @@ function updateWalls() {
       const tx = el.wing ? wx : bx, tz = el.wing ? wz : bz;
       cut = el.axis === 'x' ? (cx - el.c) * (tx - el.c) < 0 : (cz - el.c) * (tz - el.c) < 0;
     }
-    if (cut === el.cut) continue;
-    el.cut = cut; markShadows();
-    if (nightOn || (typeof TL !== 'undefined' && TL.on && TL.duskCur > 0.02)) {
+    const ph = !!el.m.userData.phaseHidden;
+    if (cut === el.cut && ph === !!el.ph) continue;
+    el.cut = cut; el.ph = ph; markShadows();
+    if (nightOn || (typeof TL !== 'undefined' && TL.on && TL.duskCur > 0.02) || (typeof BD !== 'undefined' && BD.on && BD.duskCur > 0.02)) {
       for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
     }
-    if (el.hide) el.m.visible = !cut;
-    else { el.m.material = cut ? clipVariant(el) : el.base; el.cap.visible = cut; }
+    if (el.hide) el.m.visible = !cut && !ph;
+    else { el.m.material = cut ? clipVariant(el) : el.base; el.m.visible = !ph; el.cap.visible = cut && !ph; }
   }
   for (const v of CUT.variants) {                                                 // keep night glow etc. in step
-    const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.opacity = b.opacity;
+    const b = v.userData.base; v.color.copy(b.color); v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.opacity = b.opacity;
   }
 }
 controls.addEventListener('change', () => { if (state.walls === 'cutaway') updateWalls(); });
@@ -3126,7 +3243,7 @@ function useAct(a) {
 // orbit: hover label + pointer cursor
 let hoverQ = null;
 renderer.domElement.addEventListener('pointermove', e => {
-  if (WALK.on || TOUR.on || (typeof TL !== 'undefined' && TL.on) || e.buttons) { document.getElementById('act-tip').hidden = true; return; }
+  if (WALK.on || TOUR.on || (typeof TL !== 'undefined' && TL.on) || (typeof BD !== 'undefined' && BD.on) || e.buttons) { document.getElementById('act-tip').hidden = true; return; }
   hoverQ = [e.clientX, e.clientY];
 });
 function hoverCheck() {
@@ -3202,8 +3319,9 @@ function interactStep(dt) {
     }
     f.pts.geometry.attributes.position.needsUpdate = true;
   }
-  if (WALK.on) walkAim(); else if (!TL.on) { document.getElementById('act-hint').hidden = true; hoverCheck(); }
+  if (WALK.on) walkAim(); else if (!TL.on && !(typeof BD !== 'undefined' && BD.on)) { document.getElementById('act-hint').hidden = true; hoverCheck(); }
   if (TL.on) tlTick(dt);
+  if (typeof BD !== 'undefined' && BD.on) bdTick(dt);
 }
 
 /* =====================================================================
@@ -3226,14 +3344,21 @@ function applyState() {
   document.getElementById('labels').style.display = state.labels ? '' : 'none';
   labels.forEach(l => { l.visible = state.labels && (l.userData.floor === 'loft' ? showL : showG); });
   if (selected) { const r = roomById[selected]; if ((r.floor === 'loft' && !showL) || (r.floor === 'ground' && !showG)) select(null); else hiGroup.position.y = (r.floor === 'loft' ? G.loft : G.ground).position.y; }
-  ['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(state.floors === k)));
-  ['up', 'cutaway', 'down'].forEach(k => document.getElementById('wl-' + k).setAttribute('aria-pressed', String(state.walls === k)));
-  document.getElementById('tg-roof').checked = state.roof;
+  ['ground', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(state.floors === k)));
+  document.getElementById('wl-roof').setAttribute('aria-pressed', String(state.walls === 'up' && state.roof));
+  document.getElementById('wl-up').setAttribute('aria-pressed', String(state.walls === 'up' && !state.roof));
+  document.getElementById('wl-cutaway').setAttribute('aria-pressed', String(state.walls === 'cutaway'));
   document.getElementById('tg-labels').checked = state.labels;
   document.getElementById('tg-night').checked = state.night;
   if (state.night !== nightOn) applyNight(state.night);
   if (siteReady && state.season !== seasonOn) { seasonOn = state.season; applySeason(state.season); }
-  ['fall', 'winter', 'spring', 'summer'].forEach(k => document.getElementById('se-' + k).setAttribute('aria-pressed', String(state.season === k)));
+  const SEASON_UI = {
+    fall:   '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 3C8.5 3 4.5 6 4.5 10.5c0 .7.1 1.3.3 1.8L3 14M4.8 12.2c.5.2 1.1.3 1.7.3C11 12.5 13 8.5 13 3zM5 11.5L10.5 6"/></svg> Fall',
+    winter: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2.8 5l10.4 6M13.2 5L2.8 11"/></svg> Winter',
+    spring: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V7.5M8 10.5C8 7.5 10.5 5 13 5c0 3-2 5.5-5 5.5zM8 8.5C8 6 6 4 3.5 4c0 2.5 1.8 4.5 4.5 4.5z"/></svg> Spring',
+    summer: '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg> Summer',
+  };
+  document.getElementById('btn-season').innerHTML = SEASON_UI[state.season] || SEASON_UI.fall;
 
   document.getElementById('explode').value = String(e);
   document.getElementById('explode-out').textContent = Math.round(e * 100) + '%';
@@ -3242,17 +3367,32 @@ function applyState() {
   for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunTimeLabel(state.sun); }
   for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.disabled = state.night; }
   const wn = document.getElementById('walk-night'); if (wn) wn.setAttribute('aria-pressed', String(state.night));
-  const cn = document.getElementById('chip-night'); if (cn) { cn.setAttribute('aria-pressed', String(state.night)); document.getElementById('chip-floors').textContent = 'Floors: ' + { both: 'Both', ground: 'Ground', loft: 'Loft' }[state.floors]; }
+  const cn = document.getElementById('chip-night');
+  if (cn) {
+    cn.setAttribute('aria-pressed', String(state.night));
+    const cf = document.getElementById('chip-floors');
+    if (cf) cf.innerHTML = state.floors === 'ground'
+      ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" opacity="0.35"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>Floor 1'
+      : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" fill="currentColor"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>2 Floors';
+    const csh = document.getElementById('chip-shell');
+    if (csh) csh.innerHTML = state.roof
+      ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 7.5L8 3l6 4.5M3.5 6.5V13h9V6.5"/></svg>Roof'
+      : state.walls === 'up'
+        ? '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V5M3 5h10"/></svg>Walls'
+        : '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V9L7 5z"/></svg>Cutaway';
+    const cse = document.getElementById('chip-season');
+    if (cse) cse.innerHTML = SEASON_UI[state.season] || SEASON_UI.fall;
+  }
   updateWalls();                                                                  // last, after night mode has set the glass
   const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}`;
   if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }
 }
-['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).addEventListener('click', () => { state.floors = k; applyState(); }));
-document.getElementById('tg-roof').addEventListener('change', e => { state.roof = e.target.checked; if (state.roof) state.walls = 'up'; applyState(); });
-['up', 'cutaway', 'down'].forEach(k => document.getElementById('wl-' + k).addEventListener('click', () => { state.walls = k; if (k !== 'up') state.roof = false; applyState(); }));
+['ground', 'both'].forEach(k => document.getElementById('fl-' + k).addEventListener('click', () => { state.floors = k; applyState(); }));
+document.getElementById('wl-roof').addEventListener('click', () => { state.walls = 'up'; state.roof = true; applyState(); });
+['up', 'cutaway'].forEach(k => document.getElementById('wl-' + k).addEventListener('click', () => { state.walls = k; state.roof = false; applyState(); }));
 document.getElementById('tg-labels').addEventListener('change', e => { state.labels = e.target.checked; applyState(); });
 document.getElementById('tg-night').addEventListener('change', e => { state.night = e.target.checked; applyState(); });
-['fall', 'winter', 'spring', 'summer'].forEach(k => document.getElementById('se-' + k).addEventListener('click', () => { state.season = k; applyState(); }));
+document.getElementById('btn-season').addEventListener('click', () => { const order = ['fall', 'winter', 'spring', 'summer']; state.season = order[(order.indexOf(state.season) + 1) % order.length]; applyState(); });
 document.getElementById('explode').addEventListener('input', e => { state.explode = +e.target.value; applyState(); });
 for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { state.sun = +e.target.value; applyState(); });
 document.getElementById('walk-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
@@ -3419,12 +3559,12 @@ const PLANTS = (() => {
     list.forEach((p, i) => { place(o, p); o.updateMatrix(); m.setMatrixAt(i, o.matrix); });
     m.castShadow = true; m.receiveShadow = true; LAND.add(m); return m;
   };
-  inst(new THREE.ConeGeometry(0.55, 2.2, 6).translate(0, 1.1, 0), grassMat, LITE ? grass.filter((_, i) => i % 2 === 0) : grass, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, (rnd() - 0.5) * 0.2); o.scale.set(k, k * (0.8 + rnd() * 0.5), k); });
-  inst(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), fernMat, ferns, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, 0); o.scale.set(1.25 * k, 0.75 * k, 1.25 * k); });
-  inst(new THREE.IcosahedronGeometry(1, 1).translate(0, 0.75, 0), shrubMat, shrubs, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, 0); o.scale.set(k, k * 0.85, k); });
-  inst(new THREE.BoxGeometry(2.6, 0.16, 1.25).translate(0, 0.05, 0), stoneMat, stones, (o, [x, z, a]) => { o.position.set(x, y0, z); o.rotation.set(0, a, 0); o.scale.set(0.92 + rnd() * 0.16, 1, 0.9 + rnd() * 0.2); });   // ~2'-7" × 1'-3" pavers
-  inst(new THREE.DodecahedronGeometry(1, 0), stoneMat, boulders, (o, [x, z, k]) => { o.position.set(x, y0 + 0.25 * k, z); o.rotation.set(rnd(), rnd() * 3, rnd() * 0.3); o.scale.set(1.5 * k, 0.8 * k, 1.2 * k); });
-  return { grassMat, fernMat, shrubMat };
+  const mGrass = inst(new THREE.ConeGeometry(0.55, 2.2, 6).translate(0, 1.1, 0), grassMat, LITE ? grass.filter((_, i) => i % 2 === 0) : grass, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, (rnd() - 0.5) * 0.2); o.scale.set(k, k * (0.8 + rnd() * 0.5), k); });
+  const mFerns = inst(new THREE.SphereGeometry(1, 8, 4, 0, Math.PI * 2, 0, Math.PI / 2), fernMat, ferns, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, 0); o.scale.set(1.25 * k, 0.75 * k, 1.25 * k); });
+  const mShrubs = inst(new THREE.IcosahedronGeometry(1, 1).translate(0, 0.75, 0), shrubMat, shrubs, (o, [x, z, k]) => { o.position.set(x, y0, z); o.rotation.set(0, rnd() * 3, 0); o.scale.set(k, k * 0.85, k); });
+  const mStones = inst(new THREE.BoxGeometry(2.6, 0.16, 1.25).translate(0, 0.05, 0), stoneMat, stones, (o, [x, z, a]) => { o.position.set(x, y0, z); o.rotation.set(0, a, 0); o.scale.set(0.92 + rnd() * 0.16, 1, 0.9 + rnd() * 0.2); });   // ~2'-7" × 1'-3" pavers
+  const mBoulders = inst(new THREE.DodecahedronGeometry(1, 0), stoneMat, boulders, (o, [x, z, k]) => { o.position.set(x, y0 + 0.25 * k, z); o.rotation.set(rnd(), rnd() * 3, rnd() * 0.3); o.scale.set(1.5 * k, 0.8 * k, 1.2 * k); });
+  return { grassMat, fernMat, shrubMat, meshes: [mGrass, mFerns, mShrubs, mStones], boulders: mBoulders };
 })();
 
 /* White sedan (Model 3 proportions: 15'-5" × 6'-1" × 4'-9"), backed into the parking spot and plugged into a
@@ -3476,7 +3616,7 @@ const CAR = (() => {
   for (const x of [1, -1]) { const sl = new THREE.SpotLight(0xf2f6ff, 0, 60, 0.45, 0.6, 1.2); sl.position.set(x * 2.2, 2.4, 7.6); sl.target.position.set(x * 2.2, 0, 30); sl.visible = true; car.add(sl, sl.target); beams.push(sl); }
   act(car, { kind: 'car', label: d => d.on ? 'Headlights off' : 'Flash the headlights', run: d => {
     lamp.emissiveIntensity = d.on ? 2.5 : 0; tail.emissiveIntensity = d.on ? 1.2 : 0.15; beams.forEach(sl => { sl.visible = true; sl.intensity = d.on ? 40 : 0; }); } });
-  return { car, post, paint, plug, cable, beams, lamp };
+  return { car, post, paint, plug, cable, beams, lamp, chargerMeshes: [pole, cap, wb] };
 })();
 
 /* =====================================================================
@@ -3702,14 +3842,14 @@ const PATIO = (() => {
   const allium = new THREE.MeshStandardMaterial({ color: 0x8E6FC9, roughness: 0.8 }), stem = new THREE.MeshStandardMaterial({ color: 0x5E7A3E, roughness: 1 });
   for (const m of [bark, leaf, allium, stem]) exteriorLightsOnly(m);
   const crowns = [];
-  // 4 birch tree clumps framing both lobes of the terrace
-  for (const [bx, bz] of [[-8.8, -5.6], [8.8, -4.8], [-7.2, 6.2], [10.4, 4.6]]) {
-    for (let k = 0; k < 3; k++) {
-      const lean = (k - 1) * 0.12, h = 22 + k * 3;
-      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.3, h, 7).translate(0, h / 2, 0), bark);
-      t.position.set(bx + (k - 1) * 0.6, 0, bz + (k % 2) * 0.5); t.rotation.z = lean; t.castShadow = true; grp.add(t);
+  // 2 asymmetric birch clumps along the woods-facing edge of the terrace
+  for (const [bx, bz, trunks, hBase, crScale, crY] of [[-9.6, -5.6, 3, 22, 6.8, 21], [-11.4, 3.6, 2, 18, 5.2, 17.5]]) {
+    for (let k = 0; k < trunks; k++) {
+      const lean = (k - (trunks - 1) / 2) * 0.13, h = hBase + k * 2.8;
+      const t = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.28, h, 7).translate(0, h / 2, 0), bark);
+      t.position.set(bx + (k - 0.5) * 0.55, 0, bz + (k % 2) * 0.45); t.rotation.z = lean; t.castShadow = true; grp.add(t);
     }
-    const cr = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), leaf); cr.position.set(bx, 21, bz); cr.scale.set(7, 6, 7); cr.castShadow = true; grp.add(cr); crowns.push(cr);
+    const cr = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), leaf); cr.position.set(bx, crY, bz); cr.scale.set(crScale, crScale * 0.85, crScale); cr.castShadow = true; grp.add(cr); crowns.push(cr);
   }
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
   for (let i = 0; i < 95; i++) {
@@ -3725,7 +3865,7 @@ const PATIO = (() => {
     }
   }
 
-  return { crowns, leaf, brickMat, mortarMat, lanternMat, lanternHalo, firepit, patioFireLight, setPatioFire };
+  return { grp, crowns, leaf, brickMat, mortarMat, lanternMat, lanternHalo, firepit, patioFireLight, setPatioFire };
 })();
 
 /* =====================================================================
@@ -4161,6 +4301,8 @@ function walkStep(dt) {
 }
 function enterWalk() {
   if (TOUR.on) exitTour();
+  if (typeof TL !== 'undefined' && TL.on) exitTimeline();
+  if (typeof BD !== 'undefined' && BD.on) exitBuild();
   WALK.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
   Object.assign(state, { floors: 'both', walls: 'up', roof: true, explode: 0, labels: false }); applyState(); select(null);
   buildColliders();
@@ -4178,7 +4320,7 @@ function exitWalk() {
   camera.position.copy(WALK.saved.pos); controls.target.copy(WALK.saved.target); controls.enabled = true; controls.update();
 }
 addEventListener('keydown', e => {
-  if (e.key === 'Escape') { exitWalk(); exitTour(); return; }
+  if (e.key === 'Escape') { exitWalk(); exitTour(); if (typeof TL !== 'undefined' && TL.on) exitTimeline(); if (typeof BD !== 'undefined' && BD.on) exitBuild(); return; }
   if (!WALK.on) return;
   WALK.keys[e.code] = true;
   if (/^(Key[WASDQE]|Arrow)/.test(e.code)) takeOver();
@@ -4356,6 +4498,8 @@ function tourGo(i) {
 }
 function enterTour() {
   if (WALK.on) exitWalk();
+  if (typeof TL !== 'undefined' && TL.on) exitTimeline();
+  if (typeof BD !== 'undefined' && BD.on) exitBuild();
   TOUR.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
   TOUR.on = true; document.body.classList.add('touring'); controls.minDistance = 0.3; document.getElementById('tourbar').hidden = false;
   tourGo(0);
@@ -4437,68 +4581,57 @@ function showAct(a) {                                        // "Show me" / "Sur
   toast('Tap Use when it lights up \u00b7 \u2605 for the list');
 }
 // sheet + panes
-const sheet = $$('msheet');
+const sheet = $$('msheet'), scrim = $$('mscrim');
 let sheetPane = null;
 function openSheet(pane) {
   sheetPane = pane; sheet.classList.add('open');
-  $$('pane-more').hidden = pane !== 'more'; $$('pane-found').hidden = pane !== 'found';
-  $$('msheet-title').textContent = pane === 'more' ? 'Settings' : 'Things to try';
-  $$('mb-more').setAttribute('aria-pressed', String(pane === 'more'));
-  if (pane === 'found') buildTry();
+  if (scrim) scrim.classList.add('open');
+  $$('mb-more').setAttribute('aria-pressed', 'true');
 }
-function closeSheet() { sheetPane = null; sheet.classList.remove('open'); $$('mb-more').setAttribute('aria-pressed', 'false'); }
-function nearestAct(kind) {
-  let best = null, bd = Infinity; const t = controls.target;
-  for (const a of ACTS) { if (a.kind !== kind) continue; const c = actCenter(a); if (!c) continue; const d = c.distanceTo(t); if (d < bd) { bd = d; best = a; } }
-  return best;
+function closeSheet() {
+  sheetPane = null; sheet.classList.remove('open');
+  if (scrim) scrim.classList.remove('open');
+  $$('mb-more').setAttribute('aria-pressed', 'false');
 }
-function buildTry() {
-  const kinds = [...new Set(ACTS.map(a => a.kind))], ul = $$('try-list'); ul.textContent = '';
-  kinds.sort((a, b) => (FOUND.has(a) ? 1 : 0) - (FOUND.has(b) ? 1 : 0));
-  for (const k of kinds) {
-    const li = document.createElement('li'); li.className = FOUND.has(k) ? 'done' : '';
-    const [name, sub] = KIND_INFO[k] || [k, ''];
-    li.innerHTML = `<span class="ck">${FOUND.has(k) ? '✓' : ''}</span><span class="tx"><b>${name}</b><span>${sub}</span></span>`;
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = 'Show me'; b.addEventListener('click', () => { const a = nearestAct(k); if (a) showAct(a); });
-    li.append(b); ul.append(li);
-  }
-}
-$$('btn-surprise').addEventListener('click', () => {
-  const kinds = [...new Set(ACTS.map(a => a.kind))], left = kinds.filter(k => !FOUND.has(k)), pool = left.length ? left : kinds;
-  const k = pool[Math.floor(Math.random() * pool.length)], list = ACTS.filter(a => a.kind === k);
-  showAct(list[Math.floor(Math.random() * list.length)]);
-});
+if (scrim) scrim.addEventListener('click', closeSheet);
 $$('msheet-close').addEventListener('click', closeSheet);
 $$('mb-more').addEventListener('click', () => sheetPane === 'more' ? closeSheet() : openSheet('more'));
 $$('mb-explore').addEventListener('click', () => {
-  closeSheet(); const wasExploring = !WALK.on && !TOUR.on && !TL.on;
-  if (WALK.on) exitWalk(); if (TOUR.on) exitTour(); if (TL.on) exitTimeline();
+  closeSheet(); const wasExploring = !WALK.on && !TOUR.on && !TL.on && !(typeof BD !== 'undefined' && BD.on);
+  if (WALK.on) exitWalk(); if (TOUR.on) exitTour(); if (TL.on) exitTimeline(); if (typeof BD !== 'undefined' && BD.on) exitBuild();
   if (wasExploring) { Object.assign(state, { floors: 'both', walls: 'cutaway', roof: false }); applyState(); flyTo(homePos(), HOME.target.clone()); }
 });
 $$('mb-walk').addEventListener('click', () => { closeSheet(); if (WALK.on) exitWalk(); else { FLY.cur = null; enterWalk(); toast('Left stick moves · right stick looks · tap Use'); } });
 $$('mb-tour').addEventListener('click', () => { closeSheet(); FLY.cur = null; if (TOUR.on) exitTour(); else enterTour(); });
 $$('mb-year').addEventListener('click', () => { closeSheet(); FLY.cur = null; enterTimeline(); });
+$$('mb-build').addEventListener('click', () => { closeSheet(); FLY.cur = null; enterBuild(); });
+$$('chip-floors').addEventListener('click', () => { state.floors = state.floors === 'ground' ? 'both' : 'ground'; applyState(); });
+$$('chip-shell').addEventListener('click', () => {
+  if (state.roof) { state.roof = false; state.walls = 'cutaway'; }
+  else if (state.walls === 'cutaway') { state.walls = 'up'; state.roof = false; }
+  else { state.walls = 'up'; state.roof = true; }
+  applyState();
+});
+$$('chip-season').addEventListener('click', () => {
+  const order = ['fall', 'winter', 'spring', 'summer'];
+  state.season = order[(order.indexOf(state.season) + 1) % order.length];
+  applyState();
+});
 $$('chip-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
-$$('chip-floors').addEventListener('click', () => { state.floors = { both: 'ground', ground: 'loft', loft: 'both' }[state.floors] || 'both'; applyState(); });
-// move the panel's controls into the sheet on phones (and back on desktop)
-const CTRL = document.querySelector('.controls'), TOGS = document.querySelector('.toggles');
+// move the More popover's controls into the sheet on phones (and back on desktop)
+const MORE_POP = $$('more-pop'), MORE_ROW = MORE_POP.querySelector('.more-row'), MORE_TIPS = MORE_POP.querySelector('.more-tips');
 const rowOf = id => $$(id).closest('.row');
-const PARTS = { floors: rowOf('fl-ground'), walls: rowOf('wl-up'), explode: rowOf('explode'), sun: rowOf('suntime'), season: rowOf('se-fall'), actions: document.querySelector('.actions'), status: $$('status') };
-const LAB = { roof: $$('tg-roof').closest('label'), labels: $$('tg-labels').closest('label'), night: $$('tg-night').closest('label') };
-const mkTogs = (...l) => { const d = document.createElement('div'); d.className = 'toggles'; d.append(...l); return d; };
-const TG_V = mkTogs(), TG_T = mkTogs(), TG_X = mkTogs();
+const PARTS = { explode: rowOf('explode'), sun: rowOf('suntime'), status: $$('status') };
 function layoutPhone(on) {
   document.body.classList.toggle('m', on);
   if (on) {
-    TG_V.append(LAB.roof); TG_T.append(LAB.night); TG_X.append(LAB.labels);
-    $$('sec-view').append(PARTS.floors, PARTS.walls, TG_V); $$('sec-time').append(PARTS.sun, PARTS.season, TG_T);
-    $$('sec-extras').append(PARTS.explode, TG_X, PARTS.actions, PARTS.status);
+    $$('pane-more').append(PARTS.sun, PARTS.explode, MORE_ROW, PARTS.status, MORE_TIPS);
     $$('mintro').classList.remove('gone');
   } else {
-    TOGS.append(LAB.roof, LAB.labels, LAB.night);
-    CTRL.append(PARTS.floors, PARTS.walls, TOGS, PARTS.explode, PARTS.sun, PARTS.season, PARTS.actions, PARTS.status);
+    MORE_POP.append(PARTS.sun, PARTS.explode, MORE_ROW, PARTS.status, MORE_TIPS);
     closeSheet();
   }
+  applyState();
   if (on !== layoutPhone.was) { camera.position.copy(homePos()); controls.target.copy(HOME.target); controls.update(); }
   layoutPhone.was = on;
 }
@@ -4533,9 +4666,6 @@ renderer.domElement.addEventListener('pointerdown', () => { clearTimeout(introT)
   }
   $$('usebtn').addEventListener('pointerdown', e => { e.preventDefault(); if (aimAct) { useAct(aimAct); aimTick = 4; } });
 }
-// while walking, the found counter in the top strip opens the same list, so you can hop to the next thing without leaving walk mode
-$$('walk-found').setAttribute('role', 'button');
-$$('walk-found').addEventListener('click', () => { if (!document.body.classList.contains('m') || TOUR.on) return; sheetPane === 'found' ? closeSheet() : openSheet('found'); });
 $$('walk-exit').addEventListener('click', closeSheet);
 // hotspots: pulsing dots on the nearest things you haven't tried yet
 const SPOTS = [], spotEl = $$('spots'); let spotTick = 0, lastFound = -1;
@@ -4555,12 +4685,12 @@ function phoneStep(dt) {
     lastFound = FOUND.size; const mf = $$('m-found'); if (mf) mf.textContent = `${FOUND.size} / ${KINDS()}`;
     if (sheetPane === 'found') buildTry();
   }
-  const tlOn = typeof TL !== 'undefined' && TL.on;
-  $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on && !tlOn)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on)); $$('mb-year').setAttribute('aria-pressed', String(tlOn));
+  const tlOn = typeof TL !== 'undefined' && TL.on, bdOn = typeof BD !== 'undefined' && BD.on;
+  $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on && !tlOn && !bdOn)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on)); $$('mb-year').setAttribute('aria-pressed', String(tlOn)); $$('mb-build').setAttribute('aria-pressed', String(bdOn));
   if (WALK.on) { const ub = $$('usebtn'); ub.classList.toggle('ready', !!aimAct); ub.firstChild.textContent = aimAct ? aimAct.label(aimAct) : 'Nothing to use'; }
-  const far = !WALK.on && ((typeof TL !== 'undefined' && TL.on) || camera.position.distanceTo(controls.target) > 22);
+  const far = !WALK.on && (tlOn || bdOn || camera.position.distanceTo(controls.target) > 22);
   if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
-  const show = !(typeof TL !== 'undefined' && TL.on) && !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
+  const show = !tlOn && !bdOn && !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
   if (!show) { SC.list = []; SC.dots = []; for (const sp of SPOTS) sp.style.display = 'none'; return; }
   // 1) the visibility scan: nearest few unfound things, ONE ray-test per frame, so there is never a hitch
   if (!SC.list.length) {
@@ -4651,7 +4781,7 @@ const P_KIT_TO_GRILL = [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-
 const P_GRILL_TO_KIT = [...P_KIT_TO_GRILL].reverse();
 const MOMENTS = [
   { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow & plugging in', t: 18 / 365, dur: 0.085, hour: 16.8, occupied: true, fire: true, tv: 2, car: 'arrive',
-    walls: 'up', roof: true, cam: { pos: [64, 20, 56], look: [26, 3, 22] },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [58, 26, 72], look: [32, 1, 26] },
     cast: [
       { who: 'a', path: [[55, -2.25, 34.5], [53.2, -2.25, 32.8]], sitWindow: [0.16, 0.50], exitPath: [[53.2, -2.25, 32.8], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5]], face: 1.4 },
       { who: 'b', path: [[32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.16, span: 0.34, face: 3.1 },
@@ -4659,7 +4789,7 @@ const MOMENTS = [
       { who: 'g', path: [[7.5, 0, 8.53], [8.5, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[8.5, 0, 8.53], [7.5, 0, 8.53]], face: 3.14 },
     ] },
   { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — morning coffee inside & first spring blooms', t: 78 / 365, dur: 0.08, hour: 10.5, occupied: true, car: 'parked',
-    walls: 'cutaway', roof: false, cam: { pos: [26, 26, 46], look: [20, 2, 16] },
+    floors: 'ground', walls: 'cutaway', roof: false, cam: { pos: [26, 34, 58], look: [22, 1, 16] },
     cast: [
       { who: 'g', path: [[20.7, -2.25, 29.5], [24.5, -2.25, 35.5]], sitWindow: [0.10, 0.90], exitPath: [[24.5, -2.25, 35.5], [20.7, -2.25, 29.5]], face: 0.4 },
       { who: 'g', path: [[20.7, -2.25, 29.5], [16.5, -2.25, 36.0]], sitWindow: [0.12, 0.88], exitPath: [[16.5, -2.25, 36.0], [20.7, -2.25, 29.5]], face: -0.5 },
@@ -4667,7 +4797,7 @@ const MOMENTS = [
       { who: 'b', path: [[8.8, 0, 8.53], [10.38, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[10.38, 0, 8.53], [8.8, 0, 8.53]], face: 1.57 },
     ] },
   { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch at the brick patio table under the birches', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: true, fan: 2.4, car: 'parked',
-    walls: 'up', roof: true, cam: { pos: [12, 14, 60], look: [-10, 0, 38] },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [8, 22, 68], look: [-8, 1, 34] },
     props: [{ kind: 'basket', at: [-10.41, 0.42, 38.54] }],
     cast: [
       { who: 'g', path: [[-4, -2.25, 37], [-9.99, -2.25, 41.62]], sitWindow: [0.06, 0.92], exitPath: [[-9.99, -2.25, 41.62], [-4, -2.25, 37]], face: 3.69 },
@@ -4676,7 +4806,7 @@ const MOMENTS = [
       { who: 'b', path: [[-1.5, -0.167, 13.5], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.5]], face: -1.57 },
     ] },
   { id: 'summer-lawn', title: 'Deck cookout & south lawn picnic', caption: 'Early July — grilling, lounging on the west deck & picnic on the lawn', t: 182 / 365, dur: 0.10, hour: 15.5, occupied: true, grill: true, fan: 5, car: 'parked', ball: true,
-    walls: 'up', roof: true, cam: { pos: [-26, 16, 46], look: [8, 1, 24] },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [16, 28, 76], look: [16, 1, 28] },
     props: [{ kind: 'blanket', at: [24, -2.25, 43], rot: -0.25 }, { kind: 'basket', at: [25.4, -2.25, 43.8] }],
     cast: [
       { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.02, span: 0.94, face: -1.57 },
@@ -4687,16 +4817,16 @@ const MOMENTS = [
       { who: 'g', kid: true, path: [[36.5, -2.25, 43.8], [35.5, -2.25, 43.2], [36.5, -2.25, 43.8], [35.8, -2.25, 43.5]], delay: 0.06, span: 0.90 },
     ] },
   { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — quick turnover & settling into the guest bunk room', t: 228 / 365, dur: 0.085, hour: 11.5, occupied: true, tv: 4, fan: 2.4, car: 'turnover',
-    walls: 'cutaway', roof: false, cam: { pos: [48, 28, 38], look: [25, 3, 14] },
+    floors: 'ground', walls: 'cutaway', roof: false, cam: { pos: [46, 30, 52], look: [26, 2, 16] },
     cast: [
       { who: 'g', path: P_LIV_TO_CAR.slice(4), delay: 0.0, span: 0.16, hideAtEnd: true },
       { who: 'g', path: P_KIT_TO_CAR.slice(4), delay: 0.02, span: 0.16, hideAtEnd: true },
       { who: 'g', path: P_CAR_TO_LIV.slice(2, 6), delay: 0.68, span: 0.22, face: 0.2 },
       { who: 'g', path: [[26.5, 0, 10.2], [26.5, 0, 5.5]], sitWindow: [0.72, 0.96], exitPath: [[26.5, 0, 5.5], [26.5, 0, 10.2]], face: 1.57 },
-      { who: 'a', path: [[27.5, 9.33, 14.5], [32.8, 9.33, 14.8], [38.2, 9.33, 14.5]], delay: 0.70, span: 0.24, face: 0.0 },
+      { who: 'a', path: [[24.4, 0, 15.0], [34.5, 0, 15.0], [43.5, 0, 14.0]], delay: 0.70, span: 0.24, face: 1.57 },
     ] },
   { id: 'fall-patio', title: 'Golden hour grill & deck lounge', caption: 'Late September — grilling & lounging on the west deck at golden hour', t: 268 / 365, dur: 0.09, hour: 17.6, occupied: true, grill: true, patioFire: true, tv: 2, car: 'parked',
-    walls: 'up', roof: true, cam: { pos: [-24, 10, 24], look: [-2, 2, 12] },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [-34, 18, 28], look: [-3, 1, 14] },
     cast: [
       { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.04, span: 0.92, face: -1.57 },
       { who: 'g', path: [[-1.5, -0.167, 13.0], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.0]], face: -1.57 },
@@ -4704,7 +4834,7 @@ const MOMENTS = [
       { who: 'b', path: [[8.5, -1.5, 20.5], [6.2, -1.5, 19.2]], sitWindow: [0.06, 0.94], exitPath: [[6.2, -1.5, 19.2], [8.5, -1.5, 20.5]], face: 0.1 },
     ] },
   { id: 'fall-fireside', title: 'Fire pit evening & hearth', caption: 'Late October — gathering around the Corten fire pit as leaves fall', t: 304 / 365, dur: 0.095, hour: 18.2, occupied: true, fire: true, patioFire: true, tv: 1, car: 'depart-end',
-    walls: 'up', roof: true, cam: { pos: [-3, 11, 59], look: [-18, 0, 42] },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [4, 20, 72], look: [-14, 0, 38] },
     cast: [
       { who: 'a', path: [[-12, -2.25, 40], [-15.53, -2.25, 43.71]], sitWindow: [0.06, 0.92], exitPath: [[-15.53, -2.25, 43.71], [-12, -2.25, 40]], face: -2.75 },
       { who: 'b', path: [[-12, -2.25, 41], [-19.51, -2.25, 46.15]], sitWindow: [0.08, 0.90], exitPath: [[-19.51, -2.25, 46.15], [-12, -2.25, 41]], face: 2.90 },
@@ -4712,7 +4842,7 @@ const MOMENTS = [
       { who: 'g', path: [[-12, -2.25, 38], [-17.97, -2.25, 39.73]], sitWindow: [0.10, 0.88], exitPath: [[-17.97, -2.25, 39.73], [-12, -2.25, 38]], face: -0.24 },
     ] },
   { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 346 / 365, dur: 0.08, hour: 20.0, occupied: false, car: 'away', glow: true,
-    walls: 'up', roof: true, cam: { pos: [54, 24, 58], look: [16, 4, 14] } },
+    floors: 'both', walls: 'up', roof: true, cam: { pos: [52, 27, 68], look: [18, 3, 14] } },
 ];
 // --- low-poly figures: shared geometries + a small material cache, never allocated per frame
 const TL_GEO = {
@@ -4993,7 +5123,7 @@ function tlApplyContinuousSeasons(day) {
   const month = Math.min(11, Math.floor(TL.t * 12)), sName = TL_SEASON_OF_MONTH[month];
   if (TL.seasonCur !== sName) {
     TL.seasonCur = sName; state.season = sName; seasonOn = sName;
-    ['fall', 'winter', 'spring', 'summer'].forEach(k => document.getElementById('se-' + k).setAttribute('aria-pressed', String(sName === k)));
+    const sb = document.getElementById('btn-season'); if (sb) sb.dataset.season = sName;
   }
   // Tree canopy fullness & leaf color blend
   let full = 0;
@@ -5170,14 +5300,18 @@ function tlApplyEnv(dt, immediate) {
   const ml = document.getElementById('tl-month');
   if (ml && ml.textContent !== TL_MONTHS[month]) ml.textContent = TL_MONTHS[month];
 }
-function tlSetWallsRoof(walls, roof) {
-  if (state.walls === walls && state.roof === roof) return;
-  state.walls = walls; state.roof = roof;
-  const showG = state.floors !== 'loft', showL = state.floors !== 'ground';
+function tlSetWallsRoof(walls, roof, floors = 'both') {
+  if (state.walls === walls && state.roof === roof && state.floors === floors) return;
+  state.walls = walls; state.roof = roof; state.floors = floors;
+  const showG = floors !== 'loft', showL = floors !== 'ground';
+  G.ground.visible = showG;
+  G.loft.visible = showL;
   G.mainRoof.visible = roof && showL;
   G.wingRoof.visible = roof && showG;
-  ['up', 'cutaway', 'down'].forEach(k => document.getElementById('wl-' + k).setAttribute('aria-pressed', String(walls === k)));
-  document.getElementById('tg-roof').checked = roof;
+  ['ground', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(floors === k)));
+  document.getElementById('wl-roof').setAttribute('aria-pressed', String(walls === 'up' && roof));
+  document.getElementById('wl-up').setAttribute('aria-pressed', String(walls === 'up' && !roof));
+  document.getElementById('wl-cutaway').setAttribute('aria-pressed', String(walls === 'cutaway'));
   updateWalls();
   markShadows();
   wake(4);
@@ -5190,7 +5324,7 @@ function tlSetMoment(i) {
     showCap('');
     tlSetFrontDoor(false);
     tlSetSideDoor(false);
-    tlSetWallsRoof('up', true);
+    tlSetWallsRoof('up', true, 'both');
     if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(false);
     const nx = tlNextMoment();
     if (nx) { TL.hourTarget = nx.hour; TL.occupied = !!nx.occupied; }
@@ -5201,7 +5335,7 @@ function tlSetMoment(i) {
   for (const w of B.walkers) { w.fig.visible = false; w.bob = 0; }
   if (B.ball) { B.ball.visible = false; TL.ballPh = 0; }
   TL.hourTarget = m.hour; TL.occupied = !!m.occupied;
-  tlSetWallsRoof(m.walls || 'up', m.roof !== undefined ? m.roof : (m.walls !== 'cutaway'));
+  tlSetWallsRoof(m.walls || 'up', m.roof !== undefined ? m.roof : (m.walls !== 'cutaway'), m.floors || 'both');
   tlSetFire(!!m.fire);
   if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(!!m.patioFire);
   tlSetGrill(!!m.grill);
@@ -5320,7 +5454,7 @@ function tlStepCamera(dt, immediate) {
     _tlCamGoal.x += Math.sin(TL.t * Math.PI * 16) * 0.9;
     _tlCamGoal.z += Math.cos(TL.t * Math.PI * 12) * 0.6;
     if (camera.aspect < 0.9) {
-      const pull = Math.min(1.45, 0.92 / Math.max(0.45, camera.aspect));
+      const pull = Math.min(1.22, 0.88 / Math.max(0.45, camera.aspect));
       _tlCamOff.copy(_tlCamGoal).sub(_tlCamTarget).multiplyScalar(pull);
       _tlCamGoal.copy(_tlCamTarget).add(_tlCamOff);
     }
@@ -5369,6 +5503,7 @@ function enterTimeline() {
   if (TL.on) { exitTimeline(); return; }
   if (WALK.on) exitWalk();
   if (TOUR.on) exitTour();
+  if (typeof BD !== 'undefined' && BD.on) exitBuild();
   const tvD = tvScreen ? actOf(tvScreen) : null;
   TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
   tlEnsureBuilt();
@@ -5378,7 +5513,7 @@ function enterTimeline() {
   G.ground.visible = true; G.loft.visible = true; G.loft.position.y = 0; G.wingRoof.position.y = 0; G.mainRoof.position.y = 0;
   document.getElementById('labels').style.display = 'none';
   labels.forEach(l => { l.visible = false; });
-  ['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(k === 'both')));
+  ['ground', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(k === 'both')));
   document.getElementById('tg-labels').checked = false;
   document.getElementById('tg-night').checked = false;
   document.getElementById('explode').value = '0';
@@ -5392,7 +5527,7 @@ function enterTimeline() {
   document.body.classList.add('timeline');
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
-  document.getElementById('btn-timeline').textContent = 'Exit timeline';
+  document.querySelector('#btn-timeline b').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
   tlSetMoment(0);
   tlStepActors(0);
@@ -5435,7 +5570,7 @@ function exitTimeline() {
   }
   markShadows();
   document.getElementById('tlbar').hidden = true;
-  document.getElementById('btn-timeline').textContent = 'A year at Local Time House';
+  document.querySelector('#btn-timeline b').textContent = 'A year here';
   showCap('');
 }
 document.getElementById('btn-timeline').addEventListener('click', enterTimeline);
@@ -5450,12 +5585,1012 @@ document.getElementById('tl-scrub').addEventListener('input', e => {
   tlStepCamera(0, true);
 });
 document.getElementById('tl-scrub').addEventListener('change', () => { TL.scrubbing = false; });
-renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = performance.now(); }, true);
-renderer.domElement.addEventListener('wheel', () => { TL.lastInteract = performance.now(); }, { passive: true });
+renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = performance.now(); if (typeof BD !== 'undefined') BD.lastInteract = performance.now(); }, true);
+renderer.domElement.addEventListener('wheel', () => { TL.lastInteract = performance.now(); if (typeof BD !== 'undefined') BD.lastInteract = performance.now(); }, { passive: true });
+
+/* =====================================================================
+   17. BUILD THE HOUSE — September-to-May slab-on-grade construction timelapse.
+   ===================================================================== */
+const PHASE_MESHES = [];
+const BD_LOOP = 76;
+const BD_MONTHS = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+const BD_STAGES = [
+  { t: 0.00, end: 0.045, mIdx: 0, title: 'Early September · Tree Clearing, Silt Fence & Trenching',
+    caption: 'Early September — Clearing trees & brush, installing silt fence, gravel construction drive, and excavating perimeter & utility trenches.',
+    walls: 'up', roof: false, hour: 10.0, cam: [76, 36, 74], look: [22, 0.5, 13],
+    crew: [[10, -2.0, 12, 0.8], [32, -2.0, 18, -1.1], [18, -2.0, 28, 0.4], [40, -2.0, 14, -1.6]] },
+  { t: 0.045, end: 0.095, mIdx: 0, title: 'Mid September · Batter Boards, Sub-Base & Under-Slab Plumbing',
+    caption: 'Mid September — Compacted gravel sub-base, batter boards & taut string lines, and under-slab DWV & PEX plumbing stub-ups.',
+    walls: 'up', roof: false, hour: 11.2, cam: [72, 33, 70], look: [22, 0.5, 12],
+    crew: [[12, -1.8, 10, 0.8], [35, -1.8, 7, -1.2], [20, -1.8, 23, 0.2], [6, -1.8, 21, 1.5]] },
+  { t: 0.095, end: 0.145, mIdx: 0, title: 'Late September · EPS Foam, Rebar & Slab-on-Grade Pour',
+    caption: 'Late September — Rigid EPS sub-slab insulation, perimeter 2×12 forms, #4 rebar grid, and poured concrete slab-on-grade with sunken pit.',
+    walls: 'up', roof: false, hour: 13.0, cam: [68, 32, 70], look: [21, 0.5, 13],
+    crew: [[8, 0, 8, 1.1], [28, 0, 10, -0.6], [11, -1.5, 22, 0.4], [42, 0, 9, -1.8]] },
+  { t: 0.145, end: 0.205, mIdx: 1, title: 'Early October · Ground Floor Walls & Entry Decks',
+    caption: 'Early October — 2×6 exterior stud walls raised section by section, 14-ft LVL beam, interior partitions, and entry & west decks framed for access.',
+    walls: 'up', roof: false, hour: 14.2, cam: [74, 33, 68], look: [23, 4.0, 11],
+    crew: [[10, 0, 6, 0.4], [26, 0, 11, 1.5], [39, 0, 8, -0.9], [20, -0.2, 22, 0.1]] },
+  { t: 0.205, end: 0.28, mIdx: 1, title: 'Mid October · Loft Joists, Rough Stairs, Subfloor & Upper Walls',
+    caption: 'Mid October — 2×10 loft floor joists, rough stair stringers for crew access, 3/4" OSB subfloor deck, shed-dormer & loft stud walls.',
+    walls: 'up', roof: false, hour: 15.0, cam: [76, 36, 68], look: [24, 6.5, 10],
+    crew: [[20, 9.33, 12, 0.5], [32, 9.33, 9, -1.1], [43, 9.33, 8, 1.8], [14, 0, 11, 0.2]] },
+  { t: 0.28, end: 0.33, mIdx: 1, title: 'Late October · Ridge Beam, Cathedral Rafters & Topping Out',
+    caption: 'Late October — Ridge beam set, 12/12 cathedral rafters framed west-to-east, flat wing joists, and the topping-out evergreen bough.',
+    walls: 'up', roof: false, hour: 15.6, cam: [80, 38, 72], look: [23, 8.5, 11],
+    crew: [[18, 9.33, 8, 0.2], [34, 9.33, 11, -0.7], [9, -1.5, 21, 1.2], [27, -1.8, 22, -0.4]] },
+  { t: 0.33, end: 0.405, mIdx: 2, title: 'Early November · Incremental OSB Sheathing & Housewrap',
+    caption: 'Early November — 7/16" OSB wall and roof sheathing nailed west-to-east, followed by taped white housewrap and synthetic roof underlayment.',
+    walls: 'up', roof: true, hour: 13.6, cam: [82, 34, 76], look: [23, 7.0, 12],
+    crew: [[14, 4.5, 19.2, 3.1], [32, 4.5, 19.2, 3.1], [22, -1.8, 24, 0.4], [4, -1.8, 18, 1.2]] },
+  { t: 0.405, end: 0.475, mIdx: 2, title: 'Late November · Triple-Pane Windows, Skylights & Metal Roof',
+    caption: 'Late November — Ground & dormer windows set into rough openings, north skylights flashed, and standing-seam metal roof & EPDM installed.',
+    walls: 'up', roof: true, hour: 14.4, cam: [78, 32, 78], look: [22, 6.5, 12],
+    crew: [[18, 4.5, 19.2, 3.1], [38, 4.5, 19.2, 3.1], [6, -1.8, 28, 0.1], [21, -0.2, 20, -1.5]] },
+  { t: 0.475, end: 0.53, mIdx: 3, title: 'December · Natural Wood Wing & Charred Vertical Siding',
+    caption: 'December — Warm natural wood cladding on the sunken living wing, dark charred board-on-board siding on the main bar, and first winter frost.',
+    walls: 'up', roof: true, hour: 15.0, cam: [74, 30, 80], look: [21, 6.0, 13],
+    crew: [[26, 4.5, 19.2, 3.1], [10, -1.8, 28, 3.0], [19, -0.2, 22, 0.0], [42, -1.8, 20, -0.8]] },
+  { t: 0.53, end: 0.59, mIdx: 4, title: 'Early January · Rough MEP & Mineral Wool Insulation',
+    caption: 'Early January (Cutaway) — Crew moves inside for HRV ductwork, PEX plumbing manifolds, Romex wiring, and mineral wool stud insulation.',
+    walls: 'cutaway', roof: false, hour: 13.0, cam: [64, 36, 66], look: [23, 5.0, 11],
+    crew: [[8, 0, 6, -1.2], [28, 0, 14.5, 0.4], [36, 0, 7, 1.5], [32, 9.33, 4, -0.5]] },
+  { t: 0.59, end: 0.64, mIdx: 4, title: 'Late January · Drywall Hanging, Taping & Chalk Paint',
+    caption: 'Late January (Cutaway) — 5/8" gypsum board hung ground-then-loft over insulated walls, taped, sanded, and painted in warm Chalk.',
+    walls: 'cutaway', roof: false, hour: 13.8, cam: [62, 36, 68], look: [23, 5.0, 11],
+    crew: [[11, 0, 9, 0.8], [29, 0, 9, -0.9], [43, 0, 11, 1.4], [33, 9.33, 10, 0.2]] },
+  { t: 0.64, end: 0.72, mIdx: 5, title: 'February · Bath Mosaics, Loft Oak Floor & Finish Stair',
+    caption: 'February (Cutaway) — Foyer & hearth wine tile, bath 2×2 mosaics, wide-plank white oak loft flooring, and finished oak stair & slat screen.',
+    walls: 'cutaway', roof: false, hour: 14.2, cam: [60, 36, 66], look: [22, 5.0, 11],
+    crew: [[20, 0, 12, 0.1], [36, 0, 6, 1.6], [22, 9.33, 13, -0.8], [44, 9.33, 8, 1.2]] },
+  { t: 0.72, end: 0.81, mIdx: 6, title: 'March · Wood Wall Panels, Reform Kitchen & Pocket Doors',
+    caption: 'March (Cutaway) — Living & stair wood wall paneling, burgundy & oak Reform kitchen with 5mm stainless counters, and interior pocket doors.',
+    walls: 'cutaway', roof: false, hour: 14.8, cam: [58, 34, 64], look: [18, 4.5, 11],
+    crew: [[7, 0, 4, 3.1], [13, 0, 7, 1.5], [10, -1.5, 22, -1.2], [38, 0, 14.5, 0.5]] },
+  { t: 0.81, end: 0.90, mIdx: 7, title: 'April · Appliances, Lighting, Fireplace & Exterior MEP',
+    caption: 'April — Bath vanities & glass, appliances, paper-lantern pendant & sconces, fireplace flue, condensing units, and site grading.',
+    walls: 'cutaway', roof: false, hour: 15.4, cam: [68, 32, 74], look: [19, 5.0, 14],
+    crew: [[-4, -0.2, 9, -1.5], [20, -0.2, 23, 0.2], [19, -1.8, -1.2, 3.1], [12, -1.5, 24, 0.0]] },
+  { t: 0.90, end: 1.00, mIdx: 8, title: 'May · Furniture Delivery, Brick Patio & Dusk Move-In',
+    caption: 'May — Beds, dining table & sectional delivered, blue-gray brick terrace & Corten fire pit under the birches, and move-in at dusk.',
+    walls: 'up', roof: true, hour: 18.2, cam: [78, 32, 80], look: [19, 5.0, 15],
+    crew: [] },
+];
+
+const BD = {
+  on: false, playing: false, t: 0, speed: 1, cur: -1, sunCur: 12, hourTarget: 12,
+  duskCur: 0, swayCur: 0, lastInteract: 0, scrubbing: false, saved: null, built: false,
+  grp: null, clearingGrp: null, siltDriveGrp: null, trenchGrp: null, earthGrp: null,
+  batterGrp: null, slabPlumbGrp: null, rebarGrp: null, formsGrp: null,
+  frameG: [], loftJoists: null, roughStair: null, loftSubfloors: [], loftWalls: [],
+  ridgeBeam: null, rafterChunks: [], wingJoists: null, toppingTree: null,
+  osbWallChunks: [], osbRoofChunks: [],
+  scaffGrp: null, mepInsul: null, mepDucts: null, sitePropsGrp: null, excavator: null, excBoom: null, workers: [],
+};
+
+function bdEnsureBuilt() {
+  if (BD.built) return;
+  BD.built = true;
+  tlEnsureBuilt();
+  const grp = new THREE.Group(); grp.name = 'buildTimelapse'; grp.visible = false; root.add(grp);
+  BD.grp = grp;
+
+  const mLumber = new THREE.MeshStandardMaterial({ color: 0xD4A76A, roughness: 0.78 });
+  const mOsb = new THREE.MeshStandardMaterial({ color: 0xC29658, roughness: 0.85 });
+  const mEarth = new THREE.MeshStandardMaterial({ color: 0x5A4634, roughness: 0.98 });
+  const mSubBase = new THREE.MeshStandardMaterial({ color: 0x7A756E, roughness: 0.95 });
+  const mFoam = new THREE.MeshStandardMaterial({ color: 0x6BA4C8, roughness: 0.65 });
+  const mRebar = new THREE.MeshStandardMaterial({ color: 0x6E5244, roughness: 0.7, metalness: 0.45 });
+  const mString = new THREE.MeshBasicMaterial({ color: 0xFFD026 });
+  const mStake = new THREE.MeshStandardMaterial({ color: 0xE85D2A, roughness: 0.6 });
+  const mPvc = new THREE.MeshStandardMaterial({ color: 0x26282A, roughness: 0.4 });
+  const mPexR = new THREE.MeshStandardMaterial({ color: 0xC8382B, roughness: 0.45 });
+  const mPexB = new THREE.MeshStandardMaterial({ color: 0x2868B8, roughness: 0.45 });
+  const mWool = new THREE.MeshStandardMaterial({ color: 0x7A725E, roughness: 0.96 });
+  const mDuct = new THREE.MeshStandardMaterial({ color: 0xB8C0C8, roughness: 0.35, metalness: 0.75 });
+  const mDumpster = new THREE.MeshStandardMaterial({ color: 0x28543C, roughness: 0.65, metalness: 0.25 });
+  const mPorta = new THREE.MeshStandardMaterial({ color: 0x2468A8, roughness: 0.55 });
+  const mTarp = new THREE.MeshStandardMaterial({ color: 0x2B65B0, roughness: 0.65 });
+  const mYellow = new THREE.MeshStandardMaterial({ color: 0xE5A018, roughness: 0.45, metalness: 0.2 });
+  for (const m of [mLumber, mOsb, mEarth, mSubBase, mFoam, mRebar, mStake, mPvc, mPexR, mPexB, mWool, mDuct, mDumpster, mPorta, mTarp, mYellow]) exteriorLightsOnly(m);
+
+  const pushBox = (arr, x0, x1, y0, y1, z0, z1) => {
+    if (x1 <= x0 || y1 <= y0 || z1 <= z0) return;
+    arr.push(new THREE.BoxGeometry(x1 - x0, y1 - y0, z1 - z0).translate((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2));
+  };
+  const mergeBoxes = (arr, mat, parent) => {
+    if (!arr.length) return null;
+    const hasNonIdx = arr.some(b => !b.index);
+    const list = hasNonIdx ? arr.map(b => b.index ? b.toNonIndexed() : b) : arr;
+    const g = mergeGeometries(list, false);
+    arr.forEach(b => b.dispose());
+    if (!g) return null;
+    const m = new THREE.Mesh(g, mat);
+    m.castShadow = true; m.receiveShadow = true; m.userData.nocut = true;
+    parent.add(m);
+    return m;
+  };
+
+  const mSilt = new THREE.MeshStandardMaterial({ color: 0xD86422, roughness: 0.85 });
+  const mBark = new THREE.MeshStandardMaterial({ color: 0x4E3D2E, roughness: 0.95 });
+  exteriorLightsOnly(mSilt); exteriorLightsOnly(mBark);
+
+  // 1. SITE PREP: TREE CLEARING, SILT FENCE, GRAVEL DRIVE, TRENCHING, BATTER BOARDS, PLUMBING & REBAR
+  BD.clearingGrp = new THREE.Group(); grp.add(BD.clearingGrp);
+  {
+    const felled = [
+      [8, 6, 0.35, 11, 0.4], [24, 10, 0.3, 10, -0.5], [38, 8, 0.32, 9.5, 0.9],
+      [14, 22, 0.28, 8.5, -0.3], [32, 20, 0.34, 10.5, 0.6], [44, 15, 0.26, 8, -0.8],
+    ];
+    for (const [fx, fz, r, len, rot] of felled) {
+      const log = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.8, r, len, 7).rotateZ(Math.PI / 2), mBark);
+      log.position.set(fx, LV.GRADE + r * 0.85, fz); log.rotation.y = rot;
+      log.castShadow = true; log.receiveShadow = true;
+      BD.clearingGrp.add(log);
+      const stump = new THREE.Mesh(new THREE.CylinderGeometry(r, r * 1.15, 0.9, 7), mBark);
+      stump.position.set(fx - Math.cos(rot) * (len * 0.55), LV.GRADE + 0.45, fz + Math.sin(rot) * (len * 0.55));
+      stump.castShadow = true; stump.receiveShadow = true;
+      BD.clearingGrp.add(stump);
+    }
+    for (const [bx, bz, s] of [[18, 12, 2.2], [30, 5, 1.8], [5, 18, 1.9], [40, 22, 2.1]]) {
+      const brush = new THREE.Mesh(new THREE.DodecahedronGeometry(s, 0), cones.material);
+      brush.scale.set(1.4, 0.65, 1.1); brush.position.set(bx, LV.GRADE + s * 0.3, bz);
+      brush.castShadow = true; brush.receiveShadow = true;
+      BD.clearingGrp.add(brush);
+    }
+  }
+
+  BD.siltDriveGrp = new THREE.Group(); grp.add(BD.siltDriveGrp);
+  {
+    const posts = [], fence = [], drv = [];
+    // Orange silt fence around the south & east clearing perimeter
+    const fencePts = [[-8, 30], [16, 33], [28, 36], [48, 35], [53, 22], [53, -4]];
+    for (let i = 0; i < fencePts.length - 1; i++) {
+      const [x0, z0] = fencePts[i], [x1, z1] = fencePts[i + 1];
+      const len = Math.hypot(x1 - x0, z1 - z0), ang = Math.atan2(x1 - x0, z1 - z0);
+      const g = new THREE.BoxGeometry(0.08, 2.2, len).rotateY(ang);
+      g.translate((x0 + x1) / 2, LV.GRADE + 1.1, (z0 + z1) / 2);
+      fence.push(g);
+      const n = Math.max(2, Math.floor(len / 6));
+      for (let k = 0; k <= n; k++) {
+        const px = x0 + (x1 - x0) * (k / n), pz = z0 + (z1 - z0) * (k / n);
+        pushBox(posts, px - 0.08, px + 0.08, LV.GRADE, LV.GRADE + 2.5, pz - 0.08, pz + 0.08);
+      }
+    }
+    // Gravel construction access drive & staging pad from south
+    pushBox(drv, 18.0, 30.0, LV.GRADE, LV.GRADE + 0.12, 27.5, 42.0);
+    mergeBoxes(posts, mLumber, BD.siltDriveGrp);
+    mergeBoxes(fence, mSilt, BD.siltDriveGrp);
+    mergeBoxes(drv, mSubBase, BD.siltDriveGrp);
+  }
+
+  BD.trenchGrp = new THREE.Group(); grp.add(BD.trenchGrp);
+  {
+    const tr = [];
+    // Perimeter frost-wall / thickened-edge slab trenches & utility trench from NW
+    pushBox(tr, -1.2, 49.2, LV.GRADE + 0.01, LV.GRADE + 0.16, -1.2, 0.4);
+    pushBox(tr, -1.2, 49.2, LV.GRADE + 0.01, LV.GRADE + 0.16, 16.6, 18.2);
+    pushBox(tr, -1.2, 0.4, LV.GRADE + 0.01, LV.GRADE + 0.16, -1.2, 18.2);
+    pushBox(tr, 47.6, 49.2, LV.GRADE + 0.01, LV.GRADE + 0.16, -1.2, 18.2);
+    pushBox(tr, 0.8, 2.4, LV.GRADE + 0.01, LV.GRADE + 0.15, 17.4, 28.0);
+    pushBox(tr, 16.6, 18.2, LV.GRADE + 0.01, LV.GRADE + 0.15, 17.4, 28.0);
+    pushBox(tr, 0.8, 18.2, LV.GRADE + 0.01, LV.GRADE + 0.15, 26.6, 28.0);
+    pushBox(tr, 24.5, 26.5, LV.GRADE + 0.01, LV.GRADE + 0.14, -14.0, 0.0); // utility trench from north
+    mergeBoxes(tr, mEarth, BD.trenchGrp);
+  }
+
+  BD.earthGrp = new THREE.Group(); grp.add(BD.earthGrp);
+  {
+    const eBoxes = [], sBoxes = [];
+    pushBox(eBoxes, -1.8, 49.8, LV.GRADE - 0.05, LV.GRADE + 0.06, -1.8, 18.8);
+    pushBox(eBoxes, 0.2, 18.6, LV.GRADE - 0.05, LV.GRADE + 0.05, 17.2, 28.6);
+    pushBox(sBoxes, -0.4, 48.4, LV.GRADE + 0.06, LV.GRADE + 0.16, -0.4, 17.4);
+    pushBox(sBoxes, 1.6, 17.4, LV.GRADE + 0.05, LV.GRADE + 0.14, 17.4, 27.4);
+    mergeBoxes(eBoxes, mEarth, BD.earthGrp);
+    mergeBoxes(sBoxes, mSubBase, BD.earthGrp);
+    // Excavated soil berm mounds along south-east clearing edge
+    for (const [mx, mz, rx, ry, rz] of [[33, 24.5, 4.2, 1.8, 2.6], [41, 23.5, 3.5, 1.5, 2.3], [-5, 14, 2.8, 1.3, 2.2]]) {
+      const mound = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.52), mEarth);
+      mound.scale.set(rx, ry, rz); mound.position.set(mx, LV.GRADE, mz); mound.castShadow = true; mound.receiveShadow = true;
+      BD.earthGrp.add(mound);
+    }
+  }
+
+  BD.batterGrp = new THREE.Group(); grp.add(BD.batterGrp);
+  {
+    const bL = [], bS = [], bStr = [];
+    const corners = [[-2.2, -2.2, 1, 1], [50.2, -2.2, -1, 1], [50.2, 19.2, -1, -1], [19.2, 29.2, -1, -1], [-0.2, 29.2, 1, -1], [-2.2, 19.2, 1, -1]];
+    for (const [cx, cz, dx, dz] of corners) {
+      pushBox(bL, cx - 0.08, cx + 0.08, LV.GRADE, -0.2, cz - 0.08, cz + 0.08);
+      pushBox(bL, cx + dx * 2.2 - 0.08, cx + dx * 2.2 + 0.08, LV.GRADE, -0.2, cz - 0.08, cz + 0.08);
+      pushBox(bL, cx - 0.08, cx + 0.08, LV.GRADE, -0.2, cz + dz * 2.2 - 0.08, cz + dz * 2.2 + 0.08);
+      pushBox(bL, Math.min(cx, cx + dx * 2.2), Math.max(cx, cx + dx * 2.2), -0.55, -0.35, cz - 0.05, cz + 0.05);
+      pushBox(bL, cx - 0.05, cx + 0.05, -0.55, -0.35, Math.min(cz, cz + dz * 2.2), Math.max(cz, cz + dz * 2.2));
+      pushBox(bS, cx - 0.06, cx + 0.06, -0.2, -0.05, cz - 0.06, cz + 0.06);
+    }
+    // Taut mason string lines tracing exact foundation perimeter
+    pushBox(bStr, -2.0, 50.0, -0.38, -0.35, -0.35, -0.32);
+    pushBox(bStr, -2.0, 50.0, -0.38, -0.35, 17.38, 17.41);
+    pushBox(bStr, -0.36, -0.33, -0.38, -0.35, -2.0, 19.0);
+    pushBox(bStr, 48.38, 48.41, -0.38, -0.35, -2.0, 19.0);
+    pushBox(bStr, 1.63, 1.66, -0.38, -0.35, 16.5, 29.0);
+    pushBox(bStr, 17.36, 17.39, -0.38, -0.35, 16.5, 29.0);
+    pushBox(bStr, 0.0, 19.0, -0.38, -0.35, 27.38, 27.41);
+    mergeBoxes(bL, mLumber, BD.batterGrp);
+    mergeBoxes(bS, mStake, BD.batterGrp);
+    mergeBoxes(bStr, mString, BD.batterGrp);
+  }
+
+  BD.slabPlumbGrp = new THREE.Group(); grp.add(BD.slabPlumbGrp);
+  {
+    const pvc = [], pexR = [], pexB = [];
+    const stubs = [[5.5, 1.2], [8.5, 1.2], [26.2, 1.8], [36.8, 1.8], [35.8, 2.2], [37.4, 6.0], [37.6, 8.6], [43.2, 3.2], [44.8, 7.2]];
+    for (const [px, pz] of stubs) {
+      pvc.push(new THREE.CylinderGeometry(0.11, 0.11, 3.4, 8).translate(px, -0.4, pz));
+      pexR.push(new THREE.CylinderGeometry(0.04, 0.04, 3.1, 6).translate(px - 0.25, -0.5, pz + 0.12));
+      pexB.push(new THREE.CylinderGeometry(0.04, 0.04, 3.1, 6).translate(px + 0.25, -0.5, pz + 0.12));
+    }
+    mergeBoxes(pvc, mPvc, BD.slabPlumbGrp);
+    mergeBoxes(pexR, mPexR, BD.slabPlumbGrp);
+    mergeBoxes(pexB, mPexB, BD.slabPlumbGrp);
+  }
+
+  BD.rebarGrp = new THREE.Group(); grp.add(BD.rebarGrp);
+  {
+    const foam = [], reb = [];
+    pushBox(foam, 0.4, 47.6, -0.32, -0.18, 0.4, 16.6);
+    pushBox(foam, 2.4, 16.6, -1.62, -1.52, 16.7, 26.6);
+    for (let x = 1.0; x <= 47.2; x += 2.6) pushBox(reb, x - 0.025, x + 0.025, -0.16, -0.12, 0.6, 16.4);
+    for (let z = 1.0; z <= 16.2; z += 2.6) pushBox(reb, 0.6, 47.4, -0.16, -0.12, z - 0.025, z + 0.025);
+    for (let x = 2.8; x <= 16.2; x += 2.4) pushBox(reb, x - 0.025, x + 0.025, -1.49, -1.45, 16.9, 26.3);
+    for (let z = 17.2; z <= 26.2; z += 2.4) pushBox(reb, 2.6, 16.4, -1.49, -1.45, z - 0.025, z + 0.025);
+    mergeBoxes(foam, mFoam, BD.rebarGrp);
+    mergeBoxes(reb, mRebar, BD.rebarGrp);
+  }
+
+  BD.formsGrp = new THREE.Group(); grp.add(BD.formsGrp);
+  {
+    const fm = [];
+    // Perimeter 2x12 wood forms + angled brace stakes
+    pushBox(fm, -0.55, 48.6, LV.GRADE, 0.08, -0.52, -0.37);
+    pushBox(fm, -0.55, 0.2, LV.GRADE, 0.08, 17.42, 17.57);
+    pushBox(fm, 17.4, 48.6, LV.GRADE, 0.08, 17.42, 17.57);
+    pushBox(fm, -0.55, -0.38, LV.GRADE, 0.08, -0.52, 17.57);
+    pushBox(fm, 48.43, 48.6, LV.GRADE, 0.08, -0.52, 17.57);
+    pushBox(fm, 1.46, 1.62, LV.GRADE, -1.35, 17.42, 27.6);
+    pushBox(fm, 17.41, 17.57, LV.GRADE, -1.35, 17.42, 27.6);
+    pushBox(fm, 1.46, 17.57, LV.GRADE, -1.35, 27.44, 27.6);
+    for (let x = 0; x <= 48; x += 4) {
+      pushBox(fm, x - 0.06, x + 0.06, LV.GRADE, 0.25, -0.72, -0.52);
+      if (x >= 18) pushBox(fm, x - 0.06, x + 0.06, LV.GRADE, 0.25, 17.57, 17.77);
+    }
+    mergeBoxes(fm, mLumber, BD.formsGrp);
+  }
+
+  // 2. PROCEDURAL WOOD FRAMING (WALL-BY-WALL & BAY-BY-BAY AT FULL HEIGHT, NO POP-UP SCALING)
+  const gZones = [[], [], [], []]; // 0: N/W ext, 1: S/E ext, 2: Living wing, 3: Interior partitions
+  const lZones = [[], [], []];     // 0: Gable & knee walls, 1: Dormer walls, 2: Loft interior partitions
+  const lJoists = [], rStair = [], lSub = [[], [], []];
+  const sw = 0.13, pt = 0.13;
+  const inHole = (u, y0, y1, holes) => {
+    for (const [hu0, hu1, hy0, hy1] of holes) {
+      if (u + sw > hu0 + 0.02 && u < hu1 - 0.02 && y1 > hy0 + 0.02 && y0 < hy1 - 0.02) return [hu0, hu1, hy0, hy1];
+    }
+    return null;
+  };
+  for (const w of WALL_DEFS) {
+    const wt = w.t[1] - w.t[0];
+    if (wt < 0.22) continue;
+    let target;
+    if (w.parentName === 'loft') {
+      if (!w.isExt) target = lZones[2];
+      else if (w.y[1] > 15.0 && w.axis === 'x') target = lZones[1];
+      else target = lZones[0];
+    } else {
+      if (!w.isExt) target = gZones[3];
+      else if ((w.axis === 'z' && w.u[1] > 18.0) || (w.axis === 'x' && w.t[0] > 20.0)) target = gZones[2];
+      else if ((w.axis === 'x' && w.t[0] < 2.0) || (w.axis === 'z' && w.t[0] < 2.0)) target = gZones[0];
+      else target = gZones[1];
+    }
+    const tc = (w.t[0] + w.t[1]) / 2, hd = Math.min(0.22, wt * 0.36);
+    const t0 = tc - hd, t1 = tc + hd;
+    const [u0, u1] = w.u, [wy0, wy1] = w.y, holes = w.holes || [];
+    const topAt = u => {
+      let t = w.top ? w.top(u) : wy1;
+      if (w.isExt && w.axis === 'z') t = Math.min(t, roofUnder(u) + 0.1);
+      return Math.max(wy0 + 0.6, t);
+    };
+    const addMember = (ua, ub, ya, yb) => {
+      if (w.axis === 'x') pushBox(target, ua, ub, ya, yb, t0, t1);
+      else pushBox(target, t0, t1, ya, yb, ua, ub);
+    };
+    const stepP = 1.0;
+    for (let u = u0; u < u1 - 0.01; u += stepP) {
+      const ub = Math.min(u1, u + stepP), um = (u + ub) / 2;
+      const doorHit = holes.some(([hu0, hu1, hy0]) => um > hu0 && um < hu1 && hy0 <= wy0 + 0.25);
+      if (!doorHit) addMember(u, ub, wy0, wy0 + pt);
+      const yt = topAt(um);
+      addMember(u, ub, yt - pt * 1.6, yt);
+    }
+    for (let u = u0; u <= u1 - sw + 0.01; u += 1.333) {
+      const um = u + sw / 2, yt = topAt(um) - pt * 1.6, yb = wy0 + pt;
+      const h = inHole(u, yb, yt, holes);
+      if (!h) {
+        addMember(u, u + sw, yb, yt);
+      } else {
+        const [, , hy0, hy1] = h;
+        if (hy0 - pt > yb + 0.15) addMember(u, u + sw, yb, hy0 - pt);
+        if (yt > hy1 + 0.38) addMember(u, u + sw, hy1 + 0.38, yt);
+      }
+    }
+    addMember(u1 - sw, u1, wy0 + pt, topAt(u1 - sw / 2) - pt * 1.6);
+    for (const [hu0, hu1, hy0, hy1] of holes) {
+      const yt0 = topAt(hu0), yt1 = topAt(hu1), hTop = Math.min(yt0, yt1) - pt * 1.6;
+      if (hu0 - sw >= u0) addMember(hu0 - sw, hu0, wy0 + pt, yt0 - pt * 1.6);
+      if (hu1 + sw <= u1) addMember(hu1, hu1 + sw, wy0 + pt, yt1 - pt * 1.6);
+      const hdrB = Math.min(hy1, hTop - 0.35), hdrT = Math.min(hTop, hdrB + 0.38);
+      if (hdrT > hdrB) addMember(Math.max(u0, hu0 - sw), Math.min(u1, hu1 + sw), hdrB, hdrT);
+      if (hy0 > wy0 + 0.4) addMember(hu0, hu1, hy0 - pt, hy0);
+    }
+  }
+  // 14-ft LVL beam over sunken living room opening + gable end studs
+  pushBox(gZones[2], 1.66, 16.52, LV.CEIL1 - 0.65, LV.CEIL1 + 0.1, 16.6, 17.15);
+  for (const gx of [-0.05, 48.05]) {
+    for (let z = 1.2; z <= 16.0; z += 1.333) {
+      const yt = roofUnder(z);
+      if (yt > LV.PLATE + 0.2) pushBox(lZones[0], gx - 0.18, gx + 0.18, LV.PLATE, yt, z, z + sw);
+    }
+  }
+  // Loft 2x10 floor joists at 16" o.c. + 3/4" OSB subfloor sheets (W->E)
+  for (const [[x0, x1], [z0, z1]] of [[[14.52, 16.92], [0.52, 10.45]], [[14.52, 24.16], [10.45, 16.54]], [[24.16, 47.56], [0.52, 16.54]]]) {
+    pushBox(lJoists, x0, x1, LV.CEIL1 + 0.08, LV.LOFT - 0.12, z0, z0 + 0.15);
+    pushBox(lJoists, x0, x1, LV.CEIL1 + 0.08, LV.LOFT - 0.12, z1 - 0.15, z1);
+    for (let x = x0; x <= x1; x += 1.333) {
+      pushBox(lJoists, x, Math.min(x1, x + 0.13), LV.CEIL1 + 0.08, LV.LOFT - 0.12, z0 + 0.15, z1 - 0.15);
+    }
+    // Split subfloor into 3 W->E sections
+    for (let sx = x0; sx < x1 - 0.01; sx += 4.0) {
+      const sxb = Math.min(x1, sx + 4.0), xm = (sx + sxb) / 2;
+      const bi = xm < 24.5 ? 0 : xm < 36.0 ? 1 : 2;
+      pushBox(lSub[bi], sx, sxb - 0.02, LV.LOFT - 0.12, LV.LOFT - 0.04, z0, z1);
+    }
+  }
+  // Rough construction stair stringers & treads (built with framing so crew climbs to loft)
+  for (let k = 0; k < 12; k++) {
+    const z = 1.6 + k * 0.85, y = (1.5 + k) * (LV.LOFT / 14);
+    pushBox(rStair, 21.15, 24.1, y - 0.35, y - 0.08, z, z + 0.8);
+  }
+  pushBox(rStair, 21.1, 21.25, 0, LV.LOFT, 1.5, 11.8);
+  pushBox(rStair, 24.0, 24.15, 0, LV.LOFT, 1.5, 11.8);
+
+  for (const arr of gZones) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mLumber, g); BD.frameG.push(g); }
+  BD.loftJoists = new THREE.Group(); grp.add(BD.loftJoists); mergeBoxes(lJoists, mLumber, BD.loftJoists);
+  BD.roughStair = new THREE.Group(); grp.add(BD.roughStair); mergeBoxes(rStair, mLumber, BD.roughStair);
+  for (const arr of lSub) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mOsb, g); BD.loftSubfloors.push(g); }
+  for (const arr of lZones) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mLumber, g); BD.loftWalls.push(g); }
+
+  // Ridge beam + 4 W->E cathedral rafter chunks + flat wing joists
+  const ridgeArr = [], rChunks = [[], [], [], []], wJoists = [];
+  const addRafter = (arr, x0, x1, zA, yA, zB, yB, h = 0.55) => {
+    const dz = Math.abs(zB - zA);
+    if (dz <= 0.01) return;
+    const g = new THREE.BoxGeometry(x1 - x0, h, dz).translate((x0 + x1) / 2, h / 2, (zA + zB) / 2);
+    const pos = g.attributes.position, zMid = (zA + zB) / 2, yLo = zA < zB ? yA : yB, yHi = zA < zB ? yB : yA;
+    for (let i = 0; i < pos.count; i++) pos.setY(i, pos.getY(i) + (pos.getZ(i) < zMid ? yLo : yHi));
+    g.computeVertexNormals();
+    arr.push(g);
+  };
+  pushBox(ridgeArr, -0.4, 48.5, LV.RIDGE - 0.65, LV.RIDGE + 0.02, LV.RIDGE_Z - 0.16, LV.RIDGE_Z + 0.16);
+  const [dx0, dx1] = LV.DORMER_X;
+  for (let x = -0.3; x <= 48.4; x += 2.0) {
+    const xb = Math.min(48.45, x + 0.15);
+    const ci = Math.min(3, Math.max(0, Math.floor((x + 0.3) / 12.2)));
+    const arr = rChunks[ci];
+    const inSky = SKYLIGHTS.some(([s0, s1]) => xb > s0 + 0.15 && x < s1 - 0.15);
+    if (!inSky) {
+      addRafter(arr, x, xb, LV.ROOF_EDGE_N, roofUnder(LV.ROOF_EDGE_N), LV.RIDGE_Z, roofUnder(LV.RIDGE_Z));
+    } else {
+      addRafter(arr, x, xb, LV.ROOF_EDGE_N, roofUnder(LV.ROOF_EDGE_N), SKY_Z[0], roofUnder(SKY_Z[0]));
+      addRafter(arr, x, xb, SKY_Z[1], roofUnder(SKY_Z[1]), LV.RIDGE_Z, roofUnder(LV.RIDGE_Z));
+    }
+    if (x < dx0 || x >= dx1 - 0.1) {
+      addRafter(arr, x, xb, LV.RIDGE_Z, roofUnder(LV.RIDGE_Z), LV.ROOF_EDGE_S, roofUnder(LV.ROOF_EDGE_S));
+    } else {
+      addRafter(arr, x, xb, LV.RIDGE_Z, roofUnder(LV.RIDGE_Z), LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.55);
+      addRafter(arr, x, xb, LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.55, LV.ROOF_EDGE_S, LV.DORMER_EAVE_Y - 0.55, 0.45);
+    }
+  }
+  for (let z = 17.5; z <= 26.5; z += 1.417) pushBox(wJoists, 2.1, 16.9, 8.83, LV.WING_TOP - 0.25, z, z + 0.15);
+  for (let z = 17.5; z <= 27.2; z += 1.6) pushBox(wJoists, 17.4, 24.0, 8.25, LV.WING_TOP - 0.2, z, z + 0.15);
+  BD.ridgeBeam = new THREE.Group(); grp.add(BD.ridgeBeam); mergeBoxes(ridgeArr, mLumber, BD.ridgeBeam);
+  for (const arr of rChunks) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mLumber, g); BD.rafterChunks.push(g); }
+  BD.wingJoists = new THREE.Group(); grp.add(BD.wingJoists); mergeBoxes(wJoists, mLumber, BD.wingJoists);
+
+  // Celebratory topping-out evergreen bough on the ridge at the end of framing
+  BD.toppingTree = new THREE.Group(); BD.toppingTree.position.set(24.0, LV.RIDGE + 0.1, LV.RIDGE_Z); grp.add(BD.toppingTree);
+  {
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 1.2, 6).translate(0, 0.6, 0), mEarth);
+    const bough1 = new THREE.Mesh(new THREE.ConeGeometry(0.75, 1.5, 7).translate(0, 1.3, 0), cones.material);
+    const bough2 = new THREE.Mesh(new THREE.ConeGeometry(0.55, 1.2, 7).translate(0, 2.0, 0), cones.material);
+    BD.toppingTree.add(trunk, bough1, bough2);
+  }
+
+  // 2b. INCREMENTAL 7/16" OSB WALL & ROOF SHEATHING (4 W->E CHUNKS, NOV)
+  {
+    const ow = [[], [], [], []], or = [[], [], [], []];
+    for (const w of WALL_DEFS) {
+      if (!w.isExt || w.t[1] - w.t[0] < 0.22) continue;
+      const tc = (w.t[0] + w.t[1]) / 2, holes = w.holes || [];
+      const [u0, u1] = w.u, [wy0, wy1] = w.y;
+      const topAt = u => Math.max(wy0 + 0.5, w.top ? w.top(u) : (w.axis === 'z' ? Math.min(wy1, roofUnder(u) + 0.05) : wy1));
+      for (let u = u0; u < u1 - 0.05; u += 4.0) {
+        const ub = Math.min(u1, u + 4.0), um = (u + ub) / 2;
+        const ci = w.axis === 'x' ? Math.min(3, Math.max(0, Math.floor(um / 12.1))) : (tc < 10 ? 0 : tc > 36 ? 3 : 1);
+        const yt = topAt(um);
+        // Split around rough openings horizontally
+        const hit = holes.find(([hu0, hu1]) => um > hu0 && um < hu1);
+        if (!hit) {
+          if (w.axis === 'x') pushBox(ow[ci], u, ub - 0.03, wy0, yt, tc - 0.24, tc + 0.24);
+          else pushBox(ow[ci], tc - 0.24, tc + 0.24, wy0, yt, u, ub - 0.03);
+        } else {
+          const [, , hy0, hy1] = hit;
+          if (hy0 > wy0 + 0.1) {
+            if (w.axis === 'x') pushBox(ow[ci], u, ub - 0.03, wy0, hy0, tc - 0.24, tc + 0.24);
+            else pushBox(ow[ci], tc - 0.24, tc + 0.24, wy0, hy0, u, ub - 0.03);
+          }
+          if (yt > hy1 + 0.1) {
+            if (w.axis === 'x') pushBox(ow[ci], u, ub - 0.03, hy1, yt, tc - 0.24, tc + 0.24);
+            else pushBox(ow[ci], tc - 0.24, tc + 0.24, hy1, yt, u, ub - 0.03);
+          }
+        }
+      }
+    }
+    for (let x = -0.4; x < 48.3; x += 4.0) {
+      const xb = Math.min(48.4, x + 3.96), ci = Math.min(3, Math.max(0, Math.floor((x + 0.4) / 12.2)));
+      addRafter(or[ci], x, xb, LV.ROOF_EDGE_N, roofUnder(LV.ROOF_EDGE_N) + 0.55, LV.RIDGE_Z, roofUnder(LV.RIDGE_Z) + 0.55, 0.12);
+      if (x < dx0 || x >= dx1 - 0.5) {
+        addRafter(or[ci], x, xb, LV.RIDGE_Z, roofUnder(LV.RIDGE_Z) + 0.55, LV.ROOF_EDGE_S, roofUnder(LV.ROOF_EDGE_S) + 0.55, 0.12);
+      } else {
+        addRafter(or[ci], x, xb, LV.RIDGE_Z, roofUnder(LV.RIDGE_Z) + 0.55, LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.02, 0.12);
+        addRafter(or[ci], x, xb, LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.02, LV.ROOF_EDGE_S, LV.DORMER_EAVE_Y - 0.02, 0.12);
+      }
+    }
+    pushBox(or[0], 2.4, 16.6, LV.WING_TOP - 0.36, LV.WING_TOP - 0.28, 17.3, 26.6);
+    for (const arr of ow) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mOsb, g); BD.osbWallChunks.push(g); }
+    for (const arr of or) { const g = new THREE.Group(); grp.add(g); mergeBoxes(arr, mOsb, g); BD.osbRoofChunks.push(g); }
+  }
+
+  // 3. EXTERIOR SCAFFOLDING (SOUTH FACADE, NOV–DEC)
+  BD.scaffGrp = new THREE.Group(); grp.add(BD.scaffGrp);
+  {
+    const scSteel = [], scPlank = [];
+    for (const sx of [2.5, 11.5, 25.0, 34.0, 43.0]) {
+      for (const sz of [18.2, 20.4]) pushBox(scSteel, sx - 0.06, sx + 0.06, LV.GRADE, 11.2, sz - 0.06, sz + 0.06);
+      for (const sy of [4.5, 9.8]) pushBox(scSteel, sx - 0.05, sx + 0.05, sy - 0.05, sy + 0.05, 18.2, 20.4);
+    }
+    for (const [x0, x1] of [[2.5, 11.5], [25.0, 43.0]]) {
+      for (const sy of [4.5, 9.8]) {
+        pushBox(scPlank, x0 - 0.3, x1 + 0.3, sy + 0.05, sy + 0.18, 18.35, 20.25);
+        pushBox(scSteel, x0, x1, sy + 3.1, sy + 3.2, 20.32, 20.4);
+      }
+    }
+    mergeBoxes(scSteel, M('steel'), BD.scaffGrp);
+    mergeBoxes(scPlank, mLumber, BD.scaffGrp);
+  }
+
+  // 4. INTERIOR ROUGH MEP & MINERAL WOOL INSULATION (JAN CUTAWAY)
+  BD.mepDucts = new THREE.Group(); grp.add(BD.mepDucts);
+  BD.mepInsul = new THREE.Group(); grp.add(BD.mepInsul);
+  {
+    const wool = [], duct = [], pexR = [], pexB = [], wire = [];
+    // Mineral wool batts in north, west, and east exterior wall cavities
+    pushBox(wool, 0.6, 11.2, 0.2, 8.8, 0.12, 0.42);
+    pushBox(wool, 20.5, 24.4, 0.2, 8.8, 0.12, 0.42);
+    pushBox(wool, 27.8, 35.5, 0.2, 8.8, 0.12, 0.42);
+    pushBox(wool, 39.0, 47.4, 0.2, 8.8, 0.12, 0.42);
+    pushBox(wool, 0.12, 0.42, 0.2, 8.8, 5.8, 11.7);
+    pushBox(wool, 47.65, 47.95, 0.2, 8.8, 0.8, 3.9);
+    pushBox(wool, 47.65, 47.95, 0.2, 8.8, 7.3, 11.3);
+    // HRV / HVAC galvanized trunk & branch ducts
+    pushBox(duct, 25.5, 39.5, LV.LOFT + 6.4, LV.LOFT + 7.1, 2.2, 3.0);
+    pushBox(duct, 25.5, 26.3, 7.2, LV.LOFT + 6.8, 2.2, 3.0);
+    pushBox(duct, 15.5, 43.0, 7.25, 7.8, 13.6, 14.3);
+    for (const bx of [18.0, 27.0, 35.0, 42.0]) pushBox(duct, bx, bx + 0.55, 7.3, 7.75, 9.5, 13.6);
+    // PEX manifold risers & horizontal runs
+    pushBox(pexR, 2.0, 14.5, 2.6, 2.7, 0.52, 0.62);
+    pushBox(pexB, 2.0, 14.5, 2.3, 2.4, 0.52, 0.62);
+    pushBox(pexR, 33.4, 44.5, 2.6, 2.7, 3.85, 3.95);
+    pushBox(pexB, 33.4, 44.5, 2.3, 2.4, 3.85, 3.95);
+    pushBox(pexR, 41.05, 41.2, LV.LOFT + 0.2, LV.LOFT + 4.2, 2.5, 13.5);
+    pushBox(pexB, 41.22, 41.35, LV.LOFT + 0.2, LV.LOFT + 3.8, 2.5, 13.5);
+    // Yellow Romex wiring runs at 4'-0" height across interior partitions
+    pushBox(wire, 16.5, 45.0, 4.1, 4.18, 13.28, 13.38);
+    pushBox(wire, 24.3, 24.42, 4.1, 4.18, 1.0, 13.2);
+    pushBox(wire, 33.08, 33.2, 4.1, 4.18, 1.0, 13.2);
+    mergeBoxes(wool, mWool, BD.mepInsul);
+    mergeBoxes(duct, mDuct, BD.mepDucts);
+    mergeBoxes(pexR, mPexR, BD.mepDucts);
+    mergeBoxes(pexB, mPexB, BD.mepDucts);
+    mergeBoxes(wire, mString, BD.mepDucts);
+  }
+
+  // 5. CONSTRUCTION SITE SET DRESSING (DUMPSTER, PORTA-JOHN, LUMBER STACKS, MINI-EXCAVATOR, CREW)
+  BD.sitePropsGrp = new THREE.Group(); grp.add(BD.sitePropsGrp);
+  {
+    const dBoxes = [], pBoxes = [], lBoxes = [], tBoxes = [];
+    // 20-yard green roll-off dumpster at [33, LV.GRADE, 32]
+    const dx0 = 30.0, dx1 = 42.0, dz0 = 30.5, dz1 = 37.5, dy0 = LV.GRADE, dy1 = LV.GRADE + 4.6;
+    pushBox(dBoxes, dx0, dx1, dy0, dy0 + 0.25, dz0, dz1);
+    pushBox(dBoxes, dx0, dx1, dy0, dy1, dz0, dz0 + 0.22);
+    pushBox(dBoxes, dx0, dx1, dy0, dy1, dz1 - 0.22, dz1);
+    pushBox(dBoxes, dx0, dx0 + 0.22, dy0, dy1, dz0, dz1);
+    pushBox(dBoxes, dx1 - 0.22, dx1, dy0, dy1, dz0, dz1);
+    for (let x = dx0 + 1.5; x < dx1; x += 2.2) {
+      pushBox(dBoxes, x, x + 0.18, dy0 + 0.2, dy1, dz0 - 0.12, dz0);
+      pushBox(dBoxes, x, x + 0.18, dy0 + 0.2, dy1, dz1, dz1 + 0.12);
+    }
+    // Lumber & OSB offcuts inside dumpster + staged lumber stacks on dunnage blocks at [23, LV.GRADE, 32]
+    pushBox(lBoxes, dx0 + 0.8, dx1 - 1.2, dy0 + 0.3, dy0 + 3.2, dz0 + 0.5, dz1 - 0.5);
+    pushBox(lBoxes, 21.0, 27.5, LV.GRADE + 0.3, LV.GRADE + 2.1, 31.0, 34.2);
+    pushBox(lBoxes, 21.2, 27.3, LV.GRADE, LV.GRADE + 0.3, 31.3, 31.7);
+    pushBox(lBoxes, 21.2, 27.3, LV.GRADE, LV.GRADE + 0.3, 33.5, 33.9);
+    pushBox(tBoxes, 20.9, 24.8, LV.GRADE + 0.35, LV.GRADE + 2.2, 30.9, 34.3); // blue poly tarp over half the lumber stack
+    // Blue Porta-John at [45.5, LV.GRADE, 28.5]
+    pushBox(pBoxes, 44.5, 48.2, LV.GRADE, LV.GRADE + 7.2, 27.5, 31.2);
+    pushBox(tBoxes, 44.4, 48.3, LV.GRADE + 7.2, LV.GRADE + 7.6, 27.4, 31.3);
+    mergeBoxes(dBoxes, mDumpster, BD.sitePropsGrp);
+    mergeBoxes(lBoxes, mLumber, BD.sitePropsGrp);
+    mergeBoxes(pBoxes, mPorta, BD.sitePropsGrp);
+    mergeBoxes(tBoxes, mTarp, BD.sitePropsGrp);
+  }
+
+  // Yellow Mini-Excavator parked west of the sunken living pit during Sep–Oct
+  BD.excavator = new THREE.Group(); BD.excavator.position.set(-4.5, LV.GRADE, 23.0); BD.excavator.rotation.y = 1.15; grp.add(BD.excavator);
+  {
+    const exDark = [], exYel = [];
+    pushBox(exDark, -2.2, 2.2, 0, 1.1, -3.0, -1.9); // left track
+    pushBox(exDark, -2.2, 2.2, 0, 1.1, 1.9, 3.0);   // right track
+    pushBox(exDark, -1.6, 1.6, 0.4, 1.1, -1.9, 1.9); // undercarriage
+    pushBox(exDark, -2.8, -2.5, 0.1, 0.9, -2.8, 2.8); // dozer blade
+    pushBox(exYel, -2.2, 1.8, 1.1, 2.8, -2.1, 2.1);  // engine house
+    pushBox(exDark, -0.8, 1.4, 2.8, 6.2, -1.8, 1.2); // ROPS cab frame
+    pushBox(exYel, -0.9, 1.5, 6.2, 6.45, -1.9, 1.3); // cab roof
+    mergeBoxes(exDark, mPvc, BD.excavator);
+    mergeBoxes(exYel, mYellow, BD.excavator);
+    const boom = new THREE.Group(); boom.position.set(1.6, 2.1, 0); BD.excavator.add(boom);
+    const bArm = [], bBkt = [];
+    pushBox(bArm, 0, 4.8, 0, 0.55, -0.25, 0.25);
+    pushBox(bArm, 4.4, 5.0, -2.8, 0.4, -0.22, 0.22);
+    pushBox(bBkt, 4.2, 5.6, -3.5, -2.6, -0.75, 0.75);
+    mergeBoxes(bArm, mYellow, boom);
+    mergeBoxes(bBkt, mPvc, boom);
+    BD.excBoom = boom;
+  }
+
+  // 4 Articulated Construction Crew Figures with Hard Hats
+  const hatCols = [0xFFD026, 0xF5F5F2, 0xFFD026, 0xF27420];
+  const vestCols = [0xD9822B, 0xC8A028, 0x4A6E8A, 0xB84A28];
+  for (let i = 0; i < 4; i++) {
+    const w = makePerson( { coat: vestCols[i], pants: 0x3D526B, hair: 0x3A2B22, skin: 0xDFB192 }, false, 30 + i);
+    const hatM = new THREE.MeshStandardMaterial({ color: hatCols[i], roughness: 0.35 });
+    exteriorLightsOnly(hatM);
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(0.45, 14, 10, 0, Math.PI * 2, 0, Math.PI * 0.55), hatM);
+    dome.position.set(0, 5.14, 0);
+    const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.55, 0.05, 14), hatM);
+    brim.position.set(0, 5.12, 0.05);
+    w.add(dome, brim);
+    w.visible = false;
+    grp.add(w);
+    BD.workers.push(w);
+  }
+
+  // Populate phase ticks on #bd-marks
+  const marks = document.getElementById('bd-marks');
+  if (marks && !marks.children.length) {
+    BD_STAGES.forEach(s => {
+      const d = document.createElement('i');
+      d.style.left = (s.t * 100) + '%';
+      d.title = s.title;
+      marks.appendChild(d);
+    });
+  }
+}
+
+function bdActiveStage(t) {
+  for (let i = BD_STAGES.length - 1; i >= 0; i--) {
+    if (t >= BD_STAGES[i].t) return i;
+  }
+  return 0;
+}
+
+function bdApplyPhases(t, dt) {
+  // 1. Site prep, excavation, plumbing, rebar, formwork
+  if (BD.clearingGrp) BD.clearingGrp.visible = t < 0.032;
+  if (BD.siltDriveGrp) BD.siltDriveGrp.visible = t >= 0.012 && t < 0.88;
+  if (BD.trenchGrp) BD.trenchGrp.visible = t >= 0.022 && t < 0.11;
+  if (BD.earthGrp) BD.earthGrp.visible = t >= 0.04 && t < 0.14;
+  if (BD.batterGrp) BD.batterGrp.visible = t >= 0.042 && t < 0.135;
+  if (BD.slabPlumbGrp) BD.slabPlumbGrp.visible = t >= 0.055 && t < 0.58;
+  if (BD.rebarGrp) BD.rebarGrp.visible = t >= 0.085 && t < 0.125;
+  if (BD.formsGrp) BD.formsGrp.visible = t >= 0.075 && t < 0.145;
+  if (BD.excavator) {
+    BD.excavator.visible = t < 0.15;
+    if (BD.excavator.visible && BD.excBoom) {
+      BD.excBoom.rotation.z = -0.18 + Math.sin(fxT * 2.2) * 0.16;
+      BD.excavator.rotation.y = 1.15 + Math.sin(fxT * 0.9) * 0.22;
+    }
+  }
+
+  // 2. Full-height wall-by-wall & bay-by-bay framing (no pop-up scaling)
+  const gTimes = [0.145, 0.160, 0.175, 0.190];
+  for (let i = 0; i < BD.frameG.length; i++) {
+    BD.frameG[i].visible = t >= gTimes[i] && t < 0.59;
+  }
+  if (BD.loftJoists) BD.loftJoists.visible = t >= 0.205 && t < 0.59;
+  if (BD.roughStair) BD.roughStair.visible = t >= 0.215 && t < 0.68;
+  const subTimes = [0.225, 0.233, 0.241];
+  for (let i = 0; i < BD.loftSubfloors.length; i++) {
+    BD.loftSubfloors[i].visible = t >= subTimes[i] && t < 0.655;
+  }
+  const lwTimes = [0.246, 0.258, 0.270];
+  for (let i = 0; i < BD.loftWalls.length; i++) {
+    BD.loftWalls[i].visible = t >= lwTimes[i] && t < 0.59;
+  }
+  if (BD.ridgeBeam) BD.ridgeBeam.visible = t >= 0.280 && t < 0.59;
+  const rTimes = [0.288, 0.298, 0.308, 0.318];
+  for (let i = 0; i < BD.rafterChunks.length; i++) {
+    BD.rafterChunks[i].visible = t >= rTimes[i] && t < 0.59;
+  }
+  if (BD.wingJoists) BD.wingJoists.visible = t >= 0.305 && t < 0.59;
+  if (BD.toppingTree) BD.toppingTree.visible = t >= 0.320 && t < 0.365;
+
+  // 3. Incremental OSB sheathing (0.33–0.38) before housewrap (0.38)
+  const owTimes = [0.330, 0.342, 0.354, 0.366];
+  for (let i = 0; i < BD.osbWallChunks.length; i++) {
+    BD.osbWallChunks[i].visible = t >= owTimes[i] && t < 0.382;
+  }
+  const orTimes = [0.336, 0.348, 0.360, 0.372];
+  for (let i = 0; i < BD.osbRoofChunks.length; i++) {
+    BD.osbRoofChunks[i].visible = t >= orTimes[i] && t < 0.386;
+  }
+
+  if (BD.scaffGrp) BD.scaffGrp.visible = t >= 0.33 && t < 0.525;
+  if (BD.mepDucts) BD.mepDucts.visible = t >= 0.53 && t < 0.59;
+  if (BD.mepInsul) BD.mepInsul.visible = t >= 0.56 && t < 0.59;
+  if (BD.sitePropsGrp) BD.sitePropsGrp.visible = t < 0.90;
+
+  // 4. Material progression: Housewrap -> Wood/Charred Siding; Underlayment -> Metal Roof; Unpainted GWB -> Chalk
+  if (MATS.siding && MATS.sidingWood) {
+    if (t < 0.475) {
+      MATS.siding.color.setHex(0xEFECE4); MATS.sidingWood.color.setHex(0xE8E4DA); // White housewrap
+    } else if (t < 0.495) {
+      MATS.siding.color.setHex(0xEFECE4); MATS.sidingWood.color.setHex(0xC9A273); // Wing natural wood installed first
+    } else {
+      MATS.siding.color.setHex(C.siding); MATS.sidingWood.color.setHex(0xC9A273); // Main charred siding installed
+    }
+  }
+  if (MATS.roof) {
+    if (t < 0.455) {
+      MATS.roof.color.setHex(0x485058); MATS.roof.metalness = 0.05; MATS.roof.roughness = 0.8; // Synthetic roof underlayment
+    } else {
+      MATS.roof.color.setHex(C.roof); MATS.roof.metalness = 0.35; MATS.roof.roughness = 0.45; // Standing-seam metal roof
+    }
+  }
+  if (MATS.chalk) {
+    if (t >= 0.59 && t < 0.625) MATS.chalk.color.setHex(0xDEDAD0); // Unpainted gypsum board / tape compound
+    else MATS.chalk.color.setHex(C.chalk);                        // Painted Chalk finish
+  }
+
+  // 5. Granular permanent house mesh visibility
+  const visMesh = m => {
+    const p = m.userData.phase, fl = m.userData.bdFloor || '', mn = m.userData.bdMat || '', r = m.userData.room || '';
+    switch (p) {
+      case 'slab':      return fl === 'site' ? (mn === 'gravel' ? t >= 0.86 : t >= 0.105) : t >= 0.105;
+      case 'decks':     return mn === 'concrete' || mn === 'steel' ? t >= 0.185 : t >= 0.20;
+      case 'siding':    return t >= 0.382;
+      case 'roofing':   return t >= 0.386;
+      case 'windows':   return fl === 'ground' ? t >= 0.405 : fl === 'loft' ? t >= 0.425 : t >= 0.445;
+      case 'drywall':   return fl === 'ground' ? t >= 0.59 : t >= 0.605;
+      case 'floorTile': return mn === 'wood' ? t >= 0.655 : t >= 0.64;
+      case 'stair':     return t >= 0.68;
+      case 'millwork':  return mn === 'woodPanel' ? t >= 0.72 : t >= 0.745;
+      case 'doors':     return t >= 0.775;
+      case 'fixtures':  return (mn === 'lamp' || mn === 'creamGlass' || mn === 'paper') ? t >= 0.835 : t >= 0.81;
+      case 'mep':       return t >= 0.86;
+      case 'furniture': return (r === 'guestBed' || r === 'office' || r === 'bedroom' || r === 'loft') ? t >= 0.90 : t >= 0.925;
+      default:          return false;
+    }
+  };
+  let anyChanged = false;
+  for (let i = 0; i < PHASE_MESHES.length; i++) {
+    const m = PHASE_MESHES[i], wantVis = visMesh(m), wantHid = !wantVis;
+    if (!!m.userData.phaseHidden !== wantHid) {
+      m.userData.phaseHidden = wantHid;
+      if (!m.userData.inCutSet) m.visible = wantVis;
+      anyChanged = true;
+    }
+  }
+
+  // 6. Exterior landscape & patio groups (installed in May move-in phase)
+  const extDone = t >= 0.935;
+  if (typeof PATIO !== 'undefined' && PATIO.grp) {
+    PATIO.grp.visible = extDone;
+    if (PATIO.setPatioFire) PATIO.setPatioFire(t >= 0.96);
+  }
+  if (typeof WEST_DECK !== 'undefined' && WEST_DECK.grp) WEST_DECK.grp.visible = t >= 0.92;
+  if (typeof GRILL !== 'undefined' && GRILL.grp) GRILL.grp.visible = t >= 0.92;
+  if (typeof PLANTS !== 'undefined' && PLANTS.meshes) {
+    for (const pm of PLANTS.meshes) pm.visible = extDone;
+  }
+  if (typeof CAR !== 'undefined' && CAR.chargerMeshes) {
+    for (const cm of CAR.chargerMeshes) cm.visible = t >= 0.86;
+  }
+  if (typeof CAR !== 'undefined' && CAR.car) {
+    if (t < 0.945) {
+      CAR.car.visible = false;
+      CAR.plug.visible = false; CAR.cable.visible = false;
+    } else {
+      CAR.car.visible = true;
+      const driveP = Math.max(0, 1 - (t - 0.945) / 0.035);
+      const pt = tlDrive.at(driveP);
+      CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
+      CAR.plug.visible = driveP < 0.02; CAR.cable.visible = driveP < 0.02;
+    }
+  }
+
+  // 7. Switch between exterior shell view and cutaway interior view when crews work inside
+  const sIdx = bdActiveStage(t), stg = BD_STAGES[sIdx];
+  let wantWalls = stg.walls, wantRoof = stg.roof;
+  if (sIdx === 13) { // April: cutaway for appliances/lighting (0.81–0.86), then exterior for MEP & grading (0.86–0.90)
+    wantWalls = t < 0.86 ? 'cutaway' : 'up';
+    wantRoof = t >= 0.86;
+  } else if (sIdx === 14) { // May: cutaway for furniture delivery (0.90–0.94), then evening exterior for patio & dusk move-in
+    wantWalls = t < 0.94 ? 'cutaway' : 'up';
+    wantRoof = t >= 0.94;
+  }
+  tlSetWallsRoof(wantWalls, wantRoof, 'both');
+  if (anyChanged) { updateWalls(); markShadows(); }
+
+  // 8. Animate construction crew figures in active work zones
+  const crew = stg.crew || [];
+  for (let i = 0; i < BD.workers.length; i++) {
+    const w = BD.workers[i], c = crew[i];
+    if (!c) { w.visible = false; continue; }
+    w.visible = true;
+    const [cx, cy, cz, ch] = c;
+    const sway = Math.sin(fxT * 2.4 + i * 1.7);
+    w.position.set(cx + Math.sin(fxT * 0.7 + i * 2.1) * 0.65, cy, cz + Math.cos(fxT * 0.6 + i * 1.9) * 0.65);
+    w.rotation.y = ch + sway * 0.25;
+    const ud = w.userData;
+    if (ud.armL) {
+      ud.armL.rotation.x = -0.55 + sway * 0.45;
+      ud.armR.rotation.x = -0.65 - sway * 0.55;
+      ud.legL.rotation.x = sway * 0.18;
+      ud.legR.rotation.x = -sway * 0.18;
+    }
+  }
+}
+
+function bdApplyEnv(dt, immediate) {
+  const sIdx = bdActiveStage(BD.t), stg = BD_STAGES[sIdx];
+  const mIdx = stg.mIdx;
+  const stgSpan = Math.max(0.01, stg.end - stg.t);
+  const stgFrac = Math.max(0, Math.min(1, (BD.t - stg.t) / stgSpan));
+  // Map stage month (0=Sep..8=May) to day-of-year so seasons & snow align with the stage captions
+  const monthDays = [244, 274, 305, 335, 365, 396, 424, 455, 485];
+  const day = (monthDays[mIdx] + stgFrac * 26) % 365;
+  // No snow or white winter ground until late December (day >= 355); keep bare autumn/late-fall earth before Dec 21
+  const seasonDay = (day >= 298 && day < 355) ? 298 + ((day - 298) / 57) * 18 : day;
+  const daySky = tlApplyContinuousSeasons(seasonDay);
+  if (day >= 244 && day < 355) {
+    TL.snowK = 0;
+    if (MATS.snow) { MATS.snow.opacity = 0; MATS.snow.depthWrite = false; }
+    for (const m of snowParts) m.visible = false;
+  } else {
+    for (const m of snowParts) if (m.parent === G.site && BD.t < 0.20) m.visible = false;
+  }
+  tlStepEnvFx(dt, (day >= 298 && day < 355) ? 327 : day);
+
+  BD.hourTarget = stg.hour;
+  if (sIdx !== BD.cur) {
+    BD.cur = sIdx;
+    showCap(stg.caption);
+  }
+  const prevSun = BD.sunCur;
+  if (immediate) BD.sunCur = BD.hourTarget;
+  else BD.sunCur += (BD.hourTarget - BD.sunCur) * Math.min(1, dt * 1.4);
+  state.sun = Math.max(6, Math.min(19.5, BD.sunCur));
+
+  const wantDusk = Math.max(0, Math.min(1, (BD.sunCur - 16.5) / 2.5));
+  if (immediate) BD.duskCur = wantDusk;
+  else BD.duskCur += (wantDusk - BD.duskCur) * Math.min(1, dt * 1.8);
+  const dk = BD.duskCur;
+
+  const h = state.sun, az = (h - 12.5) / 6.5 * (Math.PI / 2);
+  const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
+  const D = 27, ce = Math.cos(el);
+  sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
+  if (immediate || Math.abs(BD.sunCur - prevSun) > 0.025) { if (immediate || ++shTick % (LITE ? 10 : 4) === 0) markShadows(); }
+
+  const sElev = Math.min(1, Math.sin(el) * 1.6);
+  const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
+  sun.intensity = daySunI * (1 - dk) + NIGHTSET.sun * dk;
+  _tc1.setRGB(1, 0.8 + 0.15 * sElev, 0.62 + 0.27 * sElev);
+  sun.color.lerpColors(_tc1, _tc2.setHex(NIGHTSET.sunColor), dk);
+  hemi.intensity = dayHemiI * (1 - dk) + NIGHTSET.hemi * dk;
+  hemi.color.lerpColors(_tc1.setHex(0xf4f1ea), _tc2.setHex(NIGHTSET.hemiSky), dk);
+  hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x3d3a35), dk);
+  fill.intensity = DAY.fill * (1 - dk) + NIGHTSET.fill * dk;
+  renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
+  scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
+  if (scene.fog) scene.fog.color.copy(scene.background);
+
+  // Interior work lights during cutaway phases (t >= 0.53) and warm evening glow at May move-in (t >= 0.92)
+  const hasLight = BD.t >= 0.53;
+  const extK = BD.t >= 0.85 ? Math.min(1, Math.max(0, (BD.sunCur - 16.0) / 2.0)) : 0;
+  const intK = hasLight ? Math.max(0.55, extK) : 0;
+  for (const { L, cd } of nightRig) {
+    const k = L.castShadow ? extK : intK;
+    L.visible = true;
+    L.intensity = k > 0.01 ? cd * NIGHTSET.dim * k : 0;
+  }
+  lampMat.emissiveIntensity = BD.t >= 0.83 ? 2.6 * intK : 0;
+  paperMat.emissiveIntensity = BD.t >= 0.83 ? 1.2 * intK : 0;
+  creamMat.emissiveIntensity = BD.t >= 0.83 ? 1.4 * intK : 0;
+  const glass = MATS.glass;
+  if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = BD.t >= 0.83 ? 0.28 * extK : 0; }
+  tlSetFire(BD.t >= 0.95);
+
+  const ml = document.getElementById('bd-month');
+  if (ml && ml.textContent !== BD_MONTHS[mIdx]) ml.textContent = BD_MONTHS[mIdx];
+}
+
+const _bdCamGoal = new THREE.Vector3(), _bdCamTarget = new THREE.Vector3();
+function bdStepCamera(dt, immediate) {
+  const since = (performance.now() - BD.lastInteract) / 1000;
+  if (!immediate && since < 3.5) return;
+  const ramp = immediate ? 1 : Math.min(1, Math.max(0, (since - 3.5) / 1.5));
+  const sIdx = bdActiveStage(BD.t), stg = BD_STAGES[sIdx];
+  const p = toW(...stg.cam), q = toW(...stg.look);
+  const sway = -0.10 + Math.sin(BD.t * Math.PI * 4) * 0.16;
+  const ox = p.x - q.x, oz = p.z - q.z, c = Math.cos(sway), s = Math.sin(sway);
+  _bdCamTarget.copy(q);
+  _bdCamGoal.set(q.x + ox * c + oz * s, p.y, q.z - ox * s + oz * c);
+  if (camera.aspect < 0.9) {
+    const pull = Math.min(1.5, Math.max(1, 0.85 / camera.aspect));
+    _bdCamGoal.sub(_bdCamTarget).multiplyScalar(pull).add(_bdCamTarget);
+  }
+  const k = immediate ? 1 : Math.min(1, dt * 1.6) * ramp;
+  camera.position.lerp(_bdCamGoal, k);
+  controls.target.lerp(_bdCamTarget, k);
+  camera.lookAt(controls.target);
+  if (state.walls === 'cutaway') updateWalls();
+}
+
+function bdTick(dt) {
+  if (WALK.on || TOUR.on || TL.on) { exitBuild(); return; }
+  if (BD.playing) BD.t = (BD.t + dt * BD.speed / BD_LOOP) % 1;
+  bdApplyPhases(BD.t, dt);
+  bdApplyEnv(dt, false);
+  bdStepCamera(dt, false);
+  if (!BD.scrubbing) {
+    const sc = document.getElementById('bd-scrub');
+    if (sc) sc.value = String(Math.round(BD.t * 1000));
+  }
+  wake();
+}
+
+function enterBuild() {
+  if (BD.on) { exitBuild(); return; }
+  if (WALK.on) exitWalk();
+  if (TOUR.on) exitTour();
+  if (TL.on) exitTimeline();
+  const tvD = tvScreen ? actOf(tvScreen) : null;
+  BD.saved = {
+    state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(),
+    carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0,
+    grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed
+  };
+  bdEnsureBuilt();
+  BD.on = true; BD.playing = true; BD.t = 0; BD.speed = 1; BD.cur = -1;
+  BD.sunCur = BD_STAGES[0].hour; BD.hourTarget = BD_STAGES[0].hour; BD.duskCur = 0; BD.lastInteract = 0;
+  Object.assign(state, { floors: 'both', explode: 0, labels: false, night: false });
+  G.ground.visible = true; G.loft.visible = true;
+  G.loft.position.y = 0; G.wingRoof.position.y = 0; G.mainRoof.position.y = 0;
+  document.getElementById('labels').style.display = 'none';
+  labels.forEach(l => { l.visible = false; });
+  nightOn = false;
+  tlSetFire(false); tlSetGrill(false); tlSetTV(0); tlSetFan(0); tlSetFrontDoor(false); tlSetSideDoor(false);
+  BD.grp.visible = true;
+  document.body.classList.add('building');
+  document.getElementById('bdbar').hidden = false;
+  document.getElementById('bd-play').textContent = '❚❚';
+  document.querySelector('#btn-build b').textContent = 'Exit build';
+  bdApplyPhases(0, 0);
+  bdApplyEnv(0, true);
+  bdStepCamera(0, true);
+  markShadows();
+  wake(10);
+}
+
+function exitBuild() {
+  if (!BD.on) return;
+  document.body.classList.remove('building');
+  BD.on = false; BD.playing = false; BD.cur = -1;
+  if (BD.grp) BD.grp.visible = false;
+  if (TL.wx) TL.wx.mesh.visible = false;
+  if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
+  if (TL.fallLeaves) { TL.fallLeaves.mesh.visible = false; TL.fallLeaves.lastK = -1; }
+  if (TL.tracks) TL.tracks.mesh.visible = false;
+
+  // Restore original material colors & properties
+  if (MATS.siding) MATS.siding.color.setHex(C.siding);
+  if (MATS.sidingWood) MATS.sidingWood.color.setHex(0xC9A273);
+  if (MATS.roof) { MATS.roof.color.setHex(C.roof); MATS.roof.metalness = 0.35; MATS.roof.roughness = 0.45; }
+  if (MATS.chalk) MATS.chalk.color.setHex(C.chalk);
+  if (MATS.snow) { MATS.snow.transparent = false; MATS.snow.opacity = 1; MATS.snow.depthWrite = true; }
+  snowParts.forEach(m => { m.position.y = 0; m.scale.y = 1; });
+
+  // Restore visibility of all house phases and landscape groups
+  for (let i = 0; i < PHASE_MESHES.length; i++) {
+    const m = PHASE_MESHES[i];
+    m.userData.phaseHidden = false;
+    if (!m.userData.inCutSet) m.visible = true;
+  }
+  if (typeof PATIO !== 'undefined' && PATIO.grp) {
+    PATIO.grp.visible = true;
+    if (PATIO.setPatioFire) PATIO.setPatioFire(true);
+  }
+  if (typeof WEST_DECK !== 'undefined' && WEST_DECK.grp) {
+    WEST_DECK.grp.visible = true;
+    WEST_DECK.setNight(nightOn);
+  }
+  if (typeof GRILL !== 'undefined' && GRILL.grp) GRILL.grp.visible = true;
+  if (typeof PLANTS !== 'undefined' && PLANTS.meshes) {
+    for (const pm of PLANTS.meshes) pm.visible = true;
+  }
+  if (typeof CAR !== 'undefined' && CAR.chargerMeshes) {
+    for (const cm of CAR.chargerMeshes) cm.visible = true;
+  }
+  const pt = tlDrive.at(0);
+  CAR.car.visible = true;
+  CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
+  CAR.plug.visible = true; CAR.cable.visible = true;
+
+  if (BD.saved) {
+    tlSetFire(BD.saved.fire);
+    tlSetGrill(BD.saved.grill);
+    tlSetTV(BD.saved.tv);
+    tlSetFan(BD.saved.fan);
+    Object.assign(state, BD.saved.state);
+    seasonOn = null; nightOn = !state.night; applyState();
+    controls.enabled = true;
+    flyTo(BD.saved.pos.clone(), BD.saved.target.clone(), 0.9);
+  }
+  updateWalls();
+  markShadows();
+  document.getElementById('bdbar').hidden = true;
+  document.querySelector('#btn-build b').textContent = 'Build the house';
+  showCap('');
+}
+
+document.getElementById('btn-build').addEventListener('click', enterBuild);
+document.getElementById('bd-exit').addEventListener('click', exitBuild);
+document.getElementById('bd-play').addEventListener('click', e => { BD.playing = !BD.playing; e.target.textContent = BD.playing ? '❚❚' : '▶'; });
+document.getElementById('bd-scrub').addEventListener('input', e => {
+  BD.scrubbing = true; BD.playing = false; document.getElementById('bd-play').textContent = '▶';
+  BD.t = +e.target.value / 1000;
+  bdApplyPhases(BD.t, 0);
+  bdApplyEnv(0, true);
+  bdStepCamera(0, true);
+  markShadows();
+  wake(6);
+});
+document.getElementById('bd-scrub').addEventListener('change', () => { BD.scrubbing = false; });
 
 function animating() {                                     // things that move on their own
   return (FAN.speed && FAN.spin) || (fireLight.visible && fireLight.intensity > 0) || (tvScreen && tvScreen.visible) || smoke.some(sp => sp.visible) || skyFx.some(f => f.on) || LIGHTS_OUT.busy
-    || FX_SHOWERS.some(S => S.mesh && (S.mesh.visible || S.fog > 0.01)) || TL.on;
+    || FX_SHOWERS.some(S => S.mesh && (S.mesh.visible || S.fog > 0.01)) || TL.on || BD.on;
 }
 let lastDraw = 0;
 renderer.setAnimationLoop(() => {
@@ -5483,9 +6618,55 @@ const TINY = [];
     if (maxDim < 0.85) { o.receiveShadow = false; o.layers.set(1); TINY.push(o); }
   });
   camera.layers.enable(1);
-  // Merge static non-interactive, non-cutaway meshes sharing a material inside each floor/roof group to cut draw calls by ~70%
+  function meshBuildPhase(m, key) {
+    if (m.userData.phase) return m.userData.phase;
+    const mn = (m.material && (m.material.userData?.base?.name || m.material.name)) || '';
+    if (mn === 'snow') return 'snow';
+    if (key === 'site') {
+      if (mn === 'gravel' || mn === 'foundation' || mn === 'concreteFloor') return 'slab';
+      if (mn === 'deck' || mn === 'skirt' || mn === 'steel') return 'decks';
+      return 'mep';
+    }
+    if (key === 'mainRoof' || key === 'wingRoof') {
+      if (mn === 'ceiling' || mn === 'lamp') return 'drywall';
+      if (mn === 'woodPanel') return 'millwork';
+      if (mn === 'siding' || mn === 'sidingWood' || mn === 'soffit') return 'siding';
+      return 'roofing';
+    }
+    const r = m.userData.room || '';
+    if (mn === 'concreteFloor') return 'slab';
+    if (mn === 'siding' || mn === 'sidingWood') return 'siding';
+    if (mn === 'chalk' || mn === 'ceiling' || mn === 'panel') return 'drywall';
+    if (mn === 'frame' || mn === 'glass') {
+      if (r === 'guestBath' || r === 'bath2') return 'fixtures';
+      if (r === 'living' && m === (FX_TV && FX_TV.box)) return 'furniture';
+      if (r === 'living' && m !== (FX_FIRE && FX_FIRE.glass)) return 'furniture';
+      if (r === 'kitchen') return 'fixtures';
+      return 'windows';
+    }
+    if (mn === 'wineTile' || mn === 'wineGloss' || mn === 'nautical' || mn === 'biscuit' || mn === 'biscuitShade' || mn === 'brownberry' || mn === 'wood') return 'floorTile';
+    if (mn === 'woodStair' || mn === 'woodRiser') return r === 'living' ? 'furniture' : 'stair';
+    if (mn === 'woodPanel' || mn === 'burgundy' || mn === 'burgundyB' || mn === 'burgundyF' || mn === 'oakB' || mn === 'oakF' || mn === 'carcassIn' || mn === 'bore' || mn === 'steelTop' || mn === 'steelBowl' || mn === 'steelBowlF' || mn === 'mosaic') return 'millwork';
+    if (mn === 'millwork') return (r === 'guestBed' || r === 'office' || r === 'bedroom') ? 'furniture' : 'millwork';
+    if (mn === 'oak') return (r === 'guestBed' || r === 'office') ? 'furniture' : 'millwork';
+    if (mn === 'door' || mn === 'lever') return (m.userData.passable ? 'windows' : 'doors');
+    if (mn === 'sofa' || mn === 'sofaBase' || mn === 'rug' || mn === 'sage' || mn === 'fabric' || mn === 'fabricBase') return 'furniture';
+    if (mn === 'porcelain' || mn === 'chrome' || mn === 'stone' || mn === 'mirror' || mn === 'appliance' || mn === 'fridgeIn' || mn === 'fridgeLow' || mn === 'fridgeDoor' || mn === 'ovenGlass' || mn === 'lamp' || mn === 'creamGlass' || mn === 'paper' || mn === 'hoodLed' || mn === 'mwLed' || mn === 'beverageLemon') {
+      if (r === 'guestBed' || r === 'office' || r === 'bedroom') return 'furniture';
+      return 'fixtures';
+    }
+    if (mn === 'steel') {
+      if (r === 'office') return 'furniture';
+      if (r === 'living' || r === 'corridor') return 'fixtures';
+      return 'stair';
+    }
+    return 'fixtures';
+  }
+  for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
+    G[key].traverse(m => { if (m.isMesh && !m.isInstancedMesh && m.material?.name !== 'wallCap') m.userData.phase = meshBuildPhase(m, key); });
+  }
   const cutSet = new Set();
-  for (const el of CUT.els) { cutSet.add(el.m); if (el.cap) cutSet.add(el.cap); }
+  for (const el of CUT.els) { cutSet.add(el.m); if (el.cap) { cutSet.add(el.cap); el.cap.userData.phase = el.m.userData.phase; } }
   const snowSet = new Set(snowParts);
   for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
     const grp = G[key], buckets = new Map();
@@ -5495,7 +6676,7 @@ const TINY = [];
       if (m === tvScreen) continue;
       const g = m.geometry;
       const attrSig = Object.keys(g.attributes).sort().join(',');
-      const bKey = `${m.material.uuid}|${m.userData.room || ''}|${m.castShadow ? 1 : 0}|${m.receiveShadow ? 1 : 0}|${m.layers.mask}|${m.userData.passable ? 1 : 0}|${g.index ? 1 : 0}|${attrSig}`;
+      const bKey = `${m.material.uuid}|${m.userData.phase || ''}|${m.userData.room || ''}|${m.castShadow ? 1 : 0}|${m.receiveShadow ? 1 : 0}|${m.layers.mask}|${m.userData.passable ? 1 : 0}|${g.index ? 1 : 0}|${attrSig}`;
       let list = buckets.get(bKey);
       if (!list) { list = []; buckets.set(bKey, list); }
       list.push(m);
@@ -5508,11 +6689,25 @@ const TINY = [];
       const ref = list[0], bm = new THREE.Mesh(merged, ref.material);
       bm.castShadow = ref.castShadow; bm.receiveShadow = ref.receiveShadow; bm.layers.mask = ref.layers.mask;
       if (ref.userData.room) bm.userData.room = ref.userData.room;
+      if (ref.userData.phase) bm.userData.phase = ref.userData.phase;
       if (ref.userData.passable) bm.userData.passable = true;
       bm.userData.nocut = true;
       grp.add(bm);
       for (const m of list) grp.remove(m);
     }
+  }
+  for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
+    G[key].traverse(m => {
+      if (!m.isMesh || m.isInstancedMesh || snowSet.has(m) || m === tvScreen || m.material?.name === 'wallCap') return;
+      if (FX_SHOWERS.some(S => m === S.steam || m === S.mesh)) return;
+      if (m.material && m.material.transparent && m.material.opacity === 0) return;
+      if (m.userData.phase) {
+        if (cutSet.has(m)) m.userData.inCutSet = true;
+        m.userData.bdFloor = key;
+        m.userData.bdMat = (m.material && (m.material.userData?.base?.name || m.material.name)) || '';
+        PHASE_MESHES.push(m);
+      }
+    });
   }
   function batchGroupDeep(grp, skipSet) {
     grp.updateMatrixWorld(true);
@@ -5552,5 +6747,5 @@ const TINY = [];
 }
 setTimeout(tlEnsureBuilt, 80);
 addEventListener('visibilitychange', () => wake(10)); addEventListener('pointerdown', () => wake(10), true); addEventListener('pointerup', () => wake(10), true); addEventListener('keydown', () => wake(6), true);
-window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY, wake, TL };
+window.__house = { THREE, scene, camera, controls, renderer, state, applyState, CUT, updateWalls, root, G, ACTS, useAct, pickAct, ROOMS, select, WALK, TOUR, enterWalk, exitWalk, enterTour, exitTour, tourGo, frame, TOUR_STOPS, floorAt, toW, GOV, TINY, wake, TL, BD, enterBuild, exitBuild };
 </script>
