@@ -3085,7 +3085,7 @@ function interactStep(dt) {
 /* =====================================================================
    9. UI STATE
    ===================================================================== */
-const state = { floors: 'both', walls: 'cutaway', sun: 14, roof: false, labels: false, explode: 0, night: false, season: 'fall' };
+const state = { floors: 'both', walls: 'up', sun: 14, roof: true, labels: false, explode: 0, night: false, season: 'fall' };
 let seasonOn = null;
 var siteReady = false;   // set once the landscape (section 12) exists
 function applyState() {
@@ -4033,34 +4033,33 @@ function governor(drew) {                                  // phones: trade reso
    through the year: seasons, sun, night, tree canopies, sprouting spring
    wildflowers, and site-wide weather (falling snow, blossom petals,
    summer fireflies, tumbling autumn leaves) evolve continuously while the
-   camera gently pans around the house. ADD A MOMENT: append one object to
-   MOMENTS — no other code changes needed. No dogs, no real people.
+   camera gently sways across a lower, closer view of the house and woods.
+   ADD A MOMENT: append one object to MOMENTS — no other code changes needed.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, cam: null, panAz: 0, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: false, fire: false, fireSaved: false, seasonCur: null, nightApplied: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: false, fire: false, seasonCur: null, nightApplied: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
 const TL_LOOP = 56;                        // snappy base loop (~45-50s effective with fast-forward between moments)
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
 const SECOND_CAR = 0x5A6B7A;
 const MOMENTS = [
-  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow', t: 20 / 365, dur: 0.085, hour: 16.5, camera: 'wide', camAz: 0.45, occupied: true, fire: true, car: 'arrive',
+  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow', t: 20 / 365, dur: 0.085, hour: 16.5, occupied: true, fire: true, car: 'arrive',
     cast: [
-      { who: 'a', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.15, span: 0.55, hideAtEnd: true },
-      { who: 'b', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.28, span: 0.55, hideAtEnd: true },
-      { who: 'a', path: [[14, -1.5, 22]], delay: 0.72, span: 0.01, face: -0.7 },
+      { who: 'a', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.34, span: 0.55, hideAtEnd: true },
+      { who: 'b', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.42, span: 0.55, hideAtEnd: true },
     ] },
-  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — spring thaw and first blooms', t: 82 / 365, dur: 0.08, hour: 10, camera: 'wide', camAz: 0.05, occupied: false, car: 'parked',
+  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — spring thaw and first blooms', t: 82 / 365, dur: 0.08, hour: 10, occupied: false, car: 'parked',
     cast: [
-      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [34, -2.25, 26]], delay: 0.05, span: 0.65, face: 0.4 },
+      { who: 'g', path: [[20.5, 0, 20], [21, -1.2, 30], [27, -2.25, 31.5], [34, -2.25, 26]], delay: 0.05, span: 0.65, face: 0.4 },
       { who: 'g', path: [[-11, -2.25, 37], [-14, -2.25, 40]], delay: 0.15, span: 0.55, face: -0.8 },
     ] },
-  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch under the birches', t: 132 / 365, dur: 0.085, hour: 13, camera: 'wide', camAz: -0.55, occupied: false, car: 'parked',
+  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch under the birches', t: 132 / 365, dur: 0.085, hour: 13, occupied: false, car: 'parked',
     props: [{ kind: 'basket', at: [-15, -0.05, 41] }],
     cast: [
       { who: 'g', path: [[-16.2, -2.25, 39.2]], sit: true, face: 0.55 },
       { who: 'g', path: [[-13.8, -2.25, 42.8]], sit: true, face: -2.55 },
       { who: 'g', path: [[28, -2.25, 25], [38, -2.25, 24], [28, -2.25, 25]], loop: true, delay: 0, span: 0.85 },
     ] },
-  { id: 'summer-lawn', title: 'Afternoon on the lawn', caption: 'Early July — afternoon on the south lawn', t: 185 / 365, dur: 0.09, hour: 16.5, camera: 'wide', camAz: 0.75, occupied: false, car: 'parked', ball: true,
+  { id: 'summer-lawn', title: 'Afternoon on the lawn', caption: 'Early July — afternoon on the south lawn', t: 185 / 365, dur: 0.09, hour: 16.5, occupied: false, car: 'parked', ball: true,
     props: [{ kind: 'blanket', at: [33, -2.25, 26.5], rot: -0.3 }, { kind: 'basket', at: [34.2, -2.25, 27.2] }],
     cast: [
       { who: 'g', path: [[32, -2.25, 26]], sit: true, face: 0.8 },
@@ -4068,26 +4067,24 @@ const MOMENTS = [
       { who: 'g', kid: true, path: [[36, -2.25, 23], [43, -2.25, 25], [36, -2.25, 23]], loop: true, delay: 0, span: 0.45 },
       { who: 'g', kid: true, path: [[43, -2.25, 25], [36, -2.25, 23], [43, -2.25, 25]], loop: true, delay: 0.22, span: 0.45 },
     ] },
-  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — one stay ends, another begins', t: 228 / 365, dur: 0.09, hour: 11, camera: 'wide', camAz: 0.25, occupied: false, car: 'turnover',
+  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — one stay ends, another begins', t: 228 / 365, dur: 0.095, hour: 11, occupied: false, car: 'turnover',
     cast: [
-      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0, span: 0.34, hideAtEnd: true },
-      { who: 'g', path: [[19.5, 0, 19], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [56, -2.25, 34]], delay: 0.07, span: 0.34, hideAtEnd: true },
-      { who: 'g', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.54, span: 0.34, hideAtEnd: true },
-      { who: 'g', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.61, span: 0.34, hideAtEnd: true },
+      { who: 'g', path: [[20.5, 0, 20], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [59, -2.25, 34.5]], delay: 0, span: 0.24, hideAtEnd: true },
+      { who: 'g', path: [[20.5, 0, 20], [21, -1.2, 30], [27, -2.25, 31.5], [38, -2.25, 33.5], [59, -2.25, 34.5]], delay: 0.05, span: 0.24, hideAtEnd: true },
+      { who: 'g', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.72, span: 0.25, hideAtEnd: true },
+      { who: 'g', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.77, span: 0.25, hideAtEnd: true },
     ] },
-  { id: 'fall-patio', title: 'Golden hour on the patio', caption: 'Late September — golden hour in the woods', t: 268 / 365, dur: 0.08, hour: 18.25, camera: 'wide', camAz: -0.45, occupied: true, car: 'parked',
+  { id: 'fall-patio', title: 'Golden hour on the patio', caption: 'Late September — golden hour in the woods', t: 268 / 365, dur: 0.08, hour: 18.25, occupied: true, car: 'parked',
     cast: [
       { who: 'g', path: [[-16.2, -2.25, 39.2]], sit: true, face: 0.55 },
-      { who: 'g', path: [[19.5, 0, 19], [20.5, -1.2, 29], [5, -2.25, 35], [-12.5, -2.25, 40.5]], delay: 0.05, span: 0.65, face: -1.4 },
+      { who: 'g', path: [[20.5, 0, 20], [20.5, -1.2, 29], [5, -2.25, 35], [-12.5, -2.25, 40.5]], delay: 0.05, span: 0.65, face: -1.4 },
     ] },
-  { id: 'fall-fireside', title: 'Fireside evening', caption: 'Late October — fireside evening as autumn leaves fall', t: 302 / 365, dur: 0.09, hour: 17.75, camera: 'cutaway', camAz: 0.3, occupied: true, fire: true, car: 'arrive',
+  { id: 'fall-fireside', title: 'Fireside evening', caption: 'Late October — fireside evening as autumn leaves fall', t: 302 / 365, dur: 0.09, hour: 17.75, occupied: true, fire: true, car: 'arrive',
     cast: [
-      { who: 'a', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.05, span: 0.38, hideAtEnd: true },
-      { who: 'b', path: [[56, -2.25, 34], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [19.5, 0, 19]], delay: 0.14, span: 0.38, hideAtEnd: true },
-      { who: 'a', path: [[10, 0, 6], [10, 0, 9.5], [10, 0, 6]], loop: true, delay: 0.44, span: 0.5, face: 2.6 },
-      { who: 'b', path: [[14, -1.5, 22]], delay: 0.44, span: 0.01, face: -0.7 },
+      { who: 'a', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.34, span: 0.52, hideAtEnd: true },
+      { who: 'b', path: [[59, -2.25, 34.5], [38, -2.25, 33.5], [27, -2.25, 31.5], [21, -1.2, 30], [20.5, 0, 20]], delay: 0.42, span: 0.52, hideAtEnd: true },
     ] },
-  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 348 / 365, dur: 0.08, hour: 20, camera: 'wide', camAz: 0.15, occupied: false, car: 'away', glow: true },
+  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 348 / 365, dur: 0.08, hour: 20, occupied: false, car: 'away', glow: true },
 ];
 // --- low-poly figures: shared geometries + a small material cache, never allocated per frame
 const TL_GEO = {
@@ -4276,10 +4273,8 @@ function tlPoly(pts) {
       const l = segs[segs.length - 1]; return { x: l.b[0], y: l.b[1], z: l.b[2], h: 0 };
     } };
 }
-// --- the car drives the driveway: extend the centerline past the last point so "away" is out of view
-const _tlDriveExt = [...DRIVE];
-{ const [ax, az] = DRIVE[DRIVE.length - 2], [bx, bz] = DRIVE[DRIVE.length - 1]; const dx = bx - ax, dz = bz - az, L = Math.hypot(dx, dz) || 1; _tlDriveExt.push([bx + dx / L * 90, bz + dz / L * 90]); }
-const tlDrive = tlPoly(_tlDriveExt.map(([x, z]) => [x, terrainY(x, z) + 0.05, z]));
+// --- the car drives the driveway: keep the run tight so the car is immediately visible when arriving/departing
+const tlDrive = tlPoly(DRIVE.slice(0, 4).map(([x, z]) => [x, terrainY(x, z) + 0.05, z]));
 function setCarColor(hex) { CAR.paint.color.set(hex); TL.carColor = hex; }
 function tlSetFire(on) {
   if (!FX_FIRE || TL.fire === on) return;
@@ -4372,14 +4367,6 @@ function tlSetMoment(i) {
   else if (m.car === 'depart') TL.carD = 0;
   else if (m.car === 'turnover') { TL.carD = 0; setCarColor(SECOND_CAR); }
   showCap(m.caption);
-  if (performance.now() - TL.lastInteract > 3500) {
-    const base = homePos(), off = base.clone().sub(HOME.target);
-    const az = m.camAz || 0, c = Math.cos(az), s = Math.sin(az);
-    const p = HOME.target.clone().add(new THREE.Vector3(off.x * c + off.z * s, off.y, -off.x * s + off.z * c));
-    TL.panAz = az;
-    TL.cam = { t: 0, dur: 1.35, p0: camera.position.clone(), q0: controls.target.clone(), p1: p, q1: HOME.target.clone(), az0: az };
-    controls.enabled = false;
-  }
 }
 function tlStepActors(dt) {
   if (TL.cur < 0) return;
@@ -4417,46 +4404,50 @@ function tlStepCar(dt) {
   const m = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
   const mode = m ? m.car : 'parked';
   const ph = m ? momentProgress(m) : 0;
-  let target = TL.carD;
+  let target = 0;
   if (mode === 'parked') target = 0;
   else if (mode === 'away') target = 1;
-  else if (mode === 'arrive') target = 1 - ease(Math.min(1, ph / 0.55));
-  else if (mode === 'depart') target = ease(Math.min(1, ph / 0.55));
+  else if (mode === 'arrive') target = 1 - ease(Math.min(1, ph / 0.34));
+  else if (mode === 'depart') target = ease(Math.min(1, ph / 0.34));
   else if (mode === 'turnover') {
-    if (ph < 0.48) target = ease(ph / 0.48);
-    else { if (TL.carColor !== 0xF3F3F1) setCarColor(0xF3F3F1); target = 1 - ease((ph - 0.48) / 0.52); }
+    // Wait parked while departing people walk to the car (0..0.24), then drive out (0.24..0.48),
+    // then next car drives in (0.48..0.72) right before arriving people step out and walk to the door (0.72..0.97)
+    if (ph < 0.24) target = 0;
+    else if (ph < 0.48) target = ease((ph - 0.24) / 0.24);
+    else if (ph < 0.72) { if (TL.carColor !== 0xF3F3F1) setCarColor(0xF3F3F1); target = 1 - ease((ph - 0.48) / 0.24); }
+    else target = 0;
   }
-  if (TL.scrubbing) TL.carD = target;
-  else TL.carD += (target - TL.carD) * Math.min(1, dt * 4.2);
+  if (TL.scrubbing || mode === 'arrive' || mode === 'turnover') TL.carD = target;
+  else TL.carD += (target - TL.carD) * Math.min(1, dt * 6);
   const pt = tlDrive.at(TL.carD);
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
   const parked = TL.carD < 0.02;
   CAR.plug.visible = parked; CAR.cable.visible = parked;
-  const driving = Math.abs(target - TL.carD) > 0.002 && mode !== 'parked' && mode !== 'away';
-  const night = TL.sunCur < 7 || TL.sunCur >= 17.2;
+  const driving = TL.carD > 0.01 && TL.carD < 0.98 && mode !== 'parked' && mode !== 'away';
+  const night = TL.sunCur < 7 || TL.sunCur >= 16.3;
   const lights = driving && night;
   CAR.beams.forEach(sl => { sl.visible = lights; sl.intensity = lights ? 40 : 0; });
   CAR.lamp.emissiveIntensity = lights ? 2.5 : 0;
 }
-function tlStepCamera(dt) {
-  if (performance.now() - TL.lastInteract <= 3500) return;
+const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3();
+function tlStepCamera(dt, immediate) {
+  if (performance.now() - TL.lastInteract <= 4000) return;
+  // Lower, closer vantage point so the woods behind the house fill the background and there are no jump-resets
   const base = homePos(), off = base.clone().sub(HOME.target);
-  if (TL.cam) {
-    const Cm = TL.cam; Cm.t += dt; const k = ease(Math.min(1, Cm.t / Cm.dur));
-    camera.position.lerpVectors(Cm.p0, Cm.p1, k); controls.target.lerpVectors(Cm.q0, Cm.q1, k); camera.lookAt(controls.target);
-    if (Cm.t >= Cm.dur) { TL.cam = null; controls.enabled = true; controls.update(); }
-    if (state.walls === 'cutaway') updateWalls();
-    return;
+  const sway = Math.sin(TL.t * Math.PI * 2) * 0.42;            // seamless back-and-forth arc across the year
+  const zoom = 0.78, lowY = 0.44;                             // 22% closer and much lower pitch to frame the tree canopy
+  const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
+  const c = Math.cos(sway), s = Math.sin(sway);
+  _tlCamTarget.set(HOME.target.x + 1.2, HOME.target.y + 1.3, HOME.target.z + 1.0);
+  _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
+  if (immediate) {
+    camera.position.copy(_tlCamGoal); controls.target.copy(_tlCamTarget);
+  } else {
+    const k = Math.min(1, dt * 3.2);
+    camera.position.lerp(_tlCamGoal, k); controls.target.lerp(_tlCamTarget, k);
   }
-  // Gentle continuous wide pan while playing so the scene never sits static
-  if (TL.playing) {
-    TL.panAz += dt * 0.065;
-    const c = Math.cos(TL.panAz), s = Math.sin(TL.panAz);
-    camera.position.set(HOME.target.x + off.x * c + off.z * s, HOME.target.y + off.y, HOME.target.z - off.x * s + off.z * c);
-    controls.target.copy(HOME.target);
-    camera.lookAt(controls.target);
-    if (state.walls === 'cutaway') updateWalls();
-  }
+  camera.lookAt(controls.target);
+  if (state.walls === 'cutaway') updateWalls();
 }
 function tlTick(dt) {
   if (WALK.on || TOUR.on) { exitTimeline(); return; }
@@ -4470,7 +4461,7 @@ function tlTick(dt) {
   if (act !== TL.cur) tlSetMoment(act);
   tlStepActors(dt);
   tlStepCar(dt);
-  tlStepCamera(dt);
+  tlStepCamera(dt, false);
   if (!TL.scrubbing) { const sc = document.getElementById('tl-scrub'); if (sc) sc.value = String(Math.round(TL.t * 1000)); }
   wake();
 }
@@ -4487,18 +4478,20 @@ function enterTimeline() {
     MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
   }
   for (const B of TL.built) B.group.visible = false;
-  // Start right at the first moment (Late January arrival) so there is zero dead air
+  // Start right at the first moment (Late January arrival) with walls & roof up
   TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.nightApplied = null; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
-  Object.assign(state, { walls: 'cutaway', floors: 'both', roof: false, explode: 0, labels: false }); applyState();
+  Object.assign(state, { walls: 'up', floors: 'both', roof: true, explode: 0, labels: false }); applyState();
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
   document.getElementById('btn-timeline').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
   tlSetMoment(0);
+  tlStepCar(0);
+  tlStepCamera(0, true);
 }
 function exitTimeline() {
   if (!TL.on) return;
-  TL.on = false; TL.playing = false; TL.cur = -1; TL.cam = null;
+  TL.on = false; TL.playing = false; TL.cur = -1;
   for (const B of TL.built || []) B.group.visible = false;
   if (TL.glow) TL.glow.visible = false;
   if (TL.wx) TL.wx.mesh.visible = false;
@@ -4527,10 +4520,11 @@ document.getElementById('tl-scrub').addEventListener('input', e => {
   const a = tlActiveMoment(); if (a !== TL.cur) tlSetMoment(a);
   tlStepActors(0);
   tlStepCar(0);
+  tlStepCamera(0, true);
 });
 document.getElementById('tl-scrub').addEventListener('change', () => { TL.scrubbing = false; });
-renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = performance.now(); if (TL.cam) { TL.cam = null; controls.enabled = true; } }, true);
-renderer.domElement.addEventListener('wheel', () => { TL.lastInteract = performance.now(); if (TL.cam) { TL.cam = null; controls.enabled = true; } }, { passive: true });
+renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = performance.now(); }, true);
+renderer.domElement.addEventListener('wheel', () => { TL.lastInteract = performance.now(); }, { passive: true });
 
 function animating() {                                     // things that move on their own
   return (FAN.speed && FAN.spin) || fireLight.visible || (tvScreen && tvScreen.visible) || smoke.some(sp => sp.visible) || skyFx.some(f => f.on) || LIGHTS_OUT.busy
