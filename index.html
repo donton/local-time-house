@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <style>html,body{margin:0;height:100%}[hidden]{display:none!important}</style>
 <meta charset="utf-8">
 <title>Local Time House</title>
@@ -38,9 +38,9 @@
 }
 html, body { height: 100%; }
 [hidden] { display: none !important; }
-body { background: var(--bg); color: var(--ink); font-family: var(--font-body); overflow: hidden; }
-#stage { position: fixed; inset: 0; }
-#stage canvas { display: block; outline: none; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); overflow: hidden; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; overscroll-behavior: none; }
+#stage { position: fixed; inset: 0; touch-action: none; }
+#stage canvas { display: block; outline: none; touch-action: none; }
 #labels { position: fixed; inset: 0; pointer-events: none; }
 
 .card {
@@ -3525,7 +3525,8 @@ function walkStep(dt) {
   let side = Math.max(-1, Math.min(1, (k.KeyD || k.ArrowRight ? 1 : 0) - (k.KeyA || k.ArrowLeft ? 1 : 0) + WALK.joy.x));
   if (WALK.auto) { const r = autoSteer(dt); fwd = r.fwd; side = r.side; }                // the guided tour is walking for us
   if (k.KeyQ) WALK.yaw += dt * 1.8; if (k.KeyE) WALK.yaw -= dt * 1.8;
-  if (WALK.look.x || WALK.look.y) { WALK.yaw -= WALK.look.x * dt * 2.4; WALK.pitch = Math.max(-1.2, Math.min(1.2, WALK.pitch + WALK.look.y * dt * 1.5)); }   // right stick turns the view
+  const lx = Math.abs(WALK.look.x) < 0.08 ? 0 : WALK.look.x, ly = Math.abs(WALK.look.y) < 0.08 ? 0 : WALK.look.y;
+  if (lx || ly) { WALK.yaw -= lx * dt * 1.4; WALK.pitch = Math.max(-1.2, Math.min(1.2, WALK.pitch + ly * dt * 0.9)); }   // right stick turns the view (slowed + dead zone)
   const speed = (k.ShiftLeft || k.ShiftRight ? 10 : 5) * FT;
   const f = new THREE.Vector3(-Math.sin(WALK.yaw), 0, -Math.cos(WALK.yaw)), r = new THREE.Vector3(Math.cos(WALK.yaw), 0, -Math.sin(WALK.yaw));
   const mv = f.multiplyScalar(fwd).add(r.multiplyScalar(side));
