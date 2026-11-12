@@ -204,7 +204,7 @@ body.m.walking #look { display: block; position: fixed; z-index: 8; right: calc(
 #look::after, #joy::after { content: ""; position: absolute; inset: 0; border-radius: 50%; pointer-events: none; }
 #joy i { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255,255,255,0.85); box-shadow: 0 1px 6px rgba(0,0,0,0.35); }
 body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-index: 8; right: calc(36px + env(safe-area-inset-right, 0px)); bottom: calc(184px + env(safe-area-inset-bottom, 0px)); width: 104px; height: 104px; padding: 8px; border-radius: 50%;
-  border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: manipulation; transition: background 0.15s, transform 0.15s; }
+  border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: none; transition: background 0.15s, transform 0.15s; }
 body.m.walking #usebtn.ready { background: var(--accent); transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199,114,106,0.35); }
 body.m.walking #mintro, body.m.touring #mintro { display: none; }
 #tourcap { left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(520px, calc(100% - 32px));
@@ -3576,6 +3576,12 @@ addEventListener('keydown', e => {
 });
 addEventListener('keyup', e => { WALK.keys[e.code] = false; });
 addEventListener('blur', () => { WALK.keys = {}; });
+// iOS Safari ignores user-scalable=no, so block double-tap zoom in JS: a second tap
+// within 350ms never becomes a zoom, and the pinch gesture never starts.
+let lastTapEnd = 0;
+document.addEventListener('touchend', e => { const now = Date.now(); if (now - lastTapEnd < 350) e.preventDefault(); lastTapEnd = now; }, { passive: false });
+document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+document.addEventListener('gesturestart', e => e.preventDefault());
 
 // Hold Space and drag to pan (like design tools). Only while the pointer is over the model, so Space
 // still presses a focused button in the panel; not in walk mode, where Space belongs to walking.
