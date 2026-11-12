@@ -2481,7 +2481,7 @@ renderer.shadowMap.autoUpdate = false;
 let shadowFrames = 3, shTick = 0;
 var DIRTY = 8;                                            // phones draw only while something changes: this counts down the frames still owed after a change
 function wake(n = 6) { if (n > DIRTY) DIRTY = n; }
-function markShadows() { shadowFrames = Math.max(shadowFrames, 2); wake(); }
+function markShadows() { shadowFrames = Math.max(shadowFrames, 1); wake(); }
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 stage.appendChild(renderer.domElement);
@@ -2734,11 +2734,11 @@ const NIGHT_LIGHTS = [
 ];
 const nightRig = [];
 for (const [grp, x, y, z, cd] of NIGHT_LIGHTS) {
-  const L = new THREE.PointLight(0xffcf96, 0, 11.5, 1.8); L.visible = false; L.position.set(x, y, z); G[grp].add(L);
+  const L = new THREE.PointLight(0xffcf96, 0, 11.5, 1.8); L.visible = true; L.position.set(x, y, z); G[grp].add(L);
   nightRig.push({ L, cd });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding
-  const L = new THREE.PointLight(0xffc98a, 0, 5, 2); L.visible = false;
+  const L = new THREE.PointLight(0xffc98a, 0, 5, 2); L.visible = true;
   L.position.set(x + (axis === 'x' ? n * 0.5 : 0), y - 0.5, z + (axis === 'z' ? n * 0.5 : 0)); G.ground.add(L);   // just under the cone's mouth
   L.castShadow = !LITE; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;   // crisp cone cut-off
   L.shadow.camera.near = 0.03; L.shadow.camera.far = 6;
@@ -2768,7 +2768,7 @@ function applyNight(on) {
   sun.intensity = on ? NIGHTSET.sun : DAY.sun; sun.color.set(on ? NIGHTSET.sunColor : 0xfff3e2);
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
-  for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = on; if (on && L.castShadow) L.shadow.needsUpdate = true; }   // hidden lights cost nothing by day
+  for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = true; if (on && L.castShadow) L.shadow.needsUpdate = true; }
   if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
   lampMat.emissiveIntensity = on ? 2.6 : 0;
   paperMat.emissiveIntensity = on ? 1.1 : 0;
@@ -3473,9 +3473,9 @@ const CAR = (() => {
   const cable = new THREE.Mesh(new THREE.TubeGeometry(curve, 40, 0.055, 8, false), boxM); cable.castShadow = true; LAND.add(cable);
   const plug = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.4), boxM); plug.position.copy(b); plug.rotation.y = car.rotation.y; LAND.add(plug);
   const beams = [];
-  for (const x of [1, -1]) { const sl = new THREE.SpotLight(0xf2f6ff, 0, 60, 0.45, 0.6, 1.2); sl.position.set(x * 2.2, 2.4, 7.6); sl.target.position.set(x * 2.2, 0, 30); sl.visible = false; car.add(sl, sl.target); beams.push(sl); }
+  for (const x of [1, -1]) { const sl = new THREE.SpotLight(0xf2f6ff, 0, 60, 0.45, 0.6, 1.2); sl.position.set(x * 2.2, 2.4, 7.6); sl.target.position.set(x * 2.2, 0, 30); sl.visible = true; car.add(sl, sl.target); beams.push(sl); }
   act(car, { kind: 'car', label: d => d.on ? 'Headlights off' : 'Flash the headlights', run: d => {
-    lamp.emissiveIntensity = d.on ? 2.5 : 0; tail.emissiveIntensity = d.on ? 1.2 : 0.15; beams.forEach(sl => { sl.visible = d.on; sl.intensity = d.on ? 40 : 0; }); } });
+    lamp.emissiveIntensity = d.on ? 2.5 : 0; tail.emissiveIntensity = d.on ? 1.2 : 0.15; beams.forEach(sl => { sl.visible = true; sl.intensity = d.on ? 40 : 0; }); } });
   return { car, post, paint, plug, cable, beams, lamp };
 })();
 
@@ -5132,7 +5132,7 @@ function tlApplyEnv(dt, immediate) {
   const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
   const D = 27, ce = Math.cos(el);
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
-  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.015) { if (immediate || ++shTick % 4 === 0) markShadows(); }
+  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.025) { if (immediate || ++shTick % (LITE ? 10 : 4) === 0) markShadows(); }
   const sElev = Math.min(1, Math.sin(el) * 1.6);
   const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
   sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.44) * dk;
@@ -5359,7 +5359,8 @@ function tlTick(dt) {
 function tlEnsureBuilt() {
   if (TL.built) return;
   TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
-  TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
+  if (!TL.glow) { TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); }
+  TL.glow.visible = true; TL.glow.intensity = 0;
   tlBuildEnvFx();
   const marks = document.getElementById('tl-marks');
   MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
@@ -5373,9 +5374,16 @@ function enterTimeline() {
   tlEnsureBuilt();
   for (const B of TL.built) B.group.visible = false;
   TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
-  Object.assign(state, { walls: 'up', floors: 'both', roof: true, explode: 0, labels: false, night: false }); applyState();
-  // Pre-activate all timeline light sources once on entry (with 0 intensity when unused) so WebGL never recompiles shaders mid-loop
-  for (const { L } of nightRig) { L.visible = true; if (L.castShadow) L.shadow.needsUpdate = true; }
+  Object.assign(state, { floors: 'both', explode: 0, labels: false, night: false });
+  G.ground.visible = true; G.loft.visible = true; G.loft.position.y = 0; G.wingRoof.position.y = 0; G.mainRoof.position.y = 0;
+  document.getElementById('labels').style.display = 'none';
+  labels.forEach(l => { l.visible = false; });
+  ['ground', 'loft', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(k === 'both')));
+  document.getElementById('tg-labels').checked = false;
+  document.getElementById('tg-night').checked = false;
+  document.getElementById('explode').value = '0';
+  document.getElementById('explode-out').textContent = '0%';
+  nightOn = false;
   if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   fireLight.visible = true; fireLight.intensity = 0;
   tvLight.visible = true; tvLight.intensity = 0;
@@ -5397,7 +5405,7 @@ function exitTimeline() {
   document.body.classList.remove('timeline');
   TL.on = false; TL.playing = false; TL.cur = -1;
   for (const B of TL.built || []) B.group.visible = false;
-  if (TL.glow) { TL.glow.visible = false; TL.glow.intensity = 0; }
+  if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
   if (TL.fallLeaves) { TL.fallLeaves.mesh.visible = false; TL.fallLeaves.lastK = -1; }
@@ -5418,7 +5426,7 @@ function exitTimeline() {
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
   setCarColor(TL.saved ? TL.saved.carColor : 0xF3F3F1);
   CAR.plug.visible = true; CAR.cable.visible = true;
-  CAR.beams.forEach(sl => { sl.visible = false; sl.intensity = 0; }); CAR.lamp.emissiveIntensity = 0;
+  CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = 0; }); CAR.lamp.emissiveIntensity = 0;
   if (TL.saved) {
     Object.assign(state, TL.saved.state);
     seasonOn = null; nightOn = !state.night; applyState();
