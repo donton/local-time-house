@@ -563,7 +563,7 @@ const MAT_DEFS = {
   mwLed:      { color: 0x7DFFB4, rough: 0.3, emissive: 0x4DFF9A, emissiveI: 0.9 },
   hoodLed:    { color: 0xFFF4DC, rough: 0.3, emissive: 0xFFF0CC, emissiveI: 0.8 },
   lever:      { color: 0x1B1C1E, rough: 0.42, metal: 0.65 },                    // door levers, hinges: matte black
-  glass:      { color: C.glass, rough: 0.05, opacity: 0.28 },
+  glass:      { color: C.glass, rough: 0.05, opacity: 0.20 },
   concrete:   { color: C.concrete, rough: 0.95 },
   deck:       { color: C.deck, map: TEX.deck, tile: 4, rough: 0.85 },
   skirt:      { color: 0x232323, map: TEX.boards, tile: 2, rough: 0.8 },     // black-painted vertical wood skirting under the decks
@@ -2646,11 +2646,11 @@ function exteriorLightsOnly(m) {
 for (const n of ['siding', 'sidingWood', 'skirt', 'foundation', 'roof', 'membrane', 'soffit', 'snow', 'concrete', 'deck', 'gravel', 'frame', 'steel', 'ground']) exteriorLightsOnly(MATS[n]);
 let nightOn = false;
 const DAY = { hemi: 1.35, sun: 2.3, fill: 0, exposure: 1.05 };
-const NIGHTSET = { bg: 0x10141c, hemi: 0.1, hemiSky: 0x55627a, sun: 0.18, sunColor: 0x9fb2d6, fill: 0.0, exposure: 1.1, dim: 0.62 };
+const NIGHTSET = { bg: 0x1c2536, hemi: 0.42, hemiSky: 0x8296ba, sun: 0.52, sunColor: 0xbfd2f5, fill: 0.14, exposure: 1.18, dim: 0.68 };
 function applyNight(on) {
   nightOn = on;
   hemi.intensity = on ? NIGHTSET.hemi : DAY.hemi;
-  hemi.color.set(on ? NIGHTSET.hemiSky : 0xf4f1ea); hemi.groundColor.set(on ? 0x2a2622 : 0xd9d1c4);
+  hemi.color.set(on ? NIGHTSET.hemiSky : 0xf4f1ea); hemi.groundColor.set(on ? 0x3d3a35 : 0xd9d1c4);
   sun.intensity = on ? NIGHTSET.sun : DAY.sun; sun.color.set(on ? NIGHTSET.sunColor : 0xfff3e2);
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
@@ -3049,9 +3049,10 @@ function interactStep(dt) {
   if (fireOn) fireLight.intensity = 7 + Math.sin(fxT * 13) * 1.2 + Math.sin(fxT * 31) * 0.8;
   if (tvAct) tvLight.intensity = 2.6 + Math.sin(fxT * 7) * 0.4;
   smoke.forEach(sp => {
-    if (!sp.visible) return; sp.userData.t = (sp.userData.t + dt * 0.18) % 1; const t = sp.userData.t;
-    sp.position.set(FX_FIRE.flue[0] + Math.sin(t * 6 + sp.id) * 0.4, FX_FIRE.flue[1] + t * 7, FX_FIRE.flue[2] + t * 1.5);
-    sp.scale.setScalar(0.6 + t * 2.4); sp.material.opacity = 0.35 * Math.sin(Math.PI * t);
+    if (!sp.visible) return; sp.userData.t = (sp.userData.t + dt * 0.22) % 1; const t = sp.userData.t;
+    const o = sp.userData.origin || FX_FIRE.flue;
+    sp.position.set(o[0] + Math.sin(t * 6 + sp.id) * 0.35, o[1] + t * (sp.userData.rise || 7), o[2] + t * (sp.userData.drift || 1.5));
+    sp.scale.setScalar((sp.userData.s0 || 0.6) + t * (sp.userData.s1 || 2.4)); sp.material.opacity = 0.35 * Math.sin(Math.PI * t);
   });
   for (const S of FX_SHOWERS) {
     if (!S.mesh) continue;
@@ -3295,8 +3296,7 @@ const snowParts = [];
   add(slopedSlab(G.mainRoof, [dx0 - 0.13, dx1 + 0.13], [LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y + 0.35], [Sx + 0.06, LV.DORMER_EAVE_Y + 0.3], S, 'snow'));
   add(box(G.wingRoof, [2.51, 16.52], [LV.WING_TOP - 0.3, LV.WING_TOP + 0.05], [17.39, 26.55], 'snow'));
   add(box(G.wingRoof, [17.37, 23.75], [LV.WING_TOP + 0.02, LV.WING_TOP + 0.3], [17.39, 27.05], 'snow'));
-  add(box(G.site, [-8.34, -0.34], [-0.167, 0.05], [-0.32, 17.39], 'snow'));
-  add(box(G.site, [17.37, 24.07], [-0.167, 0.05], [17.39, 23.8], 'snow'));
+  add(box(G.site, [-8.34, -0.34], [-0.167, 0.05], [-0.32, 12.6], 'snow'));
 }
 const fogColor = new THREE.Color();
 scene.fog = new THREE.Fog(0xe4e1d9, 180, 900);
@@ -3482,6 +3482,60 @@ const PATIO = (() => {
   }
   return { crowns, leaf };
 })();
+/* Stainless steel & slate-gray gas grill on the West Deck outside the kitchen side door (Door 102). */
+const GRILL = (() => {
+  const gx = -6.75, gy = -0.167, gz = 14.5;
+  const grp = new THREE.Group(); grp.position.set(gx, gy, gz); LAND.add(grp);
+  const stTop = M('steelTop'), stBody = M('steel'), chr = M('chrome'), hoodM = M('fridgeDoor');
+  const coalM = new THREE.MeshStandardMaterial({ color: 0x3b2a22, emissive: 0xff5a14, emissiveIntensity: 0, roughness: 0.9 });
+  const foodA = new THREE.MeshStandardMaterial({ color: 0x7A3A28, roughness: 0.7 }), foodB = new THREE.MeshStandardMaterial({ color: 0xE0B93A, roughness: 0.6 });
+  const b = (w, h, d, x, y, z, m, parent = grp) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); o.castShadow = true; o.receiveShadow = true; parent.add(o); return o; };
+  // 4 chrome legs + lower slate-gray cabinet + 2 brushed stainless doors with chrome handles
+  for (const [lx, lz] of [[-0.68, -0.88], [0.68, -0.88], [-0.68, 0.88], [0.68, 0.88]]) b(0.1, 0.26, 0.1, lx, 0.13, lz, chr);
+  b(1.48, 2.08, 1.92, 0, 1.3, 0, stBody);
+  for (const sz of [-0.46, 0.46]) { b(0.05, 1.88, 0.88, 0.75, 1.3, sz, stTop); b(0.06, 0.55, 0.05, 0.80, 1.55, sz * 0.25, chr); }
+  // stainless side shelves (north & south) + slanted front control panel with 4 chrome knobs
+  for (const sz of [-1.32, 1.32]) { b(1.38, 0.08, 0.68, 0, 2.34, sz, stTop); b(0.06, 0.06, 0.58, 0.68, 2.32, sz, chr); }
+  b(0.24, 0.26, 1.94, 0.74, 2.42, 0, stTop);
+  for (const kz of [-0.68, -0.23, 0.23, 0.68]) {
+    const kn = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.06, 14).rotateZ(Math.PI / 2), chr);
+    kn.position.set(0.88, 2.42, kz); grp.add(kn);
+  }
+  // firebox + glowing coals + chrome cooking grates + food on grates
+  b(1.52, 0.28, 1.96, 0, 2.48, 0, stBody);
+  b(1.36, 0.06, 1.8, 0, 2.58, 0, coalM);
+  for (let z = -0.8; z <= 0.81; z += 0.2) b(1.38, 0.03, 0.04, 0, 2.64, z, chr);
+  const food = new THREE.Group(); food.visible = false; grp.add(food);
+  for (const [fx, fz] of [[-0.25, -0.45], [0.22, -0.45], [-0.25, 0.05], [0.22, 0.05]]) {
+    const p = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.07, 12), foodA); p.position.set(fx, 2.68, fz); food.add(p);
+  }
+  for (const fz of [0.45, 0.68]) {
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.52, 10).rotateZ(Math.PI / 2), foodB); c.position.set(0, 2.69, fz); food.add(c);
+  }
+  // hinged stainless hood + wide chrome handle
+  const lidPv = new THREE.Group(); lidPv.position.set(-0.72, 2.64, 0); grp.add(lidPv);
+  b(1.48, 0.62, 1.94, 0.72, 0.31, 0, hoodM, lidPv);
+  b(1.12, 0.16, 1.88, 0.66, 0.66, 0, stTop, lidPv);
+  b(0.07, 0.07, 1.45, 1.52, 0.24, 0, chr, lidPv);
+  for (const sz of [-0.65, 0.65]) b(0.12, 0.06, 0.06, 1.46, 0.24, sz, chr, lidPv);
+  const light = new THREE.PointLight(0xff7a2e, 0, 7, 2); light.position.set(0, 3.2, 0); light.visible = false; grp.add(light);
+  const gSmoke = [];
+  for (let i = 0; i < 6; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xd8d4ce, transparent: true, opacity: 0, depthWrite: false }));
+    sp.scale.setScalar(0.45); sp.visible = false;
+    sp.userData = { t: i / 6, origin: [gx, gy + 3.1, gz], rise: 5.2, drift: 0.7, s0: 0.35, s1: 1.5 };
+    LAND.add(sp); smoke.push(sp); gSmoke.push(sp);
+  }
+  const setOn = on => {
+    tweenTo(lidPv.rotation, 'z', on ? 1.08 : 0, 0.65);
+    coalM.emissiveIntensity = on ? 2.2 : 0;
+    food.visible = on;
+    light.visible = on; light.intensity = on ? 3.8 : 0;
+    gSmoke.forEach(sp => { sp.visible = on; });
+  };
+  const actDef = act(grp, { kind: 'grill', label: d => d.on ? 'Turn off the grill' : 'Light the grill', run: d => setOn(d.on) });
+  return { grp, setOn, actDef };
+})();
 siteReady = true; markShadows();
 function applySeason(name) {
   const S = SEASONS[name];
@@ -3499,7 +3553,8 @@ function applySeason(name) {
   });
   canopies.instanceMatrix.needsUpdate = true; if (canopies.instanceColor) canopies.instanceColor.needsUpdate = true;
   cones.material.color.set(name === 'winter' ? 0x3f5546 : 0x2f4a2e);
-  snowParts.forEach(m => { m.visible = name === 'winter'; });
+  if (MATS.snow) { MATS.snow.transparent = false; MATS.snow.opacity = 1; MATS.snow.depthWrite = true; }
+  snowParts.forEach(m => { m.position.y = 0; m.scale.y = 1; m.visible = name === 'winter'; });
   // planting through the year: grasses gold in fall, straw in winter; ferns rust in fall, brown in winter
   PLANTS.grassMat.color.set({ summer: 0x7F9B4E, fall: 0xB49A5E, winter: 0xA39A86, spring: 0x86AC58 }[name]);
   PLANTS.fernMat.color.set({ summer: 0x4D7A38, fall: 0x8C6A3A, winter: 0x6A5A46, spring: 0x5E8A44 }[name]);
@@ -4037,58 +4092,71 @@ function governor(drew) {                                  // phones: trade reso
    into the house or car (with the front door opening for them), and the
    picnic takes place in the wide open south clearing.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, fire: false, doorOpen: false, frontDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
 const TL_LOOP = 58;
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
 const SECOND_CAR = 0x5A6B7A;
-// Shared paths so people always come and go from the house (via front door at [19.8, 0, 17]) or the car ([59, -2.25, 34.5])
-// Entry deck is at x: 17.4..24, z: 17.4..23.8 (y: 0), steps down at z: 23.8..27.5 to grade (-2.25) at [20.7, -2.25, 29.5]
-const P_CAR_TO_LIV = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [14.5, 0, 15.5], [11.5, -1.5, 21.5]];
-const P_CAR_TO_KIT = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 11.5], [9.5, 0, 8.5]];
+// Shared paths so people always come and go from the house (via front door at [19.8, 0, 17] or side door at [0.1, 0, 14.6]) or the car ([59, -2.25, 34.5])
+const P_CAR_TO_LIV = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [13.2, -1.5, 19.5], [6.5, -1.5, 22.8]];
+const P_CAR_TO_KIT = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 11.5], [7.8, 0, 4.2]];
 const P_LIV_TO_CAR = [...P_CAR_TO_LIV].reverse();
 const P_KIT_TO_CAR = [...P_CAR_TO_KIT].reverse();
+const P_KIT_TO_GRILL = [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-4.85, -0.167, 14.5]];
+const P_GRILL_TO_KIT = [...P_KIT_TO_GRILL].reverse();
 const MOMENTS = [
-  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow', t: 18 / 365, dur: 0.09, hour: 16.8, occupied: true, fire: true, car: 'arrive',
+  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow', t: 18 / 365, dur: 0.09, hour: 16.8, occupied: true, fire: true, tv: 2, car: 'arrive',
     cast: [
-      { who: 'a', path: P_CAR_TO_LIV, delay: 0.28, span: 0.52, face: -0.5 },
-      { who: 'b', path: P_CAR_TO_KIT, delay: 0.35, span: 0.52, face: 3.1 },
+      { who: 'a', path: P_CAR_TO_LIV, delay: 0.25, span: 0.50, face: 0.2 },
+      { who: 'b', path: P_CAR_TO_KIT, delay: 0.31, span: 0.50, face: 3.1 },
+      { who: 'g', path: [[11.5, -1.5, 22.0], [6.2, -1.5, 19.2]], sitWindow: [0.35, 0.88], exitPath: [[6.2, -1.5, 19.2], [11.5, -1.5, 22.0]], face: 0.1 },
+      { who: 'g', path: [[26.5, 9.33, 14.2], [32.8, 9.33, 14.8], [38.2, 9.33, 14.6], [32.8, 9.33, 14.8]], delay: 0.15, span: 0.80, face: 0.0 },
     ] },
-  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — spring thaw and first blooms', t: 78 / 365, dur: 0.085, hour: 10.5, occupied: false, car: 'parked',
+  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — spring thaw and first blooms', t: 78 / 365, dur: 0.085, hour: 10.5, occupied: true, car: 'parked',
     cast: [
       { who: 'g', path: [[14.5, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [28, -2.25, 38], [35, -2.25, 41], [26, -2.25, 36], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [14.5, 0, 15.5]], delay: 0.02, span: 0.94 },
       { who: 'g', path: [[12.0, 0, 13.0], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [8, -2.25, 35], [-8, -2.25, 39], [8, -2.25, 35], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 13.0]], delay: 0.08, span: 0.90 },
+      { who: 'a', path: [[30.5, 0, 15.0], [41.5, 0, 14.5], [45.8, 0, 14.0]], sitWindow: [0.24, 0.82], exitPath: [[45.8, 0, 14.0], [34.5, 0, 15.0]], face: 1.57 },
+      { who: 'b', path: [[7.8, 0, 4.2], [12.5, 0, 13.5], [12.5, -1.5, 22.5], [6.0, -1.5, 23.5], [12.5, -1.5, 22.5], [8.5, 0, 8.5]], delay: 0.05, span: 0.90, face: 0.0 },
     ] },
-  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch under the birches', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: false, car: 'parked',
+  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch under the birches', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: true, fan: 2.4, car: 'parked',
     props: [{ kind: 'basket', at: [-15, 0.42, 41] }],
     cast: [
       { who: 'g', path: [[14.5, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [4, -2.25, 35], [-16.2, -2.25, 39.2]], sitWindow: [0.26, 0.74], exitPath: [[-16.2, -2.25, 39.2], [4, -2.25, 35], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [14.5, 0, 15.5]], face: 0.55 },
       { who: 'g', path: [[12.0, 0, 13.0], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [4, -2.25, 35], [-13.8, -2.25, 42.8]], sitWindow: [0.29, 0.72], exitPath: [[-13.8, -2.25, 42.8], [4, -2.25, 35], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 13.0]], face: -2.55 },
+      { who: 'a', path: [[3.2, 0, 4.5], [7.8, 0, 4.2], [6.65, 0, 8.53]], sitWindow: [0.30, 0.78], exitPath: [[6.65, 0, 8.53], [3.2, 0, 4.5]], face: 1.57 },
+      { who: 'b', path: [[38.5, 9.33, 14.6], [32.8, 9.33, 14.8], [26.8, 9.33, 14.6], [32.8, 9.33, 14.8]], delay: 0.06, span: 0.88, face: 0.0 },
     ] },
-  { id: 'summer-lawn', title: 'Picnic on the south lawn', caption: 'Early July — picnic in the south clearing', t: 182 / 365, dur: 0.095, hour: 15.5, occupied: false, car: 'parked', ball: true,
+  { id: 'summer-lawn', title: 'Deck cookout & south lawn picnic', caption: 'Early July — grilling on the deck & picnic in the clearing', t: 182 / 365, dur: 0.10, hour: 15.5, occupied: true, grill: true, fan: 5, car: 'parked', ball: true,
     props: [{ kind: 'blanket', at: [24, -2.25, 43], rot: -0.25 }, { kind: 'basket', at: [25.4, -2.25, 43.8] }],
     cast: [
+      { who: 'a', path: [...P_KIT_TO_GRILL, [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5], ...P_GRILL_TO_KIT], delay: 0.02, span: 0.92, face: -1.57 },
+      { who: 'b', path: [[10.2, 0, 9.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-3.2, -0.167, 11.8], [-3.2, -0.167, 15.8], [-1.2, -0.167, 14.6], [3.5, 0, 14.5], [10.2, 0, 9.5]], delay: 0.08, span: 0.86, face: -1.2 },
       { who: 'g', path: [[14.5, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [22.8, -2.25, 42.4]], sitWindow: [0.22, 0.78], exitPath: [[22.8, -2.25, 42.4], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [14.5, 0, 15.5]], face: 0.9 },
       { who: 'g', path: [[12.0, 0, 13.0], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [25.2, -2.25, 43.5]], sitWindow: [0.25, 0.76], exitPath: [[25.2, -2.25, 43.5], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 13.0]], face: -0.5 },
       { who: 'g', kid: true, path: [[16.5, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [16.5, 0, 15.5]], delay: 0.04, span: 0.92 },
       { who: 'g', kid: true, path: [[18.0, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [18.0, 0, 15.5]], delay: 0.08, span: 0.90 },
     ] },
-  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — one stay ends, another begins', t: 228 / 365, dur: 0.095, hour: 11.5, occupied: false, car: 'turnover',
+  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — one stay ends, another begins', t: 228 / 365, dur: 0.095, hour: 11.5, occupied: true, tv: 4, fan: 2.4, car: 'turnover',
     cast: [
       { who: 'g', path: P_LIV_TO_CAR, delay: 0.0, span: 0.25, hideAtEnd: true },
       { who: 'g', path: P_KIT_TO_CAR, delay: 0.04, span: 0.25, hideAtEnd: true },
-      { who: 'g', path: P_CAR_TO_LIV, delay: 0.68, span: 0.28, face: -0.5 },
-      { who: 'g', path: P_CAR_TO_KIT, delay: 0.73, span: 0.27, face: 3.1 },
+      { who: 'g', path: P_CAR_TO_LIV, delay: 0.66, span: 0.28, face: 0.2 },
+      { who: 'g', path: P_CAR_TO_KIT, delay: 0.71, span: 0.27, face: 3.1 },
+      { who: 'a', path: [[26.8, 9.33, 14.5], [32.8, 9.33, 14.8], [38.2, 9.33, 14.5]], delay: 0.74, span: 0.24, face: 0.0 },
     ] },
-  { id: 'fall-patio', title: 'Golden hour on the patio', caption: 'Late September — golden hour in the woods', t: 268 / 365, dur: 0.085, hour: 17.6, occupied: true, car: 'parked',
+  { id: 'fall-patio', title: 'Golden hour grill & patio', caption: 'Late September — grilling on the deck at golden hour', t: 268 / 365, dur: 0.09, hour: 17.6, occupied: true, grill: true, tv: 2, car: 'parked',
     cast: [
+      { who: 'a', path: [...P_KIT_TO_GRILL, [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], ...P_GRILL_TO_KIT], delay: 0.04, span: 0.90, face: -1.57 },
       { who: 'g', path: [[14.5, 0, 15.5], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [4, -2.25, 35], [-16.2, -2.25, 39.2]], sitWindow: [0.25, 0.74], exitPath: [[-16.2, -2.25, 39.2], [4, -2.25, 35], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [14.5, 0, 15.5]], face: 0.55 },
       { who: 'g', path: [[12.0, 0, 13.0], [19.8, 0, 15.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [6, -2.25, 36], [-11.5, -2.25, 40.5], [6, -2.25, 36], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [11.5, -1.5, 21.5]], delay: 0.05, span: 0.90 },
+      { who: 'b', path: [[11.5, -1.5, 22.0], [6.2, -1.5, 19.2]], sitWindow: [0.18, 0.82], exitPath: [[6.2, -1.5, 19.2], [11.5, -1.5, 22.0]], face: 0.1 },
     ] },
-  { id: 'fall-fireside', title: 'Fireside evening', caption: 'Late October — fireside evening as autumn leaves fall', t: 304 / 365, dur: 0.09, hour: 18.2, occupied: true, fire: true, car: 'depart-end',
+  { id: 'fall-fireside', title: 'Dinner & fireside evening', caption: 'Late October — dinner & fireside evening as leaves fall', t: 304 / 365, dur: 0.095, hour: 18.2, occupied: true, fire: true, tv: 1, car: 'depart-end',
     cast: [
-      { who: 'a', path: [[11.5, -1.5, 21.5], [14.2, -1.5, 22.2], [11.5, -1.5, 21.5], ...P_LIV_TO_CAR.slice(1)], delay: 0.0, span: 0.72, hideAtEnd: true },
-      { who: 'b', path: [[9.5, 0, 8.5], [12.0, 0, 11.5], [9.5, 0, 8.5], ...P_KIT_TO_CAR.slice(1)], delay: 0.05, span: 0.72, hideAtEnd: true },
+      { who: 'a', path: [[6.65, 0, 8.53], [12.5, -1.5, 20.5], [6.5, -1.5, 22.8], [11.5, -1.5, 21.5], ...P_LIV_TO_CAR.slice(1)], delay: 0.0, span: 0.72, hideAtEnd: true },
+      { who: 'b', path: [[10.38, 0, 8.53], [7.8, 0, 4.2], [9.5, 0, 8.5], ...P_KIT_TO_CAR.slice(1)], delay: 0.05, span: 0.72, hideAtEnd: true },
+      { who: 'g', path: [[36.5, 9.33, 14.6], [32.8, 9.33, 14.8], [26.5, 9.33, 14.5]], delay: 0.02, span: 0.55, hideAtEnd: true, face: 0.0 },
     ] },
   { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 346 / 365, dur: 0.08, hour: 20.0, occupied: false, car: 'away', glow: true },
 ];
@@ -4265,14 +4333,20 @@ function tlApplyContinuousSeasons(day) {
   PLANTS.fernMat.color.lerpColors(_tc1.setHex(k0.fern), _tc2.setHex(k1.fern), f);
   cones.material.color.lerpColors(_tc1.setHex(k0.pine), _tc2.setHex(k1.pine), f);
   PATIO.leaf.color.lerpColors(_tc1.setHex(k0.birch), _tc2.setHex(k1.birch), f);
-  // Roof & deck snow: smoothly melts days 52..82, smoothly accumulates days 328..352
+  // Roof & West Deck snow: fade opacity in place on the roof (never scale.y around y=0!)
   let snowK = 0;
   if (day < 52 || day >= 352) snowK = 1;
   else if (day >= 52 && day < 82) snowK = 1 - ease((day - 52) / 30);
   else if (day >= 328 && day < 352) snowK = ease((day - 328) / 24);
+  if (MATS.snow) {
+    MATS.snow.transparent = snowK < 0.99;
+    MATS.snow.opacity = snowK;
+    MATS.snow.depthWrite = snowK > 0.15;
+  }
   snowParts.forEach(m => {
     m.visible = snowK > 0.02;
-    if (m.visible) m.scale.y = Math.max(0.05, snowK);
+    m.scale.y = 1;
+    m.position.y = -(1 - snowK) * 0.16;
   });
   // Update season button highlight without triggering discrete applySeason()
   const month = Math.min(11, Math.floor(TL.t * 12)), sName = TL_SEASON_OF_MONTH[month];
@@ -4330,7 +4404,27 @@ function tlSetFire(on) {
   TL.fire = on;
   FX_FIRE.glass.material = on ? fireMat : M('frame');
   fireLight.visible = on;
-  smoke.forEach(sp => { sp.visible = on; });
+  smoke.forEach(sp => { if (!sp.userData.origin) sp.visible = on; });
+}
+function tlSetGrill(on) {
+  if (!GRILL || TL.grill === on) return;
+  TL.grill = on;
+  GRILL.actDef.on = on;
+  GRILL.setOn(on);
+}
+function tlSetTV(ch) {
+  if (!tvScreen || TL.tv === ch) return;
+  TL.tv = ch;
+  const d = actOf(tvScreen);
+  if (d) { d.ch = ch; d.on = ch > 0; }
+  tvScreen.visible = ch > 0;
+  tvLight.visible = ch > 0;
+  if (ch > 0) drawTV(ch, fxT);
+}
+function tlSetFan(spd) {
+  if (TL.fan === spd) return;
+  TL.fan = spd;
+  FAN.speed = spd;
 }
 function tlSetFrontDoor(open) {
   if (!TL.frontDoor) TL.frontDoor = ACTS.find(a => a.kind === 'door' && /front door/i.test(a.label({ on: false })));
@@ -4339,11 +4433,18 @@ function tlSetFrontDoor(open) {
   TL.frontDoor.on = open;
   TL.frontDoor.run(TL.frontDoor);
 }
+function tlSetSideDoor(open) {
+  if (!TL.sideDoor) TL.sideDoor = ACTS.find(a => a.kind === 'door' && /side door/i.test(a.label({ on: false })));
+  if (!TL.sideDoor || TL.sideDoorOpen === open) return;
+  TL.sideDoorOpen = open;
+  TL.sideDoor.on = open;
+  TL.sideDoor.run(TL.sideDoor);
+}
 function tlBuildMoment(m, idx) {
   const group = new THREE.Group(); LAND.add(group); group.visible = false;
   const walkers = [];
   const cast = m.cast || [];
-  const members = LITE ? cast.slice(0, 3) : cast;
+  const members = LITE ? cast.slice(0, 5) : cast;
   for (let k = 0; k < members.length; k++) {
     const c = members[k];
     const fig = makePerson(c.who, !!c.kid, idx * 7 + k);
@@ -4367,11 +4468,12 @@ function tlBuildMoment(m, idx) {
 function tlActiveMoment() { for (let i = 0; i < MOMENTS.length; i++) { const d = (TL.t - MOMENTS[i].t + 1) % 1; if (d < MOMENTS[i].dur) return i; } return -1; }
 function tlNextMoment() { let best = null, bd = 1; for (const m of MOMENTS) { const d = (m.t - TL.t + 1) % 1; if (d < bd) { bd = d; best = m; } } return best; }
 function momentProgress(m) { return ((TL.t - m.t + 1) % 1) / m.dur; }
-// --- smooth continuous day ↔ golden hour ↔ twilight ↔ night lighting (no binary applyNight snap)
+// --- smooth continuous day ↔ golden hour ↔ twilight ↔ moonlit night lighting
 function tlApplyEnv(dt, immediate) {
   const day = TL.t * 365, month = Math.min(11, Math.floor(TL.t * 12));
   const daySky = tlApplyContinuousSeasons(day);
   tlStepEnvFx(dt, day);
+  const prevSun = TL.sunCur;
   if (immediate) TL.sunCur = TL.hourTarget;
   else TL.sunCur += (TL.hourTarget - TL.sunCur) * Math.min(1, dt * 1.1);
   state.sun = Math.max(6, Math.min(19.5, TL.sunCur));
@@ -4382,32 +4484,37 @@ function tlApplyEnv(dt, immediate) {
   if (immediate) TL.duskCur = wantDusk;
   else TL.duskCur += (wantDusk - TL.duskCur) * Math.min(1, dt * 1.6);
   const dk = TL.duskCur;
-  // Position sun along arc and smoothly blend sky, fog, hemi, and sun intensity
+  // Position sun/moon along arc and smoothly blend sky, fog, hemi, fill, and sun intensity
   const h = state.sun, az = (h - 12.5) / 6.5 * (Math.PI / 2);
-  const el = Math.max(0.04, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
+  const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
   const D = 27, ce = Math.cos(el);
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
+  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.015) { if (!LITE || ++shTick % 4 === 0) markShadows(); }
   const sElev = Math.min(1, Math.sin(el) * 1.6);
-  const daySunI = DAY.sun * (0.25 + 0.75 * sElev), dayHemiI = DAY.hemi * (0.7 + 0.3 * sElev);
-  sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.07) * dk;
+  const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
+  sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.44) * dk;
   _tc1.setRGB(1, 0.8 + 0.15 * sElev, 0.62 + 0.27 * sElev);
   sun.color.lerpColors(_tc1, _tc2.setHex(NIGHTSET.sunColor), dk);
-  hemi.intensity = dayHemiI * (1 - dk) + (TL.occupied ? NIGHTSET.hemi : 0.06) * dk;
+  hemi.intensity = dayHemiI * (1 - dk) + (TL.occupied ? NIGHTSET.hemi : 0.36) * dk;
   hemi.color.lerpColors(_tc1.setHex(0xf4f1ea), _tc2.setHex(NIGHTSET.hemiSky), dk);
-  hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x2a2622), dk);
+  hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x3d3a35), dk);
+  fill.intensity = DAY.fill * (1 - dk) + NIGHTSET.fill * dk;
+  renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
   scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
   if (scene.fog) scene.fog.color.copy(scene.background);
-  // Warm interior lights & window glow ramp smoothly with dusk when occupied
-  const lampK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0)) : 0;
+  // Keep indoor rooms warmly lit whenever occupied so indoor activity is clearly visible through windows
+  const extK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0)) : 0;
+  const intK = TL.occupied ? Math.max(0.55, extK) : 0;
   for (const { L, cd } of nightRig) {
-    L.visible = lampK > 0.02;
-    if (L.visible) L.intensity = cd * NIGHTSET.dim * lampK;
+    const k = L.castShadow ? extK : intK;
+    L.visible = k > 0.02;
+    if (L.visible) L.intensity = cd * NIGHTSET.dim * k;
   }
-  lampMat.emissiveIntensity = 2.6 * lampK;
-  paperMat.emissiveIntensity = 1.1 * lampK;
-  creamMat.emissiveIntensity = 1.4 * lampK;
+  lampMat.emissiveIntensity = 2.6 * intK;
+  paperMat.emissiveIntensity = 1.2 * intK;
+  creamMat.emissiveIntensity = 1.4 * intK;
   const glass = MATS.glass;
-  if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = 0.35 * lampK; }
+  if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = 0.28 * extK; }
   for (const v of CUT.variants) {
     const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity;
   }
@@ -4421,6 +4528,7 @@ function tlSetMoment(i) {
   if (i < 0) {
     showCap('');
     tlSetFrontDoor(false);
+    tlSetSideDoor(false);
     const nx = tlNextMoment();
     if (nx) { TL.hourTarget = nx.hour; TL.occupied = !!nx.occupied; }
     return;
@@ -4431,6 +4539,9 @@ function tlSetMoment(i) {
   if (B.ball) { B.ball.visible = false; TL.ballPh = 0; }
   TL.hourTarget = m.hour; TL.occupied = !!m.occupied;
   tlSetFire(!!m.fire);
+  tlSetGrill(!!m.grill);
+  tlSetTV(m.tv || 0);
+  tlSetFan(m.fan || 0);
   if (TL.glow) { TL.glow.visible = !!m.glow; TL.glow.intensity = m.glow ? 8 : 0; }
   if (m.car === 'arrive') setCarColor(0xF3F3F1);
   else if (m.car === 'turnover') setCarColor(SECOND_CAR);
@@ -4439,7 +4550,7 @@ function tlSetMoment(i) {
 function tlStepActors(dt) {
   if (TL.cur < 0) return;
   const m = MOMENTS[TL.cur], B = TL.built[TL.cur], ph = momentProgress(m);
-  let nearDoor = false;
+  let nearFront = false, nearSide = false;
   for (const w of B.walkers) {
     let pt = null, moving = false, sitting = false, heading = w.face;
     if (w.sitWindow) {
@@ -4468,9 +4579,11 @@ function tlStepActors(dt) {
     w.fig.position.set(pt.x, pt.y + (moving ? Math.abs(Math.sin(w.bob)) * 0.12 : 0), pt.z);
     w.fig.rotation.y = heading;
     poseFigure(w.fig, sitting || w.sit, moving ? Math.sin(w.bob) * 0.55 : 0);
-    if (Math.hypot(pt.x - 19.8, pt.z - 17.5) < 5.5) nearDoor = true;
+    if (Math.hypot(pt.x - 19.8, pt.z - 17.5) < 5.5) nearFront = true;
+    if (Math.hypot(pt.x - 0.1, pt.z - 14.6) < 4.8) nearSide = true;
   }
-  tlSetFrontDoor(nearDoor);
+  tlSetFrontDoor(nearFront);
+  tlSetSideDoor(nearSide);
   // Smoothly scale picnic/patio props in as people arrive and pack them up as they leave
   if (B.props.length) {
     const pk = ph < 0.22 ? ease(Math.max(0, (ph - 0.12) / 0.1)) : ph > 0.76 ? 1 - ease(Math.min(1, (ph - 0.76) / 0.1)) : 1;
@@ -4494,6 +4607,7 @@ function tlStepCar(dt) {
   const m = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
   const mode = m ? m.car : (TL.t * 365 > 315 || TL.t * 365 < 18 ? 'away' : 'parked');
   const ph = m ? momentProgress(m) : 0;
+  const prevD = TL.carD, prevVis = CAR.car.visible;
   let target = TL.carD;
   if (mode === 'parked') target = 0;
   else if (mode === 'away') target = 1;
@@ -4508,28 +4622,34 @@ function tlStepCar(dt) {
   TL.carD = target;
   const pt = tlDrive.at(TL.carD);
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
-  const parked = TL.carD < 0.02;
+  CAR.car.visible = TL.carD < 0.98;
+  const parked = TL.carD < 0.02 && CAR.car.visible;
   CAR.plug.visible = parked; CAR.cable.visible = parked;
   const driving = TL.carD > 0.01 && TL.carD < 0.98 && mode !== 'parked' && mode !== 'away';
   const night = TL.sunCur < 7 || TL.sunCur >= 16.3;
-  const lights = driving && night;
+  const lights = driving && night && CAR.car.visible;
   CAR.beams.forEach(sl => { sl.visible = lights; sl.intensity = lights ? 40 : 0; });
   CAR.lamp.emissiveIntensity = lights ? 2.5 : 0;
+  if (CAR.car.visible !== prevVis || Math.abs(TL.carD - prevD) > 0.0005) {
+    if (CAR.car.visible !== prevVis || !LITE || ++shTick % 3 === 0) markShadows();
+  }
 }
 const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3();
 function tlStepCamera(dt, immediate) {
   if (performance.now() - TL.lastInteract <= 4000) return;
   const base = homePos(), off = base.clone().sub(HOME.target);
-  const sway = Math.sin(TL.t * Math.PI * 2) * 0.42;
+  const m = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
+  const grillBias = m && m.grill ? -0.36 : 0;
+  const sway = Math.sin(TL.t * Math.PI * 2) * 0.44 + grillBias;
   const zoom = 0.78, lowY = 0.44;
   const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
   const c = Math.cos(sway), s = Math.sin(sway);
-  _tlCamTarget.set(HOME.target.x + 1.2, HOME.target.y + 1.3, HOME.target.z + 1.0);
+  _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
   _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
   if (immediate) {
     camera.position.copy(_tlCamGoal); controls.target.copy(_tlCamTarget);
   } else {
-    const k = Math.min(1, dt * 3.2);
+    const k = Math.min(1, dt * 2.8);
     camera.position.lerp(_tlCamGoal, k); controls.target.lerp(_tlCamTarget, k);
   }
   camera.lookAt(controls.target);
@@ -4554,7 +4674,8 @@ function enterTimeline() {
   if (TL.on) { exitTimeline(); return; }
   if (WALK.on) exitWalk();
   if (TOUR.on) exitTour();
-  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible };
+  const tvD = tvScreen ? actOf(tvScreen) : null;
+  TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
   if (!TL.built) {
     TL.built = MOMENTS.map((m, i) => tlBuildMoment(m, i));
     TL.glow = new THREE.PointLight(0xffc98a, 0, 14, 2); TL.glow.position.set(12, 1.5, 23); LAND.add(TL.glow); TL.glow.visible = false;
@@ -4581,9 +4702,15 @@ function exitTimeline() {
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
   tlSetFire(TL.saved ? TL.saved.fire : false);
+  tlSetGrill(TL.saved ? TL.saved.grill : false);
+  tlSetTV(TL.saved ? TL.saved.tv : 0);
+  tlSetFan(TL.saved ? TL.saved.fan : 0);
   tlSetFrontDoor(false);
-  snowParts.forEach(m => { m.scale.y = 1; });
+  tlSetSideDoor(false);
+  if (MATS.snow) { MATS.snow.transparent = false; MATS.snow.opacity = 1; MATS.snow.depthWrite = true; }
+  snowParts.forEach(m => { m.position.y = 0; m.scale.y = 1; });
   TL.carD = 0; const pt = tlDrive.at(0);
+  CAR.car.visible = true;
   CAR.car.position.set(pt.x, pt.y, pt.z); CAR.car.rotation.y = pt.h;
   setCarColor(TL.saved ? TL.saved.carColor : 0xF3F3F1);
   CAR.plug.visible = true; CAR.cable.visible = true;
@@ -4593,6 +4720,7 @@ function exitTimeline() {
     seasonOn = null; nightOn = !state.night; applyState();
     camera.position.copy(TL.saved.pos); controls.target.copy(TL.saved.target); controls.enabled = true; controls.update();
   }
+  markShadows();
   document.getElementById('tlbar').hidden = true;
   document.getElementById('btn-timeline').textContent = 'A year at Local Time House';
   showCap('');
