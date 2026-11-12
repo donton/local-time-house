@@ -155,7 +155,7 @@ body.m #panel, body.m .hint, body.m #act-tip, body.m #act-hint { display: none !
 body.m #mtitle { display: flex; align-items: center; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
   font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 7px 12px 8px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
 body.m #mtitle .logo { width: 22px; }
-body.m.walking #mtitle, body.m.touring #mtitle { display: none; }
+body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 body.m.walking #mbar, body.m.touring #mbar { display: none; }
@@ -165,7 +165,7 @@ body.m.walking #mbar, body.m.touring #mbar { display: none; }
 #mbar .starbtn { color: var(--accent); }
 #mbar .starbtn b { font: 600 11px var(--font-mono); }
 body.m #mchips { display: flex; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
-body.m.walking #mchips, body.m.touring #mchips { display: none; }
+body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips { display: none; }
 #mchips button { padding: 9px 14px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 13px var(--font-body); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); touch-action: manipulation; }
 #mchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 body.m #msheet { display: block; position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: 46%; overflow: auto; overscroll-behavior: contain;
@@ -4546,7 +4546,8 @@ function phoneStep(dt) {
     lastFound = FOUND.size; const mf = $$('m-found'); if (mf) mf.textContent = `${FOUND.size} / ${KINDS()}`;
     if (sheetPane === 'found') buildTry();
   }
-  $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on));
+  const tlOn = typeof TL !== 'undefined' && TL.on;
+  $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on && !tlOn)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on)); $$('mb-year').setAttribute('aria-pressed', String(tlOn));
   if (WALK.on) { const ub = $$('usebtn'); ub.classList.toggle('ready', !!aimAct); ub.firstChild.textContent = aimAct ? aimAct.label(aimAct) : 'Nothing to use'; }
   const far = !WALK.on && ((typeof TL !== 'undefined' && TL.on) || camera.position.distanceTo(controls.target) > 22);
   if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
@@ -4641,60 +4642,68 @@ const P_KIT_TO_GRILL = [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-
 const P_GRILL_TO_KIT = [...P_KIT_TO_GRILL].reverse();
 const MOMENTS = [
   { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow & plugging in', t: 18 / 365, dur: 0.085, hour: 16.8, occupied: true, fire: true, tv: 2, car: 'arrive',
+    walls: 'up', roof: true, cam: { pos: [64, 20, 56], look: [26, 3, 22] },
     cast: [
-      { who: 'a', path: [[56, -2.25, 34.5], [53.2, -2.25, 32.8]], sitWindow: [0.22, 0.42], exitPath: [[53.2, -2.25, 32.8], ...P_CAR_TO_LIV.slice(2)], face: 1.4 },
-      { who: 'b', path: P_CAR_TO_KIT.slice(2), delay: 0.18, span: 0.35, face: 3.1 },
-      { who: 'g', path: [[9.5, -1.5, 21.5], [6.2, -1.5, 19.2]], sitWindow: [0.12, 0.90], exitPath: [[6.2, -1.5, 19.2], [9.5, -1.5, 21.5]], face: 0.1 },
-      { who: 'g', path: [[6.65, 0, 8.53], [8.5, 0, 8.53]], sitWindow: [0.15, 0.85], exitPath: [[8.5, 0, 8.53], [6.65, 0, 8.53]], face: 3.14 },
+      { who: 'a', path: [[55, -2.25, 34.5], [53.2, -2.25, 32.8]], sitWindow: [0.16, 0.50], exitPath: [[53.2, -2.25, 32.8], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5]], face: 1.4 },
+      { who: 'b', path: [[32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.16, span: 0.34, face: 3.1 },
+      { who: 'g', path: [[8.2, -1.5, 20.8], [6.2, -1.5, 19.2]], sitWindow: [0.06, 0.94], exitPath: [[6.2, -1.5, 19.2], [8.2, -1.5, 20.8]], face: 0.1 },
+      { who: 'g', path: [[7.5, 0, 8.53], [8.5, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[8.5, 0, 8.53], [7.5, 0, 8.53]], face: 3.14 },
     ] },
-  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — morning coffee & exploring the first blooms', t: 78 / 365, dur: 0.08, hour: 10.5, occupied: true, car: 'parked',
+  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — morning coffee inside & first spring blooms', t: 78 / 365, dur: 0.08, hour: 10.5, occupied: true, car: 'parked',
+    walls: 'cutaway', roof: false, cam: { pos: [26, 26, 46], look: [20, 2, 16] },
     cast: [
-      { who: 'g', path: [[19.8, 0, 15.5], [20.7, -2.25, 29.5], [28, -2.25, 38], [35, -2.25, 41], [26, -2.25, 36], [20.7, -2.25, 29.5], [19.8, 0, 15.5]], delay: 0.04, span: 0.86 },
-      { who: 'g', path: [[19.8, 0, 15.5], [20.7, -2.25, 29.5], [8, -2.25, 35], [-6, -2.25, 38], [8, -2.25, 35], [20.7, -2.25, 29.5], [19.8, 0, 15.5]], delay: 0.08, span: 0.84 },
-      { who: 'a', path: [[34.5, 0, 15.0], [45.8, 0, 14.0]], sitWindow: [0.12, 0.88], exitPath: [[45.8, 0, 14.0], [34.5, 0, 15.0]], face: 1.57 },
-      { who: 'b', path: [[6.65, 0, 8.53], [10.38, 0, 8.53]], sitWindow: [0.10, 0.90], exitPath: [[10.38, 0, 8.53], [6.65, 0, 8.53]], face: 1.57 },
+      { who: 'g', path: [[20.7, -2.25, 29.5], [24.5, -2.25, 35.5]], sitWindow: [0.10, 0.90], exitPath: [[24.5, -2.25, 35.5], [20.7, -2.25, 29.5]], face: 0.4 },
+      { who: 'g', path: [[20.7, -2.25, 29.5], [16.5, -2.25, 36.0]], sitWindow: [0.12, 0.88], exitPath: [[16.5, -2.25, 36.0], [20.7, -2.25, 29.5]], face: -0.5 },
+      { who: 'a', path: [[43.5, 0, 14.5], [45.8, 0, 14.0]], sitWindow: [0.06, 0.94], exitPath: [[45.8, 0, 14.0], [43.5, 0, 14.5]], face: 1.57 },
+      { who: 'b', path: [[8.8, 0, 8.53], [10.38, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[10.38, 0, 8.53], [8.8, 0, 8.53]], face: 1.57 },
     ] },
   { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch at the brick patio table under the birches', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: true, fan: 2.4, car: 'parked',
+    walls: 'up', roof: true, cam: { pos: [12, 14, 60], look: [-10, 0, 38] },
     props: [{ kind: 'basket', at: [-10.41, 0.42, 38.54] }],
     cast: [
-      { who: 'g', path: [[19.8, -2.25, 29.5], [4, -2.25, 35], [-9.99, -2.25, 41.62]], sitWindow: [0.12, 0.88], exitPath: [[-9.99, -2.25, 41.62], [4, -2.25, 35], [19.8, -2.25, 29.5]], face: 3.69 },
-      { who: 'g', path: [[19.8, -2.25, 29.5], [4, -2.25, 35], [-7.86, -2.25, 40.31]], sitWindow: [0.14, 0.86], exitPath: [[-7.86, -2.25, 40.31], [4, -2.25, 35], [19.8, -2.25, 29.5]], face: 3.69 },
-      { who: 'a', path: [[19.8, -2.25, 29.5], [4, -2.25, 35], [-11.87, -2.25, 36.15]], sitWindow: [0.15, 0.85], exitPath: [[-11.87, -2.25, 36.15], [4, -2.25, 35], [19.8, -2.25, 29.5]], face: 0.55 },
-      { who: 'b', path: [[0.1, 0, 14.6], [-4.6, -0.167, 10.6]], sitWindow: [0.12, 0.88], exitPath: [[-4.6, -0.167, 10.6], [0.1, 0, 14.6]], face: -1.57 },
+      { who: 'g', path: [[-4, -2.25, 37], [-9.99, -2.25, 41.62]], sitWindow: [0.06, 0.92], exitPath: [[-9.99, -2.25, 41.62], [-4, -2.25, 37]], face: 3.69 },
+      { who: 'g', path: [[-3, -2.25, 36], [-7.86, -2.25, 40.31]], sitWindow: [0.08, 0.90], exitPath: [[-7.86, -2.25, 40.31], [-3, -2.25, 36]], face: 3.69 },
+      { who: 'a', path: [[-5, -2.25, 35], [-11.87, -2.25, 36.15]], sitWindow: [0.08, 0.90], exitPath: [[-11.87, -2.25, 36.15], [-5, -2.25, 35]], face: 0.55 },
+      { who: 'b', path: [[-1.5, -0.167, 13.5], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.5]], face: -1.57 },
     ] },
   { id: 'summer-lawn', title: 'Deck cookout & south lawn picnic', caption: 'Early July — grilling, lounging on the west deck & picnic on the lawn', t: 182 / 365, dur: 0.10, hour: 15.5, occupied: true, grill: true, fan: 5, car: 'parked', ball: true,
+    walls: 'up', roof: true, cam: { pos: [-26, 16, 46], look: [8, 1, 24] },
     props: [{ kind: 'blanket', at: [24, -2.25, 43], rot: -0.25 }, { kind: 'basket', at: [25.4, -2.25, 43.8] }],
     cast: [
-      { who: 'a', path: [...P_KIT_TO_GRILL.slice(1), [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5], ...P_GRILL_TO_KIT.slice(0, -1)], delay: 0.02, span: 0.92, face: -1.57 },
-      { who: 'b', path: [[0.1, 0, 14.6], [-4.6, -0.167, 7.2]], sitWindow: [0.12, 0.88], exitPath: [[-4.6, -0.167, 7.2], [0.1, 0, 14.6]], face: -1.57 },
-      { who: 'g', path: [[20.7, -2.25, 29.5], [22.8, -2.25, 42.4]], sitWindow: [0.12, 0.88], exitPath: [[22.8, -2.25, 42.4], [20.7, -2.25, 29.5]], face: 0.9 },
-      { who: 'g', path: [[20.7, -2.25, 29.5], [25.2, -2.25, 43.5]], sitWindow: [0.14, 0.86], exitPath: [[25.2, -2.25, 43.5], [20.7, -2.25, 29.5]], face: -0.5 },
-      { who: 'g', kid: true, path: [[29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44]], delay: 0.04, span: 0.92 },
-      { who: 'g', kid: true, path: [[37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41], [37, -2.25, 44], [29, -2.25, 41]], delay: 0.08, span: 0.90 },
+      { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.02, span: 0.94, face: -1.57 },
+      { who: 'b', path: [[-1.5, -0.167, 11.5], [-4.6, -0.167, 7.2]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 7.2], [-1.5, -0.167, 11.5]], face: -1.57 },
+      { who: 'g', path: [[21.5, -2.25, 40.5], [22.8, -2.25, 42.4]], sitWindow: [0.06, 0.94], exitPath: [[22.8, -2.25, 42.4], [21.5, -2.25, 40.5]], face: 0.9 },
+      { who: 'g', path: [[26.5, -2.25, 41.5], [25.2, -2.25, 43.5]], sitWindow: [0.08, 0.92], exitPath: [[25.2, -2.25, 43.5], [26.5, -2.25, 41.5]], face: -0.5 },
+      { who: 'g', kid: true, path: [[29.5, -2.25, 41.2], [30.5, -2.25, 41.8], [29.5, -2.25, 41.2], [30.2, -2.25, 41.5]], delay: 0.04, span: 0.92 },
+      { who: 'g', kid: true, path: [[36.5, -2.25, 43.8], [35.5, -2.25, 43.2], [36.5, -2.25, 43.8], [35.8, -2.25, 43.5]], delay: 0.06, span: 0.90 },
     ] },
   { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — quick turnover & settling into the guest bunk room', t: 228 / 365, dur: 0.085, hour: 11.5, occupied: true, tv: 4, fan: 2.4, car: 'turnover',
+    walls: 'cutaway', roof: false, cam: { pos: [48, 28, 38], look: [25, 3, 14] },
     cast: [
-      { who: 'g', path: P_LIV_TO_CAR.slice(3), delay: 0.0, span: 0.18, hideAtEnd: true },
-      { who: 'g', path: P_KIT_TO_CAR.slice(3), delay: 0.03, span: 0.18, hideAtEnd: true },
-      { who: 'g', path: P_CAR_TO_LIV.slice(0, 5), delay: 0.68, span: 0.22, face: 0.2 },
-      { who: 'g', path: [[24.4, 0, 15.0], [26.5, 0, 10.2], [26.5, 0, 5.5]], sitWindow: [0.74, 0.96], exitPath: [[26.5, 0, 5.5], [26.5, 0, 10.2]], face: 1.57 },
-      { who: 'a', path: [[26.8, 9.33, 14.5], [32.8, 9.33, 14.8], [38.2, 9.33, 14.5]], delay: 0.72, span: 0.24, face: 0.0 },
+      { who: 'g', path: P_LIV_TO_CAR.slice(4), delay: 0.0, span: 0.16, hideAtEnd: true },
+      { who: 'g', path: P_KIT_TO_CAR.slice(4), delay: 0.02, span: 0.16, hideAtEnd: true },
+      { who: 'g', path: P_CAR_TO_LIV.slice(2, 6), delay: 0.68, span: 0.22, face: 0.2 },
+      { who: 'g', path: [[26.5, 0, 10.2], [26.5, 0, 5.5]], sitWindow: [0.72, 0.96], exitPath: [[26.5, 0, 5.5], [26.5, 0, 10.2]], face: 1.57 },
+      { who: 'a', path: [[27.5, 9.33, 14.5], [32.8, 9.33, 14.8], [38.2, 9.33, 14.5]], delay: 0.70, span: 0.24, face: 0.0 },
     ] },
   { id: 'fall-patio', title: 'Golden hour grill & deck lounge', caption: 'Late September — grilling & lounging on the west deck at golden hour', t: 268 / 365, dur: 0.09, hour: 17.6, occupied: true, grill: true, patioFire: true, tv: 2, car: 'parked',
+    walls: 'up', roof: true, cam: { pos: [-24, 10, 24], look: [-2, 2, 12] },
     cast: [
-      { who: 'a', path: [...P_KIT_TO_GRILL.slice(1), [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], ...P_GRILL_TO_KIT.slice(0, -1)], delay: 0.04, span: 0.90, face: -1.57 },
-      { who: 'g', path: [[0.1, 0, 14.6], [-4.6, -0.167, 10.6]], sitWindow: [0.10, 0.90], exitPath: [[-4.6, -0.167, 10.6], [0.1, 0, 14.6]], face: -1.57 },
-      { who: 'g', path: [[0.1, 0, 14.6], [-4.6, -0.167, 7.2]], sitWindow: [0.12, 0.88], exitPath: [[-4.6, -0.167, 7.2], [0.1, 0, 14.6]], face: -1.57 },
-      { who: 'b', path: [[11.5, -1.5, 22.0], [6.2, -1.5, 19.2]], sitWindow: [0.12, 0.88], exitPath: [[6.2, -1.5, 19.2], [11.5, -1.5, 22.0]], face: 0.1 },
+      { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.04, span: 0.92, face: -1.57 },
+      { who: 'g', path: [[-1.5, -0.167, 13.0], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.0]], face: -1.57 },
+      { who: 'g', path: [[-1.5, -0.167, 11.0], [-4.6, -0.167, 7.2]], sitWindow: [0.08, 0.92], exitPath: [[-4.6, -0.167, 7.2], [-1.5, -0.167, 11.0]], face: -1.57 },
+      { who: 'b', path: [[8.5, -1.5, 20.5], [6.2, -1.5, 19.2]], sitWindow: [0.06, 0.94], exitPath: [[6.2, -1.5, 19.2], [8.5, -1.5, 20.5]], face: 0.1 },
     ] },
   { id: 'fall-fireside', title: 'Fire pit evening & hearth', caption: 'Late October — gathering around the Corten fire pit as leaves fall', t: 304 / 365, dur: 0.095, hour: 18.2, occupied: true, fire: true, patioFire: true, tv: 1, car: 'depart-end',
+    walls: 'up', roof: true, cam: { pos: [-3, 11, 59], look: [-18, 0, 42] },
     cast: [
-      { who: 'a', path: [[-10, -2.25, 38], [-15.53, -2.25, 43.71]], sitWindow: [0.10, 0.86], exitPath: [[-15.53, -2.25, 43.71], [-10, -2.25, 38]], face: -2.75 },
-      { who: 'b', path: [[-10, -2.25, 38], [-19.51, -2.25, 46.15]], sitWindow: [0.12, 0.84], exitPath: [[-19.51, -2.25, 46.15], [-10, -2.25, 38]], face: 2.90 },
-      { who: 'g', path: [[-10, -2.25, 36], [-21.95, -2.25, 42.17]], sitWindow: [0.14, 0.82], exitPath: [[-21.95, -2.25, 42.17], [-10, -2.25, 36]], face: 1.33 },
-      { who: 'g', path: [[-10, -2.25, 36], [-17.97, -2.25, 39.73]], sitWindow: [0.16, 0.80], exitPath: [[-17.97, -2.25, 39.73], [-10, -2.25, 36]], face: -0.24 },
+      { who: 'a', path: [[-12, -2.25, 40], [-15.53, -2.25, 43.71]], sitWindow: [0.06, 0.92], exitPath: [[-15.53, -2.25, 43.71], [-12, -2.25, 40]], face: -2.75 },
+      { who: 'b', path: [[-12, -2.25, 41], [-19.51, -2.25, 46.15]], sitWindow: [0.08, 0.90], exitPath: [[-19.51, -2.25, 46.15], [-12, -2.25, 41]], face: 2.90 },
+      { who: 'g', path: [[-12, -2.25, 39], [-21.95, -2.25, 42.17]], sitWindow: [0.08, 0.90], exitPath: [[-21.95, -2.25, 42.17], [-12, -2.25, 39]], face: 1.33 },
+      { who: 'g', path: [[-12, -2.25, 38], [-17.97, -2.25, 39.73]], sitWindow: [0.10, 0.88], exitPath: [[-17.97, -2.25, 39.73], [-12, -2.25, 38]], face: -0.24 },
     ] },
-  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 346 / 365, dur: 0.08, hour: 20.0, occupied: false, car: 'away', glow: true },
+  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 346 / 365, dur: 0.08, hour: 20.0, occupied: false, car: 'away', glow: true,
+    walls: 'up', roof: true, cam: { pos: [54, 24, 58], look: [16, 4, 14] } },
 ];
 // --- low-poly figures: shared geometries + a small material cache, never allocated per frame
 const TL_GEO = {
@@ -5146,6 +5155,18 @@ function tlApplyEnv(dt, immediate) {
   const ml = document.getElementById('tl-month');
   if (ml && ml.textContent !== TL_MONTHS[month]) ml.textContent = TL_MONTHS[month];
 }
+function tlSetWallsRoof(walls, roof) {
+  if (state.walls === walls && state.roof === roof) return;
+  state.walls = walls; state.roof = roof;
+  const showG = state.floors !== 'loft', showL = state.floors !== 'ground';
+  G.mainRoof.visible = roof && showL;
+  G.wingRoof.visible = roof && showG;
+  ['up', 'cutaway', 'down'].forEach(k => document.getElementById('wl-' + k).setAttribute('aria-pressed', String(walls === k)));
+  document.getElementById('tg-roof').checked = roof;
+  updateWalls();
+  markShadows();
+  wake(4);
+}
 function tlSetMoment(i) {
   if (TL.cur >= 0 && TL.built[TL.cur]) TL.built[TL.cur].group.visible = false;
   if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
@@ -5154,6 +5175,8 @@ function tlSetMoment(i) {
     showCap('');
     tlSetFrontDoor(false);
     tlSetSideDoor(false);
+    tlSetWallsRoof('up', true);
+    if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(false);
     const nx = tlNextMoment();
     if (nx) { TL.hourTarget = nx.hour; TL.occupied = !!nx.occupied; }
     return;
@@ -5163,7 +5186,9 @@ function tlSetMoment(i) {
   for (const w of B.walkers) { w.fig.visible = false; w.bob = 0; }
   if (B.ball) { B.ball.visible = false; TL.ballPh = 0; }
   TL.hourTarget = m.hour; TL.occupied = !!m.occupied;
+  tlSetWallsRoof(m.walls || 'up', m.roof !== undefined ? m.roof : (m.walls !== 'cutaway'));
   tlSetFire(!!m.fire);
+  if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(!!m.patioFire);
   tlSetGrill(!!m.grill);
   tlSetTV(m.tv || 0);
   tlSetFan(m.fan || 0);
@@ -5268,23 +5293,34 @@ function tlStepCar(dt) {
     if (CAR.car.visible !== prevVis || ++shTick % 4 === 0) markShadows();
   }
 }
-const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3();
+const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3(), _tlCamOff = new THREE.Vector3();
 function tlStepCamera(dt, immediate) {
   const idle = TL.lastInteract ? (performance.now() - TL.lastInteract) / 1000 : 99;
   if (idle < 3.5) return;
   const r = Math.min(1, (idle - 3.5) / 3.5), ramp = r * r * (3 - 2 * r);
-  const base = homePos(), off = base.clone().sub(HOME.target);
-  // Single continuous cosine curve over the year: faces SE in winter (for the driveway arrival/departure)
-  // and glides smoothly to SW in spring/summer/early fall (framing the West Deck grill, birch patio, and south lawn)
-  const targetSway = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30;
-  if (immediate) TL.swayCur = targetSway;
-  else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
-  const zoom = 0.78, lowY = 0.44;
-  const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
-  const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
-  _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
-  _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
-  const k = immediate ? 0.25 : Math.min(1, dt * 1.45) * ramp;
+  const m = TL.cur >= 0 ? MOMENTS[TL.cur] : tlNextMoment();
+  if (m && m.cam) {
+    _tlCamTarget.copy(toW(m.cam.look[0], m.cam.look[1], m.cam.look[2]));
+    _tlCamGoal.copy(toW(m.cam.pos[0], m.cam.pos[1], m.cam.pos[2]));
+    _tlCamGoal.x += Math.sin(TL.t * Math.PI * 16) * 0.9;
+    _tlCamGoal.z += Math.cos(TL.t * Math.PI * 12) * 0.6;
+    if (camera.aspect < 0.9) {
+      const pull = Math.min(1.45, 0.92 / Math.max(0.45, camera.aspect));
+      _tlCamOff.copy(_tlCamGoal).sub(_tlCamTarget).multiplyScalar(pull);
+      _tlCamGoal.copy(_tlCamTarget).add(_tlCamOff);
+    }
+  } else {
+    const base = homePos(), off = base.clone().sub(HOME.target);
+    const targetSway = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30;
+    if (immediate) TL.swayCur = targetSway;
+    else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
+    const zoom = 0.78, lowY = 0.44;
+    const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
+    const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
+    _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
+    _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
+  }
+  const k = immediate ? 1 : Math.min(1, dt * 1.9) * ramp;
   camera.position.lerp(_tlCamGoal, k);
   controls.target.lerp(_tlCamTarget, k);
   camera.lookAt(controls.target);
@@ -5336,7 +5372,10 @@ function enterTimeline() {
   document.getElementById('btn-timeline').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
   tlSetMoment(0);
+  tlStepActors(0);
   tlStepCar(0);
+  tlStepCamera(0, true);
+  wake(10);
 }
 function exitTimeline() {
   if (!TL.on) return;
