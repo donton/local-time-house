@@ -2941,7 +2941,7 @@ function updateWalls() {
     el.cut = cut; markShadows();
     if (nightOn || (typeof TL !== 'undefined' && TL.on && TL.duskCur > 0.02)) {
       for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
-    } else sconceShadowDirty = true;
+    }
     if (el.hide) el.m.visible = !cut;
     else { el.m.material = cut ? clipVariant(el) : el.base; el.cap.visible = cut; }
   }
@@ -3622,7 +3622,7 @@ const PATIO = (() => {
     fireOn = on;
     coals.material.emissiveIntensity = on ? 2.4 : 0;
     flames.visible = on;
-    patioFireLight.visible = on;
+    patioFireLight.visible = true;
     patioFireLight.intensity = on ? 5.2 : 0;
     pSmoke.forEach(sp => { sp.visible = on; });
   };
@@ -4434,10 +4434,10 @@ function openSheet(pane) {
   sheetPane = pane; sheet.classList.add('open');
   $$('pane-more').hidden = pane !== 'more'; $$('pane-found').hidden = pane !== 'found';
   $$('msheet-title').textContent = pane === 'more' ? 'Settings' : 'Things to try';
-  $$('mb-more').setAttribute('aria-pressed', String(pane === 'more')); $$('mb-found').setAttribute('aria-pressed', String(pane === 'found'));
+  $$('mb-more').setAttribute('aria-pressed', String(pane === 'more'));
   if (pane === 'found') buildTry();
 }
-function closeSheet() { sheetPane = null; sheet.classList.remove('open'); $$('mb-more').setAttribute('aria-pressed', 'false'); $$('mb-found').setAttribute('aria-pressed', 'false'); }
+function closeSheet() { sheetPane = null; sheet.classList.remove('open'); $$('mb-more').setAttribute('aria-pressed', 'false'); }
 function nearestAct(kind) {
   let best = null, bd = Infinity; const t = controls.target;
   for (const a of ACTS) { if (a.kind !== kind) continue; const c = actCenter(a); if (!c) continue; const d = c.distanceTo(t); if (d < bd) { bd = d; best = a; } }
