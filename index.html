@@ -3079,6 +3079,7 @@ function interactStep(dt) {
   }
   if (fireOn) fireLight.intensity = 7 + Math.sin(fxT * 13) * 1.2 + Math.sin(fxT * 31) * 0.8;
   if (tvAct) tvLight.intensity = 2.6 + Math.sin(fxT * 7) * 0.4;
+  if (typeof PATIO !== 'undefined' && PATIO.patioFireLight && PATIO.patioFireLight.visible) PATIO.patioFireLight.intensity = 5.2 + Math.sin(fxT * 11) * 0.9 + Math.sin(fxT * 27) * 0.6;
   smoke.forEach(sp => {
     if (!sp.visible) return; sp.userData.t = (sp.userData.t + dt * 0.22) % 1; const t = sp.userData.t;
     const o = sp.userData.origin || FX_FIRE.flue;
@@ -3384,22 +3385,36 @@ const CAR = (() => {
   return { car, post, paint, plug, cable, beams, lamp };
 })();
 
-/* Patio under the trees off the south-west corner of the house: blue-gray brick laid in a running bond, a slatted green metal
-   table with a bench and two chairs, white-stemmed birches, and a skirt of grasses and purple alliums. */
+/* =====================================================================
+   BRICK PATIO & FIRE PIT HEARTH — Double-Lobed Terrace under White Birches
+   Lobe 1: Green metal dining set (table, bench, two chairs, table lantern).
+   Lobe 2: Circular Corten fire pit bowl with 4 neutral slatted timber lounge chairs
+   (Donald Judd / Enzo Mari inspired, as in reference image) circling the fire.
+   ===================================================================== */
 const PATIO = (() => {
-  const cx = PATIO_AT[0], cz = PATIO_AT[1], rot = 0.55, Wp = 14, Dp = 10;
+  const cx = PATIO_AT[0], cz = PATIO_AT[1], rot = 0.55, Wp = 23, Dp = 12;
   const grp = new THREE.Group(); grp.position.set(cx, LV.GRADE, cz); grp.rotation.y = rot; LAND.add(grp);
-  // organic outline: a soft, irregular oval that wraps the furniture with room to pull chairs out
-  const RX = 7.8, RZ = 5.9, wob = a => 1 + 0.09 * Math.sin(3 * a + 1.1) + 0.05 * Math.sin(5 * a + 2.3) + 0.03 * Math.sin(7 * a + 0.4);
-  const outline = Array.from({ length: 64 }, (_, i) => { const a = i / 64 * Math.PI * 2; return new THREE.Vector2(Math.cos(a) * RX * wob(a), Math.sin(a) * RZ * wob(a)); });
-  const inPatio = (x, z, k = 1) => { const a = Math.atan2(z, x), w = wob(a); return (x / (RX * w * k)) ** 2 + (z / (RZ * w * k)) ** 2 < 1; };
-  // whole bricks only (8" × 4" in a running bond, ⅜" joints): a brick is laid if its centre falls inside the
-  // outline, so the edge steps brick by brick instead of cutting any
+
+  // Organic double-lobed outline (Dining Lobe 1 centered at (-4.2, -0.3), Fire Pit Lobe 2 at (5.2, 0.3))
+  const wob = a => 1 + 0.08 * Math.sin(3 * a + 1.1) + 0.04 * Math.sin(5 * a + 2.3);
+  const inPatio = (x, z, k = 1) => {
+    const dx1 = x - (-4.2), dz1 = z - (-0.3), a1 = Math.atan2(dz1, dx1), w1 = wob(a1) * k;
+    if ((dx1 / (6.8 * w1)) ** 2 + (dz1 / (5.6 * w1)) ** 2 < 1) return true;
+    const dx2 = x - 5.2, dz2 = z - 0.3, a2 = Math.atan2(dz2, dx2), w2 = wob(a2) * k;
+    if ((dx2 / (6.2 * w2)) ** 2 + (dz2 / (5.6 * w2)) ** 2 < 1) return true;
+    return false;
+  };
+
+  // Whole blue-gray bricks in running bond (8" × 4" with ⅜" joints)
   const BL = 8 / 12, BW = 4 / 12, J = 0.375 / 12, list = [];
-  for (let r = -Math.ceil(RZ * 1.3 / (BW + J)); r <= Math.ceil(RZ * 1.3 / (BW + J)); r++) {
+  for (let r = -24; r <= 24; r++) {
     const z = r * (BW + J), off = (r & 1) ? (BL + J) / 2 : 0;
-    for (let c = -Math.ceil(RX * 1.3 / (BL + J)); c <= Math.ceil(RX * 1.3 / (BL + J)); c++) { const x = c * (BL + J) + off; if (inPatio(x, z)) list.push([x, z]); }
+    for (let c = -28; c <= 28; c++) {
+      const x = c * (BL + J) + off;
+      if (inPatio(x, z)) list.push([x, z]);
+    }
   }
+
   const brickMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 }), mortarMat = new THREE.MeshStandardMaterial({ color: 0xC9C6BF, roughness: 1 });
   exteriorLightsOnly(brickMat); exteriorLightsOnly(mortarMat);
   const bricks = new THREE.InstancedMesh(new THREE.BoxGeometry(BL, 0.18, BW), brickMat, list.length);
@@ -3408,11 +3423,17 @@ const PATIO = (() => {
   list.forEach(([x, z], i) => {
     o3.position.set(x, 0.05, z); o3.updateMatrix(); bricks.setMatrixAt(i, o3.matrix);
     o3.position.set(x, 0.0, z); o3.updateMatrix(); bed.setMatrixAt(i, o3.matrix);
-    const v = (88 + Math.random() * 30) / 255; bricks.setColorAt(i, col.setRGB(v - 0.03, v, v + 0.05, THREE.SRGBColorSpace));   // blue-gray, brick to brick
+    const v = (88 + Math.random() * 30) / 255; bricks.setColorAt(i, col.setRGB(v - 0.03, v, v + 0.05, THREE.SRGBColorSpace));
   });
   bricks.receiveShadow = bed.receiveShadow = true; grp.add(bed, bricks);
+
+  // 1. DINING TERRACE (Lobe 1 at x = -4.2, z = -0.3)
+  const diningGrp = new THREE.Group();
+  diningGrp.position.set(-4.2, 0, -0.3);
+  grp.add(diningGrp);
+
   const green = new THREE.MeshStandardMaterial({ color: 0x4C5B36, roughness: 0.55, metalness: 0.35 }); exteriorLightsOnly(green);
-  const part = (w, h, d, x, y, z, ry = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), green); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = true; grp.add(m); return m; };
+  const part = (w, h, d, x, y, z, ry = 0) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), green); m.position.set(x, y, z); m.rotation.y = ry; m.castShadow = true; diningGrp.add(m); return m; };
   const slats = (x0, x1, z0, z1, y, n, alongX = true) => {
     for (let i = 0; i < n; i++) {
       const t = (i + 0.5) / n;
@@ -3425,11 +3446,11 @@ const PATIO = (() => {
   for (const [x, z] of [[-2.45, -1.25], [2.45, -1.25], [-2.45, 1.25], [2.45, 1.25]]) part(0.07, 2.36, 0.07, x, 1.18, z);
   part(5.0, 0.06, 0.07, 0, 2.28, -1.25); part(5.0, 0.06, 0.07, 0, 2.28, 1.25);
   const lanternMat = new THREE.MeshStandardMaterial({ color: 0xffe4b5, emissive: 0xffa838, emissiveIntensity: 0, roughness: 0.25 });
-  const lanternBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.08, 8), green); lanternBase.position.set(0.35, 2.44, -0.12); grp.add(lanternBase);
-  const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.36, 8), lanternMat); lanternGlass.position.set(0.35, 2.66, -0.12); grp.add(lanternGlass);
-  const lanternCap = new THREE.Mesh(new THREE.ConeGeometry(0.21, 0.12, 8), green); lanternCap.position.set(0.35, 2.90, -0.12); grp.add(lanternCap);
+  const lanternBase = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.08, 8), green); lanternBase.position.set(0.35, 2.44, -0.12); diningGrp.add(lanternBase);
+  const lanternGlass = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.36, 8), lanternMat); lanternGlass.position.set(0.35, 2.66, -0.12); diningGrp.add(lanternGlass);
+  const lanternCap = new THREE.Mesh(new THREE.ConeGeometry(0.21, 0.12, 8), green); lanternCap.position.set(0.35, 2.90, -0.12); diningGrp.add(lanternCap);
   const lanternHalo = new THREE.Mesh(new THREE.CircleGeometry(1.35, 16).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffb84d, transparent: true, opacity: 0.28, depthWrite: false }));
-  lanternHalo.position.set(0.35, 2.415, -0.12); lanternHalo.visible = false; grp.add(lanternHalo);
+  lanternHalo.position.set(0.35, 2.415, -0.12); lanternHalo.visible = false; diningGrp.add(lanternHalo);
   // bench with back, north side
   slats(-2.6, 2.6, -3.35, -2.25, 1.5, 6); for (const x of [-2.4, 2.4]) { part(0.07, 1.5, 0.07, x, 0.75, -2.35); part(0.07, 2.9, 0.07, x, 1.45, -3.3); part(0.07, 0.05, 1.1, x, 2.15, -2.8); }
   for (let i = 0; i < 5; i++) part(5.2, 0.16, 0.04, 0, 1.75 + i * 0.25, -3.33);
@@ -3440,12 +3461,155 @@ const PATIO = (() => {
     for (let i = 0; i < 4; i++) part(1.8, 0.14, 0.04, x, 1.8 + i * 0.22, 3.55);
     for (const dx of [-0.85, 0.85]) { part(0.07, 1.3, 0.07, x + dx, 2.1, 3.55); part(0.07, 0.05, 1.3, x + dx, 2.15, 2.9); }
   }
-  // birches (white multi-stem) and planting around the patio
+
+  // 2. FIRE PIT HEARTH (Lobe 2 centered at x = 5.2, z = 0.3)
+  const firepit = new THREE.Group();
+  firepit.position.set(5.2, 0, 0.3);
+  grp.add(firepit);
+
+  const cortenMat = new THREE.MeshStandardMaterial({ color: 0x764B35, roughness: 0.88, metalness: 0.24 });
+  const lavaMat = new THREE.MeshStandardMaterial({ color: 0x242220, roughness: 0.96 });
+  const logMat = new THREE.MeshStandardMaterial({ color: 0x8C7152, roughness: 0.85 });
+  const coalMat = new THREE.MeshStandardMaterial({ color: 0x3b1c10, emissive: 0xff4808, emissiveIntensity: 2.4, roughness: 0.9 });
+  const flameMat = new THREE.MeshBasicMaterial({ color: 0xffaa2b, transparent: true, opacity: 0.88 });
+  const innerFlame = new THREE.MeshBasicMaterial({ color: 0xff5508, transparent: true, opacity: 0.82 });
+  const chairWood = new THREE.MeshStandardMaterial({ color: 0xD2BA96, roughness: 0.78 }); // natural neutral wood as in reference
+  for (const m of [cortenMat, lavaMat, logMat, chairWood]) exteriorLightsOnly(m);
+
+  // Corten steel circular fire pit bowl (approx. 34" diameter, 14" high)
+  const bowlBody = new THREE.Mesh(new THREE.CylinderGeometry(1.42, 1.25, 0.88, 24), cortenMat);
+  bowlBody.position.y = 0.44; bowlBody.castShadow = true; bowlBody.receiveShadow = true; firepit.add(bowlBody);
+  const bowlRim = new THREE.Mesh(new THREE.TorusGeometry(1.42, 0.055, 8, 24).rotateX(Math.PI / 2), cortenMat);
+  bowlRim.position.y = 0.88; bowlRim.castShadow = true; firepit.add(bowlRim);
+
+  // Charcoal lava rock bed inside bowl
+  const lavaBed = new THREE.Mesh(new THREE.CylinderGeometry(1.36, 1.36, 0.14, 20), lavaMat);
+  lavaBed.position.y = 0.76; lavaBed.receiveShadow = true; firepit.add(lavaBed);
+
+  // Glowing coals
+  const coals = new THREE.Mesh(new THREE.CylinderGeometry(1.05, 1.05, 0.08, 16), coalMat);
+  coals.position.y = 0.82; firepit.add(coals);
+
+  // Criss-crossed split firewood logs
+  const logs = new THREE.Group();
+  firepit.add(logs);
+  const logAngles = [0.2, 1.4, 2.5, 3.8, 5.0];
+  logAngles.forEach((ang, idx) => {
+    const lg = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.085, 1.40, 7), logMat);
+    lg.position.set(Math.cos(ang) * 0.22, 0.92 + idx * 0.04, Math.sin(ang) * 0.22);
+    lg.rotation.z = Math.cos(ang) * 0.38 + 0.1;
+    lg.rotation.x = Math.sin(ang) * 0.38;
+    lg.rotation.y = ang + 0.4;
+    lg.castShadow = true; logs.add(lg);
+  });
+
+  // Animated flickering flame cones
+  const flames = new THREE.Group();
+  firepit.add(flames);
+  for (let i = 0; i < 5; i++) {
+    const fa = i * (Math.PI * 2 / 5);
+    const flOuter = new THREE.Mesh(new THREE.ConeGeometry(0.26, 0.95, 5).translate(0, 0.47, 0), flameMat);
+    flOuter.position.set(Math.cos(fa) * 0.32, 0.88, Math.sin(fa) * 0.32);
+    flOuter.rotation.y = fa; flames.add(flOuter);
+    const flInner = new THREE.Mesh(new THREE.ConeGeometry(0.16, 0.70, 5).translate(0, 0.35, 0), innerFlame);
+    flInner.position.set(Math.cos(fa) * 0.20, 0.88, Math.sin(fa) * 0.20);
+    flInner.rotation.y = fa + 0.5; flames.add(flInner);
+  }
+  const centerFlame = new THREE.Mesh(new THREE.ConeGeometry(0.32, 1.20, 6).translate(0, 0.60, 0), flameMat);
+  centerFlame.position.set(0, 0.88, 0); flames.add(centerFlame);
+
+  // Warm glowing firelight
+  const patioFireLight = new THREE.PointLight(0xff7a24, 0, 16, 2);
+  patioFireLight.position.set(5.2, 1.6, 0.3);
+  grp.add(patioFireLight);
+
+  // Rising smoke wisps
+  const pSmoke = [];
+  for (let i = 0; i < 4; i++) {
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xd8d4ce, transparent: true, opacity: 0, depthWrite: false }));
+    sp.scale.setScalar(0.48); sp.visible = false;
+    sp.userData = { t: i / 4, origin: [cx + 5.2 * Math.cos(rot) + 0.3 * Math.sin(rot), LV.GRADE + 1.8, cz - 5.2 * Math.sin(rot) + 0.3 * Math.cos(rot)], rise: 6.5, drift: 0.9, s0: 0.4, s1: 1.8 };
+    LAND.add(sp); smoke.push(sp); pSmoke.push(sp);
+  }
+
+  let fireOn = true;
+  const setPatioFire = on => {
+    fireOn = on;
+    coals.material.emissiveIntensity = on ? 2.4 : 0;
+    flames.visible = on;
+    patioFireLight.visible = on;
+    patioFireLight.intensity = on ? 5.2 : 0;
+    pSmoke.forEach(sp => { sp.visible = on; });
+  };
+  setPatioFire(true);
+
+  act(firepit, {
+    kind: 'firepit',
+    label: d => d.on !== false && fireOn ? 'Extinguish patio fire pit' : 'Light patio fire pit',
+    run: d => setPatioFire(!fireOn)
+  });
+
+  // 3. FOUR NEUTRAL WOOD CHAIRS CIRCLING THE FIRE PIT (Reference design from image)
+  // Modeled as minimalist low slatted timber plank lounge chairs (Donald Judd / Enzo Mari style)
+  const buildWoodChair = (cxPos, czPos, rotY) => {
+    const chair = new THREE.Group();
+    chair.position.set(cxPos, 0, czPos);
+    chair.rotation.y = rotY;
+    grp.add(chair);
+
+    const wb = (w, h, d, x, y, z, rx = 0) => {
+      const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), chairWood);
+      o.position.set(x, y, z);
+      if (rx) o.rotation.x = rx;
+      o.castShadow = true; o.receiveShadow = true;
+      chair.add(o);
+      return o;
+    };
+
+    // Sturdy wooden slab sides (left & right at sx = ±1.0)
+    for (const sx of [-1.0, 1.0]) {
+      // Ground runner
+      wb(0.14, 0.16, 2.30, sx, 0.08, -0.05);
+      // Front vertical riser block
+      wb(0.14, 0.95, 0.18, sx, 0.48, 0.85);
+      // Rear reclined backrest slab support
+      wb(0.14, 1.48, 0.18, sx, 0.96, -0.72, -0.32);
+    }
+    // Front and rear lower cross braces
+    wb(1.98, 0.12, 0.14, 0, 0.22, 0.85);
+    wb(1.98, 0.12, 0.14, 0, 0.22, -0.72);
+
+    // 4 thick horizontal seat planks sloping back
+    for (let i = 0; i < 4; i++) {
+      const zPos = 0.80 - i * 0.38;
+      const yPos = 1.04 - i * 0.07;
+      wb(1.98, 0.085, 0.32, 0, yPos, zPos, 0.18);
+    }
+
+    // 4 thick horizontal backrest planks reclining back
+    for (let i = 0; i < 4; i++) {
+      const yPos = 0.92 + i * 0.35;
+      const zPos = -0.46 - i * 0.11;
+      wb(1.98, 0.30, 0.085, 0, yPos, zPos, -0.32);
+    }
+  };
+
+  // 4 chairs placed in a welcoming ring at radius 3.3 ft facing the fire bowl
+  const chairAngles = [Math.PI * 0.25, Math.PI * 0.75, Math.PI * 1.25, Math.PI * 1.75];
+  chairAngles.forEach(a => {
+    const cxPos = 5.2 + Math.cos(a) * 3.3;
+    const czPos = 0.3 + Math.sin(a) * 3.3;
+    const rotFacing = Math.atan2(5.2 - cxPos, 0.3 - czPos);
+    buildWoodChair(cxPos, czPos, rotFacing);
+  });
+
+  // 4. BIRCHES & SURROUNDING PLANTING
   const bark = new THREE.MeshStandardMaterial({ color: 0xEDEBE4, roughness: 0.8 }), leaf = new THREE.MeshStandardMaterial({ color: 0xE0C04A, roughness: 1, flatShading: true });
   const allium = new THREE.MeshStandardMaterial({ color: 0x8E6FC9, roughness: 0.8 }), stem = new THREE.MeshStandardMaterial({ color: 0x5E7A3E, roughness: 1 });
   for (const m of [bark, leaf, allium, stem]) exteriorLightsOnly(m);
   const crowns = [];
-  for (const [bx, bz] of [[-8.5, -5.5], [8.8, -4.5], [-7.0, 6.2]]) {
+  // 4 birch tree clumps framing both lobes of the terrace
+  for (const [bx, bz] of [[-8.8, -5.6], [8.8, -4.8], [-7.2, 6.2], [10.4, 4.6]]) {
     for (let k = 0; k < 3; k++) {
       const lean = (k - 1) * 0.12, h = 22 + k * 3;
       const t = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.3, h, 7).translate(0, h / 2, 0), bark);
@@ -3454,10 +3618,10 @@ const PATIO = (() => {
     const cr = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 1), leaf); cr.position.set(bx, 21, bz); cr.scale.set(7, 6, 7); cr.castShadow = true; grp.add(cr); crowns.push(cr);
   }
   let seed = 11; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  for (let i = 0; i < 70; i++) {
-    const a = rnd() * Math.PI * 2, rx = (Wp / 2 + 1 + rnd() * 2.5) * Math.cos(a), rz = (Dp / 2 + 1 + rnd() * 2.5) * Math.sin(a);
-    if (rz > Dp / 2 && Math.abs(rx) < 2.2) continue;                                       // keep the south edge open
-    if (inPatio(rx, rz, 1.12)) continue;                                                    // never on the paving
+  for (let i = 0; i < 95; i++) {
+    const a = rnd() * Math.PI * 2, rx = (Wp / 2 + 0.8 + rnd() * 2.8) * Math.cos(a), rz = (Dp / 2 + 0.8 + rnd() * 2.8) * Math.sin(a);
+    if (rz > Dp / 2 && Math.abs(rx) < 2.5) continue; // keep entrance open
+    if (inPatio(rx, rz, 1.10)) continue;            // never on the paving
     if (rnd() < 0.55) {
       const h = 2.2 + rnd() * 1.4;
       const st = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, h, 4).translate(0, h / 2, 0), stem); st.position.set(rx, 0, rz); grp.add(st);
@@ -3466,7 +3630,8 @@ const PATIO = (() => {
       const gm = new THREE.Mesh(new THREE.ConeGeometry(0.6, 2.4, 6).translate(0, 1.2, 0), PLANTS.grassMat); gm.position.set(rx, 0, rz); gm.rotation.y = rnd() * 3; grp.add(gm);
     }
   }
-  return { crowns, leaf, brickMat, mortarMat, lanternMat, lanternHalo };
+
+  return { crowns, leaf, brickMat, mortarMat, lanternMat, lanternHalo, firepit, patioFireLight, setPatioFire };
 })();
 
 /* =====================================================================
@@ -3969,6 +4134,7 @@ const TOUR_STOPS = [
     cap: 'The primary bedroom, with the laundry pocket door beside the bath.' },
   { name: 'Primary bath', walk: { y: 9.33, path: [[27.5, 12.3], [28.5, 14.8], [38.2, 14.8], [38.6, 7.8], [44.0, 7.6]], look: [44.5, 11, 12.5] },
     cap: 'Through the pocket door to the bath. Open the shower door and turn the water on.' },
+  { name: 'Brick patio & fire pit', pos: [-4, 7, 56], look: [-14, 2, 41], cap: 'Down under the white birches: blue-gray brick terrace with outdoor dining and a Corten fire pit ringed by neutral timber lounge chairs.' },
   { name: 'Dollhouse', world: true, cap: 'The whole house at a glance.' },
   { name: 'Evening', pos: [70, 20, 70], look: [22, 7, 14], night: true, cap: 'And back outside as the lights come on.' },
 ];
