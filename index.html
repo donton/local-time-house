@@ -3605,7 +3605,7 @@ const PATIO = (() => {
 
   // Warm glowing firelight
   const patioFireLight = new THREE.PointLight(0xff7a24, 0, 16, 2);
-  patioFireLight.position.set(5.2, 1.6, 0.3);
+  patioFireLight.position.set(-4.2, 1.6, -0.3);
   grp.add(patioFireLight);
 
   // Rising smoke wisps
@@ -3613,7 +3613,7 @@ const PATIO = (() => {
   for (let i = 0; i < 4; i++) {
     const sp = new THREE.Sprite(new THREE.SpriteMaterial({ color: 0xd8d4ce, transparent: true, opacity: 0, depthWrite: false }));
     sp.scale.setScalar(0.48); sp.visible = false;
-    sp.userData = { t: i / 4, origin: [cx + 5.2 * Math.cos(rot) + 0.3 * Math.sin(rot), LV.GRADE + 1.8, cz - 5.2 * Math.sin(rot) + 0.3 * Math.cos(rot)], rise: 6.5, drift: 0.9, s0: 0.4, s1: 1.8 };
+    sp.userData = { t: i / 4, origin: [cx - 4.2 * Math.cos(rot) - 0.3 * Math.sin(rot), LV.GRADE + 1.8, cz + 4.2 * Math.sin(rot) - 0.3 * Math.cos(rot)], rise: 6.5, drift: 0.9, s0: 0.4, s1: 1.8 };
     LAND.add(sp); smoke.push(sp); pSmoke.push(sp);
   }
 
