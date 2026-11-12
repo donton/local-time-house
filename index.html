@@ -80,8 +80,8 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .controls { padding: 12px 16px; display: grid; gap: 14px; }
 .row { display: grid; gap: 6px; }
 .lbl { font-size: 10.5px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted); }
-.seg { display: grid; grid-template-columns: repeat(3, 1fr); border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
-.seg button { font: 500 12.5px var(--font-body); padding: 7px 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; }
+.seg { display: flex; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden; }
+.seg button { flex: 1 1 0; min-width: 0; font: 500 12.5px var(--font-body); padding: 7px 0; border: 0; background: transparent; color: var(--ink); cursor: pointer; text-align: center; white-space: nowrap; }
 .seg button + button { border-left: 1px solid var(--rule); }
 .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .toggles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -297,7 +297,6 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
       <button id="btn-tour" class="btn" type="button">Guided tour</button>
       <button id="btn-timeline" class="btn" type="button">A year at Local Time House</button>
       <button id="btn-reset" class="btn" type="button">Reset view</button>
-      <button id="btn-export" class="btn primary" type="button">Export GLB</button>
     </div>
     <div id="status" role="status"></div>
   </div>
@@ -400,7 +399,6 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
-import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 /* =====================================================================
@@ -973,7 +971,7 @@ const ROOMS = [
   { id: 'office', name: 'Office', floor: 'ground', y: 0, mat: 'concreteFloor',
     rects: [[39.31, 45.16, 0.52, 16.54], [45.16, 47.56, 0.52, 7.14], [45.16, 47.56, 11.54, 16.54]], dimRect: [39.31, 47.56, 0.52, 16.54], ceiling: "8'-0\"",
     finishes: [WALLS_CHALK, FLOOR_CONC],
-    note: 'Floating desk (keynote 8) under W04, 5\'-0" × 5\'-0" fixed, 3\'-0" sill. W03 casements on east and south.' },
+    note: 'Queen bed with headboard bookcase on the east wall and shelves along the north wall. Floating desk (keynote 8) under W04 with desk chair. W03 casements on east and south.' },
   { id: 'closet108', name: 'Office Closet', floor: 'ground', y: 0, mat: 'concreteFloor', small: true,
     rects: [[45.51, 47.56, 7.53, 11.14]], ceiling: "8'-0\"", finishes: [WALLS_CHALK, FLOOR_CONC], note: 'Door 108 2\'-8" swing.' },
   // ---- Loft floor ---------------------------------------------------
@@ -1226,9 +1224,7 @@ function buildGround(g) {
   buildKitchen(g); NOCUT = true; buildStair(g); NOCUT = false; buildStairCladding(g); buildLiving(g); buildGuestBath(g);
   // Guest bedroom bed (dashed on A101.1)
   bedQueenEast(g, 5.7, 32.86, 0, 'guestBed');
-  bunkBed(g, 0.52, 47.56, 0, 'office');                                 // office: twin-over-queen bunk along the north wall, head on the east wall
-  // Office desk (keynote 8), floating under W04
-  box(g, [45.9, 47.56], [2.4, 2.55], [11.62, 16.46], 'millwork', { room: 'office' });
+  buildOffice(g);                                                       // office: queen bed, headboard bookcase, north wall shelves, desk & chair
 }
 
 // Bed sized from the mattress: [w, l] in feet, headboard against the wall at zHead, centered on cx.
@@ -1248,45 +1244,64 @@ function bedQueenEast(g, cz, xWall, y, room) {
   box(g, [xm + 0.05, xh - 1.9], [y + 1.85, y + 1.95], [z0 + 0.05, z1 - 0.05], 'fabric', { room });   // throw over the foot half
   box(g, [xh, xWall], [y, y + 3.6], [z0 - e, z1 + e], 'millwork', { room });                      // headboard
 }
-// Twin-over-queen bunk (after the owner's reference): the twin is set back flush to the north (back) wall, the queen below is wider and
-// sticks out in front. Slatted lower headboard, a low footboard, a two-board guard rail on the twin, and a storage stair with drawer
-// fronts at the foot end, squeezed into the 1'-1" between the bed and the west wall, climbing north onto the foot of the twin.
-// Head on the east (window) wall. Same bed style as the other rooms; posts flush with the frame outline.
-function bunkBed(g, zN, xEast, y, room) {
-  const e = 2 / 12, hb = 0.25, qw = 5, ql = 80 / 12, tw = 38 / 12, post = 0.17, beam = 0.17, ycu = y + 4.5;
+// Office layout: queen bed (60" × 80") with its head on the east against a headboard bookcase,
+// shelves along the north wall, floating desk under W04, and desk chair. No rug.
+function buildOffice(g) {
+  const room = 'office';
   const B = (xs, ys, zs, m = 'millwork') => box(g, xs, ys, zs, m, { room });
-  const xh = xEast - hb, mx0 = xh - ql, xf0 = mx0 - e;
-  const z0f = zN, z0 = z0f + e, z1 = z0 + qw, z1f = z1 + e, t1 = z0f + tw + 2 * e;
-  // lower queen
-  B([xf0, xEast], [y, y + 1.1], [z0f, z1f]);                                                // platform frame
-  B([mx0, xh], [y + 1.1, y + 1.85], [z0, z1], 'porcelain');                                  // mattress
-  B([mx0 + 0.05, xh - 1.9], [y + 1.85, y + 1.95], [z0 + 0.05, z1 - 0.05], 'fabric');         // throw
-  B([xh, xEast], [y, y + 2.9], [z0f, z1f]);                                                  // solid headboard, kept under the window sill (3'-0")
-  B([xf0, xf0 + 0.14], [y + 1.1, y + 2.2], [z0f, z1f]);                                      // low footboard
-  // four posts carry the twin: two against the back wall, two at the twin's open edge (standing on the queen's headboard and footboard)
-  for (const xs of [[xEast - post, xEast], [xf0, xf0 + post]]) for (const zs of [[z0f, z0f + post], [t1 - post, t1]]) B(xs, [y, ycu + 1.5], zs);
-  // upper deck: just the twin's width, on the wall side
-  B([xf0, xEast], [ycu - 0.3, ycu], [z0f, t1]);                                              // deck under the twin
-  // twin
-  B([mx0 + e, xh], [ycu, ycu + 0.75], [z0f + e, t1 - e], 'porcelain');                       // mattress (75")
-  B([mx0 + e + 0.05, xh - 1.9], [ycu + 0.75, ycu + 0.85], [z0f + e + 0.05, t1 - e - 0.05], 'fabric');
-  B([xh, xEast], [ycu, ycu + 1.5], [z0f, t1]);                                               // headboard
-  B([xf0, xh], [ycu + 0.45, ycu + 0.8], [t1 - 0.06, t1]);                                    // two-board guard rail on the open side
-  B([xf0, xh], [ycu + 1.15, ycu + 1.5], [t1 - 0.06, t1]);
-  B([xf0, xh], [ycu + 1.0, ycu + 1.5], [z0f, z0f + 0.06]);                                   // rail on the wall side
-  // foot-end guard: one solid plank, open over the landing
-  const zL = z0f + 1.5;
-  B([xf0, xf0 + 0.06], [ycu + 0.35, ycu + 1.5], [zL, t1]);
-  // storage stair squeezed in between the west wall and the foot of the bed, pulled out south so the top of the climb is a 1'-6" landing
-  // beside the twin's foot: 8 risers climbing north, drawer fronts facing south
-  const n = 8, rise = 4.5 / n, d = 0.4375, xw = 39.35, zS = zL + n * d;
-  B([xw, xf0], [y, ycu], [z0f, zL]);                                                         // landing: a solid box at deck height
-  for (let j = 1; j <= n; j++) {
-    const zb = zS - (j - 1) * d, za = zb - d;                                               // column j: 1 = south (lowest) ... n = north (top)
-    B([xw, xf0], [y, y + j * rise], [za, zb]);                                              // stepped solid
-    B([xw + 0.06, xf0 - 0.06], [y + (j - 1) * rise + 0.06, y + j * rise - 0.05], [zb, zb + 0.02]);                    // drawer front on the riser
-    B([(xw + xf0) / 2 - 0.03, (xw + xf0) / 2 + 0.03], [y + (j - 0.5) * rise - 0.03, y + (j - 0.5) * rise + 0.03], [zb + 0.02, zb + 0.06]);   // knob
+
+  // 1. SHELVES wall-mounted along the north wall above the bed (y: 4.5 and 5.8)
+  B([39.35, 47.52], [4.50, 4.58], [0.52, 1.15], 'oak');
+  B([39.35, 47.52], [5.80, 5.88], [0.52, 1.15], 'oak');
+  for (const bx of [39.6, 41.8, 44.0, 46.2]) {
+    B([bx, bx + 0.05], [4.35, 4.50], [0.52, 1.12], 'steel');
+    B([bx, bx + 0.05], [5.65, 5.80], [0.52, 1.12], 'steel');
   }
+  B([40.0, 41.2], [4.58, 5.15], [0.55, 1.05], 'burgundy');
+  B([41.3, 42.3], [4.58, 5.05], [0.55, 1.05], 'fabric');
+  B([43.5, 44.8], [4.58, 5.20], [0.55, 1.05], 'nautical');
+  B([41.5, 42.8], [5.88, 6.45], [0.55, 1.05], 'sage');
+  B([44.0, 45.5], [5.88, 6.50], [0.55, 1.05], 'burgundy');
+
+  // 2. HEADBOARD BOOKCASE along the east wall (x: 46.16 to 47.56, z: 0.52 to 6.94)
+  B([46.12, 47.56], [2.80, 2.86], [0.52, 6.96], 'oak');
+  B([46.16, 47.56], [0, 0.25], [0.52, 6.94], 'millwork');
+  for (const dz of [0.52, 2.66, 4.80, 6.90]) {
+    B([46.16, 47.56], [0.25, 2.80], [dz, dz + 0.04], 'millwork');
+  }
+  for (const [za, zb] of [[0.56, 2.66], [2.70, 4.80], [4.84, 6.90]]) {
+    B([46.18, 47.54], [1.10, 1.15], [za, zb], 'oak');
+    B([46.18, 47.54], [1.95, 2.00], [za, zb], 'oak');
+  }
+  B([46.22, 47.45], [1.15, 1.75], [5.00, 5.80], 'fabric');
+  B([46.22, 47.45], [1.15, 1.82], [5.85, 6.75], 'burgundy');
+  B([46.22, 47.45], [2.00, 2.65], [5.10, 6.10], 'nautical');
+  B([46.45, 46.85], [2.86, 2.91], [6.2, 6.6], 'steel');
+  B([46.62, 46.68], [2.91, 3.80], [6.37, 6.43], 'steel');
+  B([46.45, 46.85], [3.60, 3.90], [6.2, 6.6], 'fabric');
+
+  // 3. QUEEN BED (60" × 80") directly against the north wall
+  const xh = 46.16, xm = xh - 80 / 12;
+  const z0 = 0.58, z1 = z0 + 5.0;
+  B([39.35, xh], [0, 1.05], [0.52, 5.62], 'millwork');
+  B([xm, xh], [1.05, 1.85], [z0, z1], 'porcelain');
+  B([xm + 0.05, xm + 3.8], [1.85, 1.95], [z0 + 0.05, z1 - 0.05], 'fabric');
+  B([xh - 1.8, xh - 0.15], [1.85, 2.15], [0.80, 2.90], 'porcelain');
+  B([xh - 1.8, xh - 0.15], [1.85, 2.15], [3.20, 5.30], 'porcelain');
+
+  // 4. FLOATING DESK under W04
+  B([45.9, 47.56], [2.4, 2.55], [11.62, 16.46], 'millwork');
+  B([46.3, 47.1], [2.55, 2.58], [13.6, 14.4], 'steel');
+  B([47.05, 47.15], [2.58, 3.25], [13.6, 14.4], 'steel');
+  B([47.03, 47.05], [2.62, 3.21], [13.65, 14.35], 'ovenGlass');
+
+  // 5. DESK CHAIR
+  B([44.0, 45.2], [1.45, 1.55], [13.4, 14.6], 'fabric');
+  B([43.95, 44.1], [1.55, 2.65], [13.4, 14.6], 'fabric');
+  B([44.0, 45.15], [1.38, 1.45], [13.45, 14.55], 'steel');
+  B([44.55, 44.65], [0.35, 1.38], [13.95, 14.05], 'steel');
+  B([44.0, 45.2], [0.28, 0.35], [13.95, 14.05], 'steel');
+  B([44.55, 44.65], [0.28, 0.35], [13.4, 14.6], 'steel');
 }
 function bed(g, xs, zs, y, room) {
   box(g, xs, [y, y + 1.1], zs, 'millwork', { room });
@@ -3147,58 +3162,7 @@ for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventLi
 document.getElementById('walk-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
 document.getElementById('btn-reset').addEventListener('click', () => { camera.position.copy(homePos()); controls.target.copy(HOME.target); controls.update(); });
 
-/* =====================================================================
-   10. EXPORT GLB (meters, Y-up). The viewer only saves allow-listed types, so the GLB ships inside a .zip.
-   ===================================================================== */
-const CRC_T = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
-function crc32(b) { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_T[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
-function zipStore(files) {
-  const parts = [], central = []; let off = 0;
-  for (const { name, data } of files) {
-    const nm = new TextEncoder().encode(name), crc = crc32(data), n = data.length;
-    const lh = new DataView(new ArrayBuffer(30));
-    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(12, 0x21, true);
-    lh.setUint32(14, crc, true); lh.setUint32(18, n, true); lh.setUint32(22, n, true); lh.setUint16(26, nm.length, true);
-    const cd = new DataView(new ArrayBuffer(46));
-    cd.setUint32(0, 0x02014b50, true); cd.setUint16(4, 20, true); cd.setUint16(6, 20, true); cd.setUint16(14, 0x21, true);
-    cd.setUint32(16, crc, true); cd.setUint32(20, n, true); cd.setUint32(24, n, true); cd.setUint16(28, nm.length, true); cd.setUint32(42, off, true);
-    parts.push(lh, nm, data); central.push(cd, nm); off += 30 + nm.length + n;
-  }
-  const cdSize = central.reduce((a, p) => a + p.byteLength, 0);
-  const eo = new DataView(new ArrayBuffer(22));
-  eo.setUint32(0, 0x06054b50, true); eo.setUint16(8, files.length, true); eo.setUint16(10, files.length, true);
-  eo.setUint32(12, cdSize, true); eo.setUint32(16, off, true);
-  return new Blob([...parts, ...central, eo], { type: 'application/zip' });
-}
-async function exportGLB() {
-  const status = document.getElementById('status');
-  status.textContent = 'Building GLB…';
-  const saved = { ...state };
-  Object.assign(state, { floors: 'both', walls: 'up', roof: true, explode: 0, night: false }); applyState();
-  const snowWas = snowParts.map(m => m.visible); snowParts.forEach(m => { m.visible = false; });
-  labels.forEach(l => { l.visible = false; }); hiGroup.visible = false;
-  try {
-    const { GLTFExporter } = await import('three/addons/exporters/GLTFExporter.js');
-    const glb = await new GLTFExporter().parseAsync(root, { binary: true, onlyVisible: true });
-    const bytes = new Uint8Array(glb);
-    const readme = new TextEncoder().encode('Local Time House, Andes NY.\nUnits: meters, Y up. Origin near the center of the house.\nGroups: site, ground, loft, wingRoof, mainRoof.\n');
-    const api = window.claude?.use ? await window.claude.use('downloads') : null;
-    if (api) {
-      await api.save({ filename: 'local-time-house-glb.zip', data: zipStore([{ name: 'local-time-house.glb', data: bytes }, { name: 'README.txt', data: readme }]) });
-      status.textContent = 'Saved local-time-house-glb.zip (contains the .glb).';
-    } else {
-      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'model/gltf-binary' }));
-      a.download = 'local-time-house.glb'; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-      status.textContent = 'Downloaded local-time-house.glb.';
-    }
-  } catch (err) {
-    status.textContent = err?.code === 'declined' ? 'Export cancelled.' : `Export failed: ${err?.message || err}`;
-  } finally {
-    Object.assign(state, saved); hiGroup.visible = true; applyState();
-    snowParts.forEach((m, i) => { m.visible = snowWas[i]; });
-  }
-}
-document.getElementById('btn-export').addEventListener('click', exportGLB);
+
 
 /* =====================================================================
    12. SITE + SEASONS — from the owner's site photos (Nov 2026): a cleared dirt pad with a gravel band in mixed
@@ -3735,7 +3699,7 @@ const TOUR_STOPS = [
   { name: 'Guest bath', walk: { y: 0, path: [[26.5, 10.2], [26.6, 14.8], [34.9, 14.9], [35.0, 11.5], [35.0, 8.8]], look: [36, 3, 3] },
     cap: 'The guest bath, in Nautical Blue. Turn the shower on and watch the mirror fog.' },
   { name: 'Office', walk: { y: 0, path: [[35.0, 8.8], [35.0, 14.8], [41.6, 15.0], [43.5, 12.0]], look: [43, 4, 15.6] },
-    cap: 'Through the second pocket door to the office: a twin-over-queen bunk against the back wall, and the floating desk under the window.' },
+    cap: 'Through the second pocket door to the office: queen bed with headboard bookcase, north wall shelves, and the floating desk under the window.' },
   { name: 'Loft', walk: { y: 0, path: [[43.5, 12.0], [41.6, 15.0], [30.0, 15.0], [24.4, 15.0], [21.0, 13.8], [18.4, 12.8], [18.6, 9.6], [18.6, 4.4], [19.0, 2.2], [21.8, 1.7], [22.7, 3.4], [22.7, 6.0], [22.7, 10.0], [22.6, 12.4]], look: [7, 7.5, 6] },
     cap: 'Back to the stair and up to the loft, open to the kitchen below.' },
   { name: 'Primary bedroom', walk: { y: 9.33, path: [[22.6, 12.4], [27.5, 12.3]], look: [36, 11.5, 8.5] },
