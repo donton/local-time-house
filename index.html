@@ -4545,7 +4545,7 @@ function phoneStep(dt) {
     else if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; }
   }
   if (FOUND.size !== lastFound) {
-    lastFound = FOUND.size; $$('m-found').textContent = `${FOUND.size} / ${KINDS()}`;
+    lastFound = FOUND.size; const mf = $$('m-found'); if (mf) mf.textContent = `${FOUND.size} / ${KINDS()}`;
     if (sheetPane === 'found') buildTry();
   }
   $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on));
