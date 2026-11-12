@@ -2379,8 +2379,8 @@ scene.add(root);
     if (d.env && MATS[name]) { MATS[name].envMap = envTex; MATS[name].envMapIntensity = d.env; MATS[name].needsUpdate = true; }
   }
 }
-// Field of view: wider for the orbit view; wider still when you're inside (walk mode, indoor tour stops).
-const FOV = { orbit: 46, inside: 68 };
+// Field of view (vertical degrees): narrow for the orbit view; much wider when you're inside (walk mode, indoor tour stops).
+const FOV = { orbit: 46, inside: 80 };
 const camera = new THREE.PerspectiveCamera(FOV.orbit, window.innerWidth / window.innerHeight, 0.12, 1200);
 const setFov = f => { camera.fov = f; camera.updateProjectionMatrix(); };
 const HOME = { pos: new THREE.Vector3(16.5, 26, 23.5), target: new THREE.Vector3(0.6, -0.4, 1.4) };
