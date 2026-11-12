@@ -236,7 +236,6 @@ body.m #mchips::-webkit-scrollbar { display: none; }
 body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips, body.m.building #mchips { display: none; }
 #mchips button { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 12.5px/1 var(--font-body); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.06); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #mchips button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
-#mchips button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 #mscrim { display: none; }
 body.m #mscrim { display: block; position: fixed; inset: 0; z-index: 8; background: rgba(20,18,16,0.22); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
 body.m #mscrim.open { opacity: 1; pointer-events: auto; }
@@ -374,8 +373,12 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
           Fall
         </button>
       </div>
-      <div class="toggles">
-        <label class="tog icon-tog"><input id="tg-night" type="checkbox"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/></svg> Night</label>
+      <div class="row sep">
+        <span class="lbl" id="light-lbl">Light</span>
+        <button id="btn-night" class="tog icon-tog" type="button" aria-labelledby="light-lbl" title="Click to toggle Day / Night">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg>
+          Day
+        </button>
       </div>
       <div class="more-wrap">
         <button id="more-btn" type="button" aria-expanded="false" aria-controls="more-pop">
@@ -677,7 +680,7 @@ const TEX = {
 };
 
 const MAT_DEFS = {
-  chalk:      { color: C.chalk, rough: 0.92 },
+  chalk:      { color: C.chalk, rough: 1, env: 0.15 },
   wood:       { color: C.wood, map: TEX.planks, tile: 8, rough: 0.7 },
   woodStair:  { color: C.woodStair, rough: 0.7 },
   woodRiser:  { color: 0xA4865E, rough: 0.75 },                         // stair risers, set back under the nosings (reads as a shadow line)
@@ -700,7 +703,7 @@ const MAT_DEFS = {
   brownberry: { color: C.brownberry, map: TEX.mosaicTone, tile: 1.333, rough: 0.3 },   // 2"×2" mosaic
   biscuitShade: { color: 0xB9A98C, rough: 0.5 },
   snow:       { color: 0xF3F5F7, rough: 0.9 },
-  ceiling:    { color: 0xF7F6F2, rough: 0.95 },                          // painted GWB ceilings, white
+  ceiling:    { color: 0xF7F6F2, rough: 1, env: 0.1 },                          // painted GWB ceilings, flat matte white
   woodPanel:  { color: 0xC9A273, rough: 0.6 },                              // wood wall panel (A402): smooth, no joint lines
   concreteFloor: { color: 0x938F8A, map: TEX.concrete, tile: 16, rough: 0.38 },   // ground floor, sealed concrete (mid gray)
   wineTile:   { color: 0x6B2330, map: TEX.tileTone, tile: 2, rough: 0.45 },       // foyer 6"×6", grout matched
@@ -2838,19 +2841,36 @@ function fixtures() {
   G.loft.add(P);
 })();
 
-// Room light sources for night mode (point lights, warm): 6 consolidated zone lights (down from 15) for fast fragment shading.
+// Recessed downlight zones (SpotLights aimed straight down from the ceiling — zero upward spill onto ceilings)
+const RECESS_SPOTS = [
+  // [group, x, y, z, targetY, candela, angle, dist]
+  ['ground', 5.2, 8.85, 6.2, 0, 26, 0.85, 13],                                                      // kitchen recessed cans + island
+  ['ground', 12.2, 8.85, 6.2, 0, 20, 0.85, 13],                                                     // dining recessed cans
+  ['ground', 19.2, 8.35, 13.0, 0, 18, 0.82, 12],                                                    // entry + stair hall
+  ['ground', 9.5, 9.15, 21.5, 0, 24, 0.90, 14],                                                     // sunken living wing
+  ['ground', 31.2, 8.35, 8.5, 0, 20, 0.86, 12],                                                     // guest bedroom, bath & corridor
+  ['ground', 43.5, 8.35, 8.5, 0, 18, 0.84, 12],                                                     // east office
+  ['loft', 34.5, LV.LOFT_CEIL - 0.15, 9.5, LV.LOFT, 26, 0.88, 13],                                  // loft primary bedroom, bath & laundry
+];
+// Soft indirect bounce + dining paper lantern (placed at mid-room / lantern height so ceilings stay evenly lit, never glossy)
 const NIGHT_LIGHTS = [
-  // [group, x, y, z, candela]
-  ['ground', 8.4, 8.8, 6.2, 24],                                                                    // kitchen + dining island
-  ['ground', 19.2, 7.5, 13.0, 15],                                                                  // entry + stair hall under loft
-  ['ground', 9.5, 8.2, 21.5, 18],                                                                   // sunken living wing
-  ['ground', 31.2, 7.6, 8.5, 18],                                                                   // guest bedroom, bath & corridor
-  ['ground', 43.5, 7.6, 8.5, 15],                                                                   // east office
-  ['loft', 34.5, LV.LOFT_CEIL - 0.8, 9.5, 24],                                                      // loft primary bedroom, bath & laundry
+  // [group, x, y, z, candela, dist]
+  ['ground', 8.4, 6.25, 6.2, 7.5, 13],                                                              // dining paper lantern (24" globe) + kitchen bounce
+  ['ground', 19.2, 4.6, 13.0, 4.5, 11],                                                             // entry + stair hall bounce
+  ['ground', 9.5, 4.5, 21.5, 5.5, 13],                                                              // sunken living bounce
+  ['ground', 31.2, 4.5, 8.5, 5.0, 11],                                                              // guest + corridor bounce
+  ['ground', 43.5, 4.5, 8.5, 4.2, 10],                                                              // east office bounce
+  ['loft', 34.5, LV.LOFT + 4.2, 9.5, 6.5, 13],                                                      // loft bounce
 ];
 const nightRig = [];
-for (const [grp, x, y, z, cd] of NIGHT_LIGHTS) {
-  const L = new THREE.PointLight(0xffcf96, 0, 11.5, 1.8); L.visible = true; L.position.set(x, y, z); G[grp].add(L);
+for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
+  const L = new THREE.SpotLight(0xffcf96, 0, dist, ang, 0.85, 1.6);
+  L.visible = true; L.position.set(x, y, z); L.target.position.set(x, ty, z);
+  G[grp].add(L, L.target);
+  nightRig.push({ L, cd });
+}
+for (const [grp, x, y, z, cd, dist] of NIGHT_LIGHTS) {
+  const L = new THREE.PointLight(0xffcf96, 0, dist, 1.8); L.visible = true; L.position.set(x, y, z); G[grp].add(L);
   nightRig.push({ L, cd });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding
@@ -3349,7 +3369,12 @@ function applyState() {
   document.getElementById('wl-up').setAttribute('aria-pressed', String(state.walls === 'up' && !state.roof));
   document.getElementById('wl-cutaway').setAttribute('aria-pressed', String(state.walls === 'cutaway'));
   document.getElementById('tg-labels').checked = state.labels;
-  document.getElementById('tg-night').checked = state.night;
+  const LIGHT_UI = {
+    day:   '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg> Day',
+    night: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/></svg> Night',
+  };
+  const bn = document.getElementById('btn-night');
+  if (bn) { bn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day; bn.setAttribute('aria-pressed', String(state.night)); }
   if (state.night !== nightOn) applyNight(state.night);
   if (siteReady && state.season !== seasonOn) { seasonOn = state.season; applySeason(state.season); }
   const SEASON_UI = {
@@ -3369,6 +3394,7 @@ function applyState() {
   const wn = document.getElementById('walk-night'); if (wn) wn.setAttribute('aria-pressed', String(state.night));
   const cn = document.getElementById('chip-night');
   if (cn) {
+    cn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day;
     cn.setAttribute('aria-pressed', String(state.night));
     const cf = document.getElementById('chip-floors');
     if (cf) cf.innerHTML = state.floors === 'ground'
@@ -3391,7 +3417,7 @@ function applyState() {
 document.getElementById('wl-roof').addEventListener('click', () => { state.walls = 'up'; state.roof = true; applyState(); });
 ['up', 'cutaway'].forEach(k => document.getElementById('wl-' + k).addEventListener('click', () => { state.walls = k; state.roof = false; applyState(); }));
 document.getElementById('tg-labels').addEventListener('change', e => { state.labels = e.target.checked; applyState(); });
-document.getElementById('tg-night').addEventListener('change', e => { state.night = e.target.checked; applyState(); });
+document.getElementById('btn-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
 document.getElementById('btn-season').addEventListener('click', () => { const order = ['fall', 'winter', 'spring', 'summer']; state.season = order[(order.indexOf(state.season) + 1) % order.length]; applyState(); });
 document.getElementById('explode').addEventListener('input', e => { state.explode = +e.target.value; applyState(); });
 for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { state.sun = +e.target.value; applyState(); });
@@ -5515,7 +5541,7 @@ function enterTimeline() {
   labels.forEach(l => { l.visible = false; });
   ['ground', 'both'].forEach(k => document.getElementById('fl-' + k).setAttribute('aria-pressed', String(k === 'both')));
   document.getElementById('tg-labels').checked = false;
-  document.getElementById('tg-night').checked = false;
+  const bn = document.getElementById('btn-night'); if (bn) bn.setAttribute('aria-pressed', 'false');
   document.getElementById('explode').value = '0';
   document.getElementById('explode-out').textContent = '0%';
   nightOn = false;
