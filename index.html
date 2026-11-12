@@ -76,6 +76,14 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 #panel.collapsed .titleblock { border-bottom: 0; }
 .titleblock h1 { margin: 0; display: flex; align-items: center; gap: 10px; font-family: var(--font-brand); font-weight: 400; font-size: 28px; line-height: 1; letter-spacing: -0.01em; text-wrap: balance; }
 .logo { flex: none; width: 30px; height: auto; fill: var(--logo); }
+.brandmark { flex: none; width: 30px; height: auto; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.06)); }
+.wordmark { height: 20px; width: auto; max-width: 172px; display: block; object-fit: contain; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .wordmark { filter: invert(0.92) brightness(1.2); }
+  :root:not([data-theme="light"]) .brandmark { filter: brightness(1.35) contrast(1.1); }
+}
+:root[data-theme="dark"] .wordmark { filter: invert(0.92) brightness(1.2); }
+:root[data-theme="dark"] .brandmark { filter: brightness(1.35) contrast(1.1); }
 .titleblock .meta { font-family: var(--font-mono); font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; gap: 8px; }
 .controls { padding: 12px 16px; display: grid; gap: 14px; }
 .row { display: grid; gap: 6px; }
@@ -154,7 +162,8 @@ body.walking #panel, body.walking #info { display: none; }
 body.m #panel, body.m .hint, body.m #act-tip, body.m #act-hint { display: none !important; }
 body.m #mtitle { display: flex; align-items: center; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
   font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 7px 12px 8px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
-body.m #mtitle .logo { width: 22px; }
+body.m #mtitle .logo, body.m #mtitle .brandmark { width: 22px; }
+body.m #mtitle .wordmark { height: 16px; max-width: 140px; }
 body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
@@ -245,7 +254,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <aside id="panel" class="card">
   <div class="titleblock">
     <div class="tb-text">
-      <h1><svg class="logo" viewBox="0 0 1884 1694" aria-hidden="true" focusable="false"><path d="M755.947 0.637315C772.959 -1.99123 814.555 4.25195 833.493 5.94625C917.864 12.7597 1001.92 23.0033 1085.46 36.6541C1107.27 40.1578 1125.61 36.8128 1144.19 51.8365C1167.83 70.9455 1163.83 97.7847 1164.84 125.671C1166.06 152.991 1166.96 180.325 1167.54 207.666C1168.77 269.841 1173.1 331.915 1180.52 393.658C1209.06 394.971 1234.64 400.57 1262.57 405.694C1320.8 416.34 1378.27 429.751 1437.32 435.257C1454.93 436.897 1483.12 437.893 1497.42 448.591C1519.9 465.894 1521.63 490.974 1524.04 516.796C1530.25 583.531 1524.04 649.68 1526.97 716.589C1528.45 750.231 1528.29 779.793 1533.46 813.388C1594.14 825.748 1655.3 835.609 1716.79 842.94C1755.27 847.606 1796.61 849.804 1834.76 857.986C1844.45 860.07 1858.46 872.813 1865.23 880.673C1875.26 893.271 1876.07 914.092 1877.71 929.957C1889.38 1043.09 1881.87 1160.11 1878.54 1273.51C1872.56 1318.41 1763 1370.66 1729.71 1387.31C1674.99 1424.29 1576.42 1468.98 1525.63 1509.7C1497.82 1532 1379.34 1600.39 1351.27 1622.66C1347.23 1625.88 1239.98 1690.33 1235.2 1691.41C1212.27 1696.57 1155.7 1692.83 1135.11 1690.43C1109.26 1689.99 1078.47 1687.22 1052.49 1685.38C1029.32 1683.85 1006.15 1682.62 982.952 1681.68C894.109 1677.55 805.234 1674.2 716.33 1671.65C672.564 1670.03 628.509 1666.89 584.757 1665.84C520.773 1664.39 456.749 1664.66 392.758 1664.35C366.105 1664.22 339.766 1662.88 312.926 1663.08C272.903 1663.39 232.575 1664.18 192.589 1663.36C162.12 1662.75 131.305 1659.69 100.75 1659.35C85.8362 1658.36 66.2032 1657.09 53.8669 1647.97C32.1964 1631.94 35.0676 1614.54 35.0769 1590.88C35.2449 1573.72 35.0022 1556.55 34.35 1539.4C33.5982 1523.24 31.9537 1506.72 31.4093 1490.67L24.8715 1233.31C24.4143 1218.64 23.7465 1203.81 22.9875 1189.14C15.2552 1039.81 8.89678 890.474 2.37559 741.093C1.1935 714.012 0.188728 686.471 0.0020822 659.375C-0.0798344 589.246 2.25531 519.135 7.00336 449.168C8.29432 429.784 6.45896 383.967 18.7382 370.695C36.5089 351.486 141.896 292.585 165.838 280.432C210.437 257.381 349.864 174.995 395.797 154.732C436.971 136.522 532.301 85.2963 573.257 66.743C587.391 60.1981 639.307 38.4569 653.115 31.2515C687.624 12.945 715.489 4.48422 755.947 0.637315Z"/></svg><span>Local Time House</span></h1>
+      <h1><img class="brandmark" src="brandmark.png" alt="" width="30" height="27"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="87"></h1>
       <div class="meta"><span>Andes, NY</span></div>
     </div>
     <button id="panel-toggle" class="collapse" type="button" aria-expanded="true" aria-controls="panel-body" aria-label="Hide controls">
@@ -329,7 +338,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <div id="act-toast" class="act-hint act-toast" hidden></div>
 <div id="reticle" aria-hidden="true"></div>
 <div id="spots" aria-hidden="true"></div>
-<div id="mtitle"><svg class="logo" viewBox="0 0 1884 1694" aria-hidden="true" focusable="false"><path d="M755.947 0.637315C772.959 -1.99123 814.555 4.25195 833.493 5.94625C917.864 12.7597 1001.92 23.0033 1085.46 36.6541C1107.27 40.1578 1125.61 36.8128 1144.19 51.8365C1167.83 70.9455 1163.83 97.7847 1164.84 125.671C1166.06 152.991 1166.96 180.325 1167.54 207.666C1168.77 269.841 1173.1 331.915 1180.52 393.658C1209.06 394.971 1234.64 400.57 1262.57 405.694C1320.8 416.34 1378.27 429.751 1437.32 435.257C1454.93 436.897 1483.12 437.893 1497.42 448.591C1519.9 465.894 1521.63 490.974 1524.04 516.796C1530.25 583.531 1524.04 649.68 1526.97 716.589C1528.45 750.231 1528.29 779.793 1533.46 813.388C1594.14 825.748 1655.3 835.609 1716.79 842.94C1755.27 847.606 1796.61 849.804 1834.76 857.986C1844.45 860.07 1858.46 872.813 1865.23 880.673C1875.26 893.271 1876.07 914.092 1877.71 929.957C1889.38 1043.09 1881.87 1160.11 1878.54 1273.51C1872.56 1318.41 1763 1370.66 1729.71 1387.31C1674.99 1424.29 1576.42 1468.98 1525.63 1509.7C1497.82 1532 1379.34 1600.39 1351.27 1622.66C1347.23 1625.88 1239.98 1690.33 1235.2 1691.41C1212.27 1696.57 1155.7 1692.83 1135.11 1690.43C1109.26 1689.99 1078.47 1687.22 1052.49 1685.38C1029.32 1683.85 1006.15 1682.62 982.952 1681.68C894.109 1677.55 805.234 1674.2 716.33 1671.65C672.564 1670.03 628.509 1666.89 584.757 1665.84C520.773 1664.39 456.749 1664.66 392.758 1664.35C366.105 1664.22 339.766 1662.88 312.926 1663.08C272.903 1663.39 232.575 1664.18 192.589 1663.36C162.12 1662.75 131.305 1659.69 100.75 1659.35C85.8362 1658.36 66.2032 1657.09 53.8669 1647.97C32.1964 1631.94 35.0676 1614.54 35.0769 1590.88C35.2449 1573.72 35.0022 1556.55 34.35 1539.4C33.5982 1523.24 31.9537 1506.72 31.4093 1490.67L24.8715 1233.31C24.4143 1218.64 23.7465 1203.81 22.9875 1189.14C15.2552 1039.81 8.89678 890.474 2.37559 741.093C1.1935 714.012 0.188728 686.471 0.0020822 659.375C-0.0798344 589.246 2.25531 519.135 7.00336 449.168C8.29432 429.784 6.45896 383.967 18.7382 370.695C36.5089 351.486 141.896 292.585 165.838 280.432C210.437 257.381 349.864 174.995 395.797 154.732C436.971 136.522 532.301 85.2963 573.257 66.743C587.391 60.1981 639.307 38.4569 653.115 31.2515C687.624 12.945 715.489 4.48422 755.947 0.637315Z"/></svg><span>Local Time House</span></div>
+<div id="mtitle"><img class="brandmark" src="brandmark.png" alt="" width="22" height="20"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="87"></div>
 <div id="mintro"><b>Tap anything.</b>Drag to look around · pinch to zoom · try the fridge</div>
 <div id="mchips">
   <button id="chip-night" type="button" aria-pressed="false">☾ Night</button>
