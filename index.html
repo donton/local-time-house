@@ -4420,7 +4420,7 @@ document.addEventListener('gesturestart', e => e.preventDefault());
 renderer.domElement.addEventListener('pointerdown', e => { if (WALK.on) { takeOver(); WALK.drag = [e.clientX, e.clientY]; renderer.domElement.setPointerCapture?.(e.pointerId); } });
 renderer.domElement.addEventListener('pointermove', e => {
   if (!WALK.on || !WALK.drag) return;
-  WALK.yaw -= (e.clientX - WALK.drag[0]) * 0.0045; WALK.pitch -= (e.clientY - WALK.drag[1]) * 0.0045;
+  WALK.yaw += (e.clientX - WALK.drag[0]) * 0.0045; WALK.pitch += (e.clientY - WALK.drag[1]) * 0.0045;
   WALK.pitch = Math.max(-1.2, Math.min(1.2, WALK.pitch)); WALK.drag = [e.clientX, e.clientY];
 });
 addEventListener('pointerup', () => { WALK.drag = null; });
