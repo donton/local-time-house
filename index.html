@@ -5336,7 +5336,7 @@ function tlApplyEnv(dt, immediate) {
   const extK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0)) : 0;
   const intK = TL.occupied ? Math.max(0.55, extK) : 0;
   for (const { L, cd } of nightRig) {
-    const k = L.castShadow ? extK : intK;
+    const k = L.userData.ext ? extK : intK;
     L.visible = true;
     L.intensity = k > 0.01 ? cd * NIGHTSET.dim * k : 0;
   }
