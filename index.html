@@ -4735,6 +4735,9 @@ const VO = { cur: 0, on: false };
 const _v = new THREE.Vector3();
 function phoneStep(dt) {
   if (FLY.cur && !WALK.on && !TOUR.on) flyStep(dt);
+  const tlOn = typeof TL !== 'undefined' && TL.on, bdOn = typeof BD !== 'undefined' && BD.on;
+  const far = !WALK.on && (tlOn || bdOn || camera.position.distanceTo(controls.target) > 22);
+  if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
   if (!document.body.classList.contains('m')) { if (SPOTS.length) { SPOTS.forEach(s => s.style.display = 'none'); } if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; } return; }
   {                                                      // keep the house in the part of the screen the sheet doesn't cover
     const want = sheetPane ? Math.round(sheet.offsetHeight / 2) : 0; VO.cur += (want - VO.cur) * Math.min(1, dt * 9);
@@ -4746,11 +4749,8 @@ function phoneStep(dt) {
     lastFound = FOUND.size; const mf = $$('m-found'); if (mf) mf.textContent = `${FOUND.size} / ${KINDS()}`;
     if (sheetPane === 'found') buildTry();
   }
-  const tlOn = typeof TL !== 'undefined' && TL.on, bdOn = typeof BD !== 'undefined' && BD.on;
   $$('mb-explore').setAttribute('aria-pressed', String(!WALK.on && !TOUR.on && !tlOn && !bdOn)); $$('mb-walk').setAttribute('aria-pressed', String(WALK.on)); $$('mb-tour').setAttribute('aria-pressed', String(TOUR.on)); $$('mb-year').setAttribute('aria-pressed', String(tlOn)); $$('mb-build').setAttribute('aria-pressed', String(bdOn));
   if (WALK.on) { const ub = $$('usebtn'); ub.classList.toggle('ready', !!aimAct); ub.firstChild.textContent = aimAct ? aimAct.label(aimAct) : 'Nothing to use'; }
-  const far = !WALK.on && (tlOn || bdOn || camera.position.distanceTo(controls.target) > 22);
-  if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
   const show = !tlOn && !bdOn && !(TOUR.on && !WALK.on) && !FLY.cur && state.explode < 0.05;
   if (!show) { SC.list = []; SC.dots = []; for (const sp of SPOTS) sp.style.display = 'none'; return; }
   // 1) the visibility scan: nearest few unfound things, ONE ray-test per frame, so there is never a hitch
@@ -5070,9 +5070,9 @@ function tlStepEnvFx(dt, day) {
       if (W.mesh.instanceColor) W.mesh.instanceColor.needsUpdate = true;
     }
     const activeCount = Math.floor(W.N * rate);
-    for (let i = 0; i < W.N; i++) {
+    W.mesh.count = activeCount;
+    for (let i = 0; i < activeCount; i++) {
       const p = W.pts[i];
-      if (i >= activeCount) { _wxO.scale.setScalar(0.0001); _wxO.updateMatrix(); W.mesh.setMatrixAt(i, _wxO.matrix); continue; }
       p.ph += dt * p.sp * 2.2;
       if (kind === 'fireflies') {
         p.y = 1.5 + Math.sin(p.ph * 0.9) * 3.2;
@@ -5165,16 +5165,19 @@ function tlApplyContinuousSeasons(day) {
   else if (day >= 52 && day < 82) snowK = 1 - ease((day - 52) / 30);
   else if (day >= 328 && day < 352) snowK = ease((day - 328) / 24);
   TL.snowK = snowK;
-  if (MATS.snow) {
-    MATS.snow.transparent = snowK < 0.99;
-    MATS.snow.opacity = snowK;
-    MATS.snow.depthWrite = snowK > 0.15;
+  if (TL._snowCache === undefined || Math.abs(snowK - TL._snowCache) > 0.004 || (snowK === 0 && TL._snowCache !== 0) || (snowK === 1 && TL._snowCache !== 1)) {
+    TL._snowCache = snowK;
+    if (MATS.snow) {
+      MATS.snow.transparent = snowK < 0.99;
+      MATS.snow.opacity = snowK;
+      MATS.snow.depthWrite = snowK > 0.15;
+    }
+    snowParts.forEach(m => {
+      m.visible = snowK > 0.02;
+      m.scale.y = 1;
+      m.position.y = -(1 - snowK) * 0.16;
+    });
   }
-  snowParts.forEach(m => {
-    m.visible = snowK > 0.02;
-    m.scale.y = 1;
-    m.position.y = -(1 - snowK) * 0.16;
-  });
   // Wet bluestone patio shimmer right after snowmelt during spring thaw (late Feb – mid April)
   const wetK = day >= 56 && day < 112 ? Math.sin(((day - 56) / 56) * Math.PI) : 0;
   PATIO.brickMat.roughness = 0.9 - 0.68 * wetK;
@@ -5184,7 +5187,7 @@ function tlApplyContinuousSeasons(day) {
   const month = Math.min(11, Math.floor(TL.t * 12)), sName = TL_SEASON_OF_MONTH[month];
   if (TL.seasonCur !== sName) {
     TL.seasonCur = sName; state.season = sName; seasonOn = sName;
-    const sb = document.getElementById('btn-season'); if (sb) sb.dataset.season = sName;
+    const sb = TL._sb || (TL._sb = document.getElementById('btn-season')); if (sb) sb.dataset.season = sName;
   }
   // Tree canopy fullness & leaf color blend
   let full = 0;
@@ -5193,26 +5196,41 @@ function tlApplyContinuousSeasons(day) {
   else if (day >= 250 && day < 332) full = 1.0 - ease((day - 250) / 82);
   const springToSum = day >= 115 && day < 175 ? (day - 115) / 60 : day >= 175 ? 1 : 0;
   const sumToFall = day >= 225 && day < 280 ? (day - 225) / 55 : day >= 280 ? 1 : 0;
-  decid.forEach((t, i) => {
-    const treeFull = Math.max(0, Math.min(1, (full - (1 - t.k) * 0.25) / 0.75));
-    const s = treeFull < 0.02 ? 0.0001 : (0.18 + 0.82 * treeFull);
-    const w = (5.5 + t.k * 6.5) * s, h = (t.h * 0.26) * s;
-    canopies.getMatrixAt(i, mtx); mtx.decompose(ps, q, sc);
-    sc.set(w, h, w); mtx.compose(ps, q, sc); canopies.setMatrixAt(i, mtx);
-    const idx = Math.floor(t.k * 97);
-    const cSp = SEASONS.spring.leaves[idx % SEASONS.spring.leaves.length];
-    const cSu = SEASONS.summer.leaves[idx % SEASONS.summer.leaves.length];
-    const cFa = SEASONS.fall.leaves[idx % SEASONS.fall.leaves.length];
-    _tc1.setHex(cSp).lerp(_tc2.setHex(cSu), springToSum).lerp(_tc3.setHex(cFa), sumToFall);
-    canopies.setColorAt(i, _tc1);
-  });
-  canopies.instanceMatrix.needsUpdate = true;
-  if (canopies.instanceColor) canopies.instanceColor.needsUpdate = true;
-  const bScale = Math.max(0.0001, full);
-  PATIO.crowns.forEach(c => {
-    c.visible = full > 0.03;
-    c.scale.set(7 * bScale, 6 * bScale, 7 * bScale);
-  });
+  twigs.visible = full < 0.95;
+  const tc = TL._treeCache;
+  if (!tc || Math.abs(full - tc.full) > 0.002 || Math.abs(springToSum - tc.spSu) > 0.002 || Math.abs(sumToFall - tc.suFa) > 0.002) {
+    const matChanged = !tc || Math.abs(full - tc.full) > 0.002;
+    const colChanged = !tc || Math.abs(springToSum - tc.spSu) > 0.002 || Math.abs(sumToFall - tc.suFa) > 0.002;
+    TL._treeCache = { full, spSu: springToSum, suFa: sumToFall };
+    for (let i = 0; i < decid.length; i++) {
+      const t = decid[i];
+      if (matChanged) {
+        if (!t._q) t._q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), t.k * 6);
+        const treeFull = Math.max(0, Math.min(1, (full - (1 - t.k) * 0.25) / 0.75));
+        const s = treeFull < 0.02 ? 0.0001 : (0.18 + 0.82 * treeFull);
+        const w = (5.5 + t.k * 6.5) * s, h = (t.h * 0.26) * s;
+        ps.set(t.x, t.y + t.h * 0.74, t.z);
+        sc.set(w, h, w);
+        mtx.compose(ps, t._q, sc);
+        canopies.setMatrixAt(i, mtx);
+      }
+      if (colChanged) {
+        const idx = Math.floor(t.k * 97);
+        const cSp = SEASONS.spring.leaves[idx % SEASONS.spring.leaves.length];
+        const cSu = SEASONS.summer.leaves[idx % SEASONS.summer.leaves.length];
+        const cFa = SEASONS.fall.leaves[idx % SEASONS.fall.leaves.length];
+        _tc1.setHex(cSp).lerp(_tc2.setHex(cSu), springToSum).lerp(_tc3.setHex(cFa), sumToFall);
+        canopies.setColorAt(i, _tc1);
+      }
+    }
+    if (matChanged) canopies.instanceMatrix.needsUpdate = true;
+    if (colChanged && canopies.instanceColor) canopies.instanceColor.needsUpdate = true;
+    const bScale = Math.max(0.0001, full);
+    PATIO.crowns.forEach(c => {
+      c.visible = full > 0.03;
+      c.scale.set(7 * bScale, 6 * bScale, 7 * bScale);
+    });
+  }
   return _tc3.lerpColors(_tc1.setHex(k0.sky), _tc2.setHex(k1.sky), f);
 }
 // --- waypoint polyline in plan feet (with a heading per point)
@@ -5311,8 +5329,20 @@ function tlApplyEnv(dt, immediate) {
   if (immediate) TL.sunCur = TL.hourTarget;
   else TL.sunCur += (TL.hourTarget - TL.sunCur) * Math.min(1, dt * 1.1);
   state.sun = Math.max(6, Math.min(19.5, TL.sunCur));
-  for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.value = String(state.sun); }
-  for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunTimeLabel(state.sun); }
+  const dom = TL._dom || (TL._dom = {
+    st: document.getElementById('suntime'), wst: document.getElementById('walk-sun'),
+    sto: document.getElementById('suntime-out'), wsto: document.getElementById('walk-sun-out'),
+    ml: document.getElementById('tl-month'), sc: document.getElementById('tl-scrub')
+  });
+  const sunLbl = sunTimeLabel(state.sun);
+  if (sunLbl !== TL._sunLbl) {
+    TL._sunLbl = sunLbl;
+    const sunStr = String(state.sun);
+    if (dom.st) dom.st.value = sunStr;
+    if (dom.wst) dom.wst.value = sunStr;
+    if (dom.sto) dom.sto.textContent = sunLbl;
+    if (dom.wsto) dom.wsto.textContent = sunLbl;
+  }
   // Dusk factor 0 (daytime <= 16.5) -> 1 (nighttime >= 19.2)
   const wantDusk = Math.max(0, Math.min(1, (TL.sunCur - 16.5) / 2.7));
   if (immediate) TL.duskCur = wantDusk;
@@ -5323,7 +5353,7 @@ function tlApplyEnv(dt, immediate) {
   const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
   const D = 27, ce = Math.cos(el);
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
-  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.025) { if (immediate || ++shTick % (LITE ? 10 : 4) === 0) markShadows(); }
+  if (immediate || Math.abs(TL.sunCur - prevSun) > 0.025) { if (immediate || ((TL._shTick = (TL._shTick || 0) + 1) % (LITE ? 10 : 4) === 0)) markShadows(); }
   const sElev = Math.min(1, Math.sin(el) * 1.6);
   const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
   sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.44) * dk;
@@ -5355,11 +5385,12 @@ function tlApplyEnv(dt, immediate) {
   if (typeof WEST_DECK !== 'undefined') WEST_DECK.setNightK(lanternK);
   const glass = MATS.glass;
   if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = 0.28 * extK; }
-  for (const v of CUT.variants) {
-    const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity;
+  if (state.walls !== 'up') {
+    for (const v of CUT.variants) {
+      const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity;
+    }
   }
-  const ml = document.getElementById('tl-month');
-  if (ml && ml.textContent !== TL_MONTHS[month]) ml.textContent = TL_MONTHS[month];
+  if (dom.ml && dom.ml.textContent !== TL_MONTHS[month]) dom.ml.textContent = TL_MONTHS[month];
 }
 function tlSetWallsRoof(walls, roof, floors = 'both') {
   if (state.walls === walls && state.roof === roof && state.floors === floors) return;
@@ -5499,8 +5530,8 @@ function tlStepCar(dt) {
       TL.tracks.mat.opacity = 0.55 * TL.snowK;
     }
   }
-  if (CAR.car.visible !== prevVis || Math.abs(TL.carD - prevD) > 0.0005) {
-    if (CAR.car.visible !== prevVis || ++shTick % 4 === 0) markShadows();
+  if (CAR.car.visible !== prevVis || Math.abs(TL.carD - prevD) > 0.003) {
+    if (CAR.car.visible !== prevVis || ((TL._carShTick = (TL._carShTick || 0) + 1) % 4 === 0)) markShadows();
   }
 }
 const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3(), _tlCamOff = new THREE.Vector3();
@@ -5520,12 +5551,18 @@ function tlStepCamera(dt, immediate) {
       _tlCamGoal.copy(_tlCamTarget).add(_tlCamOff);
     }
   } else {
-    const base = homePos(), off = base.clone().sub(HOME.target);
+    const a = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1.5;
+    const f = Math.max(1, 1.5 / a);
+    _tlCamOff.copy(HOME.pos).sub(HOME.target);
+    if (a < 0.9) {
+      const th = 0.75, cs = Math.cos(th), sn = Math.sin(th);
+      _tlCamOff.set(_tlCamOff.x * cs + _tlCamOff.z * sn, _tlCamOff.y, _tlCamOff.z * cs - _tlCamOff.x * sn).multiplyScalar(f * 0.44);
+    } else _tlCamOff.multiplyScalar(f);
     const targetSway = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30;
     if (immediate) TL.swayCur = targetSway;
     else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
     const zoom = 0.78, lowY = 0.44;
-    const rx = off.x * zoom, rz = off.z * zoom, ry = off.y * lowY;
+    const rx = _tlCamOff.x * zoom, rz = _tlCamOff.z * zoom, ry = _tlCamOff.y * lowY;
     const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
     _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
     _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
@@ -5548,7 +5585,7 @@ function tlTick(dt) {
   tlStepActors(dt);
   tlStepCar(dt);
   tlStepCamera(dt, false);
-  if (!TL.scrubbing) { const sc = document.getElementById('tl-scrub'); if (sc) sc.value = String(Math.round(TL.t * 1000)); }
+  if (!TL.scrubbing) { const sc = TL._dom ? TL._dom.sc : document.getElementById('tl-scrub'); if (sc) sc.value = String(Math.round(TL.t * 1000)); }
   wake();
 }
 function tlEnsureBuilt() {
@@ -5569,7 +5606,7 @@ function enterTimeline() {
   TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
   tlEnsureBuilt();
   for (const B of TL.built) B.group.visible = false;
-  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0;
+  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
   Object.assign(state, { floors: 'both', explode: 0, labels: false, night: false });
   G.ground.visible = true; G.loft.visible = true; G.loft.position.y = 0; G.wingRoof.position.y = 0; G.mainRoof.position.y = 0;
   document.getElementById('labels').style.display = 'none';
@@ -5599,7 +5636,8 @@ function enterTimeline() {
 function exitTimeline() {
   if (!TL.on) return;
   document.body.classList.remove('timeline');
-  TL.on = false; TL.playing = false; TL.cur = -1;
+  TL.on = false; TL.playing = false; TL.cur = -1; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
+  twigs.visible = true;
   for (const B of TL.built || []) B.group.visible = false;
   if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   if (TL.wx) TL.wx.mesh.visible = false;
