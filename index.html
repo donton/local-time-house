@@ -2861,15 +2861,15 @@ const RECESS_SPOTS = [
   ['ground', 35.0, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor east can
   ['ground', 43.5, 7.95, 4.5, 0, 12, 0.72, 4.8],                                                    // east office north cans
   ['ground', 43.5, 7.95, 12.5, 0, 12, 0.72, 4.8],                                                   // east office south cans
-  ['loft', 32.5, LV.LOFT_CEIL - 0.05, 8.45, LV.LOFT, 14, 0.72, 4.8],                                // loft primary bed north cans
-  ['loft', 32.5, LV.LOFT_CEIL - 0.05, 14.05, LV.LOFT, 14, 0.72, 4.8],                               // loft primary bed south cans
+  ['loft', 28.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed west cans
+  ['loft', 37.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed east cans
   ['loft', 33.2, 16.9, 3.0, LV.LOFT, 14, 0.72, 4.5],                                                // loft laundry & MECH
-  ['loft', 44.5, 19.5, 9.9, LV.LOFT, 20, 0.70, 5.5],                                                // upstairs bath (vaulted)
+  ['loft', 44.5, 21.2, 9.9, LV.LOFT, 24, 0.68, 6.2],                                                // upstairs bath (vaulted)
 ];
 // Soft indirect bounce + dining paper lantern (kept subtle so mid-room points don't create fake wall/door hotspots)
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela, dist]
-  ['ground', 8.4, 6.25, 6.2, 5.5, 5.5],                                                             // dining paper lantern (24" globe) + kitchen bounce
+  ['ground', DINING_CENTER[0], 6.25, DINING_CENTER[1], 5.5, 5.5],                                   // dining paper lantern (24" globe) + kitchen bounce
   ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
