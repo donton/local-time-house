@@ -198,7 +198,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .rlabel b { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
 .rlabel span { display: block; font-family: var(--font-mono); font-size: 10px; color: #5f584f; font-variant-numeric: tabular-nums; }
 
-.hud { left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 12px;
+.hud { box-sizing: border-box; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 12px;
   display: flex; align-items: center; gap: 10px; max-width: calc(100% - 32px); flex-wrap: wrap; justify-content: center; }
 .hud-text { font-size: 12.5px; color: var(--muted); }
 .act-tip { position: fixed; z-index: 5; pointer-events: none; font: 500 12px var(--font-body); padding: 4px 8px; border-radius: 4px; background: var(--ink); color: var(--bg); white-space: nowrap; }
@@ -208,11 +208,23 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 body.walking #reticle { display: block; }
 #walk-found { font-family: var(--font-mono); font-size: 11px; color: var(--accent); white-space: nowrap; }
 .walk-light { display: flex; align-items: center; gap: 8px; }
-.walk-light input { width: 120px; accent-color: var(--accent); }
-.walk-light output { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 58px; font-variant-numeric: tabular-nums; }
+.walk-light input { flex: 1; min-width: 110px; accent-color: var(--accent); }
+.walk-light output { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); min-width: 56px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 #walk-night { display: inline-flex; align-items: center; gap: 5px; }
 #walk-night svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 #walk-night[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.walk-pill { border: 1px solid var(--rule); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 6px 11px; font: 600 12px/1.1 var(--font-body); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; max-width: 100%; }
+.walk-pill:hover, .walk-pill[aria-expanded="true"] { border-color: var(--muted); background: var(--card); }
+#walk-room-btn { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+#walk-room-btn span { overflow: hidden; text-overflow: ellipsis; }
+#walk-light-btn { font-family: var(--font-mono); font-size: 11.5px; font-variant-numeric: tabular-nums; flex: none; }
+.walk-pop { position: fixed; z-index: 10; padding: 10px 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 28px rgba(0,0,0,0.18); }
+.walk-pop[hidden] { display: none !important; }
+#walk-room-pop { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: min(260px, calc(100% - 32px)); max-height: 55vh; overflow: auto; display: grid; gap: 4px; }
+#walk-room-pop .wp-sec { font: 600 10px/1.2 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 6px 8px 2px; }
+#walk-room-pop button { border: 0; background: transparent; text-align: left; padding: 8px 10px; border-radius: 8px; font: 500 13px/1.2 var(--font-body); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+#walk-room-pop button:hover, #walk-room-pop button.cur { background: var(--chip); color: var(--accent); font-weight: 600; }
+#walk-light-pop { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: min(300px, calc(100% - 32px)); }
 #walkpad { display: none; gap: 6px; }
 #walkpad button { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 16px; touch-action: none; }
 @media (pointer: coarse) { #walkpad { display: flex; } .hud-text { display: none; } }
@@ -241,7 +253,7 @@ body.m #mtitle .wordmark { height: 16px; max-width: 140px; }
 body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle, body.m.building #mtitle { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
-body.m.walking #mbar, body.m.touring #mbar { display: none; }
+body.m.walking #mbar, body.m.touring #mbar, body.m.timeline #mbar, body.m.building #mbar { display: none; }
 #mbar button { display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; min-height: 52px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font: 600 10.5px var(--font-body); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #mbar button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 #mbar button[aria-pressed="true"] { color: var(--accent); background: var(--chip); }
@@ -253,10 +265,10 @@ body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips, body.m.
 #mchips button { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 12.5px/1 var(--font-body); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.06); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 #mchips button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 #mscrim { display: none; }
-body.m #mscrim { display: block; position: fixed; inset: 0; z-index: 8; background: rgba(20,18,16,0.22); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
+body.m #mscrim { display: block; position: fixed; inset: 0; z-index: 9; background: rgba(20,18,16,0.22); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
 body.m #mscrim.open { opacity: 1; pointer-events: auto; }
-body.m #msheet { display: block; position: fixed; z-index: 9; left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom, 0px)); max-height: 70%; overflow: auto; overscroll-behavior: contain;
-  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 18px 18px 0 0; padding: 0 0 18px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+body.m #msheet { display: block; position: fixed; z-index: 10; left: 0; right: 0; bottom: 0; max-height: 75%; overflow: auto; overscroll-behavior: contain;
+  background: var(--sheet); border: 1px solid var(--rule); border-bottom: 0; border-radius: 18px 18px 0 0; padding: 0 0 calc(18px + env(safe-area-inset-bottom, 0px)); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   box-shadow: 0 -10px 32px rgba(0,0,0,0.14); transform: translateY(110%); visibility: hidden; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s 0.28s; }
 body.m #msheet.open { transform: none; visibility: visible; transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1); }
 body.m.touring #msheet, body.m.touring #mscrim { display: none; }
@@ -282,10 +294,9 @@ body.m #mintro.gone { opacity: 0; pointer-events: none; }
 body.m #mintro b { display: block; font: 700 15px var(--font-display); margin-bottom: 2px; }
 /* walking on a phone: stick on the left, big Use button on the right, slim HUD on top */
 body.m.walking #walkpad, body.m.walking .hud-text { display: none; }
-body.m.walking #walkhud { top: calc(8px + env(safe-area-inset-top, 0px)); bottom: auto; left: 8px; right: 8px; transform: none; max-width: none; padding: 6px 8px; gap: 8px; flex-wrap: nowrap; justify-content: space-between; }
-body.m.walking .walk-light input { width: 80px; }
-body.m.walking .walk-light output { display: none; }
-body.m.walking #walkhud .btn { padding: 8px 10px; white-space: nowrap; }
+body.m.walking #walkhud { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto; left: max(66px, calc(16px + env(safe-area-inset-left, 0px) + 50px)); right: max(66px, calc(16px + env(safe-area-inset-right, 0px) + 50px)); transform: none; max-width: none; height: 40px; padding: 0 6px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; border-radius: 999px; }
+body.m.walking #walk-room-pop, body.m.walking #walk-light-pop { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; }
+body.m.walking #walk-room-pop { left: max(16px, env(safe-area-inset-left, 0px)); right: auto; }
 body.m.walking #walk-found { white-space: nowrap; font-size: 10.5px; }
 body.m.walking #joy { display: block; position: fixed; z-index: 8; left: calc(22px + env(safe-area-inset-left, 0px)); bottom: calc(34px + env(safe-area-inset-bottom, 0px)); width: 132px; height: 132px; border-radius: 50%;
   background: rgba(255,255,255,0.18); border: 2px solid rgba(255,255,255,0.55); box-shadow: 0 0 0 1px rgba(0,0,0,0.25); touch-action: none; }
@@ -298,18 +309,57 @@ body.m.walking #usebtn { display: grid; place-items: center; position: fixed; z-
   border: 3px solid rgba(255,255,255,0.7); background: rgba(40,36,32,0.55); color: #fff; font: 700 12px/1.2 var(--font-body); text-align: center; touch-action: none; transition: background 0.15s, transform 0.15s; }
 body.m.walking #usebtn.ready { background: var(--accent); transform: scale(1.08); box-shadow: 0 0 0 6px rgba(199,114,106,0.35); }
 body.m.walking #mintro, body.m.touring #mintro, body.m.building #mintro { display: none; }
-#tourcap { left: 50%; transform: translateX(-50%); bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(520px, calc(100% - 32px));
-  padding: 10px 14px; text-align: center; font: 500 14px/1.38 var(--font-body); pointer-events: none; }
-body.m #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); }
-#tlbar, #bdbar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; align-items: center; gap: 10px; width: min(680px, calc(100% - 32px)); padding: 10px 12px; }
-#tlbar[hidden], #bdbar[hidden] { display: none !important; }
-#tlbar .tl-track, #bdbar .tl-track { position: relative; flex: 1; display: flex; align-items: center; }
-#tl-scrub, #bd-scrub { width: 100%; accent-color: var(--accent); cursor: pointer; }
-#tl-marks, #bd-marks { position: absolute; left: 0; right: 0; top: 50%; height: 0; pointer-events: none; }
-#tl-marks i, #bd-marks i { position: absolute; width: 8px; height: 8px; margin: -4px 0 0 -4px; border-radius: 50%; background: var(--accent); border: 1.5px solid var(--card); }
-#tl-month, #bd-month { min-width: 78px; text-align: right; font: 600 13px var(--font-body); white-space: nowrap; }
-#tl-play, #tl-exit, #bd-play, #bd-exit { border: 0; background: transparent; font: 700 15px var(--font-body); color: var(--ink); cursor: pointer; padding: 4px 6px; }
-body.m #tlbar, body.m #bdbar { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+#tourcap { box-sizing: border-box; left: 50%; transform: translateX(-50%); bottom: calc(114px + env(safe-area-inset-bottom, 0px)); z-index: 7; width: max-content; max-width: min(540px, calc(100% - 32px));
+  padding: 7px 14px; text-align: center; font: 400 18px/1.25 var(--font-brand); pointer-events: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: opacity 0.28s ease, transform 0.28s ease; }
+#tourcap .cap-eyebrow { display: block; font: 500 10.5px/1.2 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); margin-bottom: 2px; }
+#tourcap .cap-title { display: block; font: 400 20px/1.15 var(--font-brand); color: var(--ink); letter-spacing: 0.01em; }
+#tourcap .cap-sub { display: block; font: 400 12.5px/1.35 var(--font-body); color: var(--muted); margin-top: 3px; }
+body.m.touring #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); max-width: calc(100% - 132px); }
+#tlbar, #bdbar, #tourbar { box-sizing: border-box; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: min(720px, calc(100% - 32px)); padding: 12px 16px 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+#tlbar[hidden], #bdbar[hidden], #tourbar[hidden] { display: none !important; }
+#tlbar .tl-controls, #bdbar .tl-controls, #tourbar .tl-controls { display: flex; align-items: center; gap: 8px; width: 100%; }
+#tlbar .tl-track, #bdbar .tl-track, #tourbar .tl-track { position: relative; flex: none; width: 100%; height: 36px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+#tl-scrub, #bd-scrub, #tour-scrub { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 2; }
+.tl-rail { position: relative; width: 100%; height: 6px; border-radius: 999px; overflow: hidden; background: var(--rule); display: flex; }
+.tl-rail i { height: 100%; display: block; opacity: 0.55; }
+.tl-rail .s-wi { width: 16.4%; background: var(--blue); }
+.tl-rail .s-sp { width: 25.2%; background: #8DAE4E; }
+.tl-rail .s-su { width: 25.2%; background: #D8B979; }
+.tl-rail .s-fa { width: 24.9%; background: #B8653B; }
+.tl-rail .s-w2 { width: 8.3%; background: var(--blue); }
+.bd-rail .s-fa { width: 33.3%; }
+.bd-rail .s-wi { width: 33.3%; }
+.bd-rail .s-sp { width: 33.4%; }
+.tl-needle { position: absolute; top: 50%; width: 3px; height: 18px; margin: -9px 0 0 -1.5px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 2px var(--card); pointer-events: none; z-index: 5; transition: height 0.15s; }
+.tl-months { position: absolute; left: 0; right: 0; bottom: -2px; display: flex; justify-content: space-between; pointer-events: none; padding: 0 2px; }
+.tl-months span { font: 500 9px/1 var(--font-mono); color: var(--muted); opacity: 0.78; }
+#tl-marks, #bd-marks, #tour-marks { position: absolute; left: 0; right: 0; top: 50%; height: 0; z-index: 4; pointer-events: none; }
+#tl-marks button, #bd-marks button, #tour-marks button { position: absolute; height: 10px; margin-top: -5px; padding: 0; border-radius: 999px; background: var(--card); border: 1.5px solid var(--accent); cursor: pointer; pointer-events: auto; transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease; }
+#tl-marks button:hover, #tl-marks button.active, #bd-marks button:hover, #bd-marks button.active, #tour-marks button:hover, #tour-marks button.active { transform: scaleY(1.28); background: var(--accent); box-shadow: 0 2px 8px rgba(82, 0, 0, 0.25); }
+#tl-marks button::after, #bd-marks button::after, #tour-marks button::after { content: attr(data-tip); position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%) translateY(4px); white-space: nowrap; padding: 4px 8px; border-radius: 6px; background: var(--ink); color: var(--bg); font: 500 11px/1.2 var(--font-body); opacity: 0; pointer-events: none; transition: opacity 0.15s, transform 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+#tl-marks button:hover::after, #bd-marks button:hover::after, #tour-marks button:hover::after { opacity: 1; transform: translateX(-50%) translateY(0); }
+.tl-readout { display: flex; align-items: baseline; gap: 8px; margin-left: auto; line-height: 1.15; }
+#tl-month, #bd-month, #tour-name { font: 600 12.5px var(--font-body); color: var(--ink); white-space: nowrap; }
+#tl-time, #bd-stage, #tour-count { font: 500 11px var(--font-mono); color: var(--muted); white-space: nowrap; }
+#tl-speed, #bd-speed, #tour-speed { border: 1px solid var(--rule); background: transparent; border-radius: 999px; font: 500 11px/1 var(--font-mono); color: var(--muted); cursor: pointer; padding: 5px 9px; }
+#tl-speed:hover, #bd-speed:hover, #tour-speed:hover { color: var(--ink); border-color: var(--muted); }
+#tl-play, #bd-play, #tour-play { border: 0; background: transparent; font: 700 15px/1 var(--font-body); color: var(--ink); cursor: pointer; padding: 6px 8px; border-radius: 999px; }
+#tl-play:hover, #bd-play:hover, #tour-play:hover { background: var(--chip); }
+#mode-exit { display: none; position: fixed; z-index: 9; top: calc(16px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px)); width: 40px; height: 40px; padding: 0; border-radius: 50%; font: 700 16px/1 var(--font-body); color: var(--ink); cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: background 0.15s, border-color 0.15s, color 0.15s; }
+#mode-exit:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+body.walking #mode-exit, body.touring #mode-exit, body.timeline #mode-exit, body.building #mode-exit { display: inline-flex; align-items: center; justify-content: center; }
+#snap-btn { position: fixed; z-index: 9; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: 40px; height: 40px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: right 0.2s ease, background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s; }
+#snap-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+#snap-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+#snap-btn:active { transform: scale(0.94); }
+body:not(.m) #info:not([hidden]) ~ #snap-btn { right: max(332px, calc(16px + env(safe-area-inset-right, 0px) + 316px)); }
+#snap-flash { position: fixed; inset: 0; z-index: 30; background: #fff; opacity: 0; pointer-events: none; transition: opacity 0.28s ease-out; }
+#snap-flash.on { opacity: 0.45; transition: none; }
+#tl-pins { position: fixed; inset: 0; z-index: 6; pointer-events: none; overflow: hidden; }
+.tl-pin { position: absolute; left: 0; top: 0; transform: translate(-50%, -100%); display: flex; flex-direction: column; align-items: center; will-change: transform, opacity; }
+.tl-pin-bubble { padding: 5px 10px; border-radius: 999px; background: var(--card); border: 1px solid var(--rule); box-shadow: 0 6px 18px rgba(0,0,0,0.14); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); font: 500 11.5px/1.2 var(--font-body); color: var(--ink); white-space: nowrap; }
+.tl-pin-stem { width: 1.5px; height: 12px; background: var(--accent); opacity: 0.7; }
+.tl-pin-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); border: 1.5px solid var(--card); box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
 body.m.touring #joy, body.m.touring #look, body.m.touring #usebtn { display: none !important; }
 body.m.touring #tourbar { bottom: calc(12px + env(safe-area-inset-bottom, 0px)); left: 8px; right: 8px; transform: none; max-width: none; flex-wrap: nowrap; gap: 6px; padding: 8px; }
 body.m.touring #tourbar .btn { padding: 12px 12px; min-width: 44px; }
@@ -479,12 +529,15 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 </nav>
 <div id="mscrim" aria-hidden="true"></div>
 <section id="msheet" aria-live="polite">
-  <div class="mgrip"><h2 id="msheet-title">Display &amp; View</h2><button id="msheet-close" type="button" aria-label="Close">✕</button></div>
+  <div class="mgrip"><h2 id="msheet-title">Display and view</h2><button id="msheet-close" type="button" aria-label="Close">✕</button></div>
   <div id="pane-more"></div>
 </section>
 <div id="joy" aria-label="Walk stick"><i></i></div>
 <div id="look" aria-label="Look stick"><i></i></div>
 <button id="usebtn" type="button"><span>Nothing to use</span></button>
+<button id="mode-exit" class="card" type="button" aria-label="Exit current mode">✕</button>
+<button id="snap-btn" class="card" type="button" aria-label="Take snapshot" title="Take snapshot (P)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h2l1.3-2h4.4l1.3 2h2A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button>
+<div id="snap-flash" aria-hidden="true"></div>
 <div id="walkhud" class="card hud" hidden>
   <span class="hud-text">WASD or arrows to walk · drag to look · Shift to hurry · Esc to leave</span>
   <div id="walkpad" aria-label="Walk controls">
@@ -493,33 +546,60 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
     <button type="button" data-k="KeyS" aria-label="Walk back">▼</button>
     <button type="button" data-k="KeyD" aria-label="Step right">▶</button>
   </div>
+  <button id="walk-room-btn" class="walk-pill" type="button" aria-expanded="false" aria-controls="walk-room-pop"><span>Entry deck</span> ▾</button>
+  <button id="walk-light-btn" class="walk-pill" type="button" aria-expanded="false" aria-controls="walk-light-pop">☀ 2:00 PM</button>
+</div>
+<div id="walk-room-pop" class="card walk-pop" hidden></div>
+<div id="walk-light-pop" class="card walk-pop" hidden>
   <div class="walk-light">
     <input id="walk-sun" type="range" min="6" max="19.5" step="0.25" value="14" aria-label="Time of day">
     <output id="walk-sun-out" for="walk-sun">2:00 PM</output>
     <button id="walk-night" class="btn" type="button" aria-pressed="false" title="Click to toggle Day / Night"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg> Day</button>
   </div>
-  <button id="walk-exit" class="btn" type="button">Exit walk</button>
 </div>
 
+<div id="tl-pins" hidden></div>
 <div id="tourcap" class="card" hidden></div>
 <div id="tlbar" class="card" hidden>
-  <button id="tl-play" type="button" aria-label="Play or pause the year">❚❚</button>
-  <div class="tl-track"><input id="tl-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Time of year"><div id="tl-marks"></div></div>
-  <span id="tl-month">January</span>
-  <button id="tl-exit" type="button" aria-label="Exit timeline">✕</button>
+  <div class="tl-track">
+    <input id="tl-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Time of year">
+    <div class="tl-rail"><i class="s-wi"></i><i class="s-sp"></i><i class="s-su"></i><i class="s-fa"></i><i class="s-w2"></i></div>
+    <div id="tl-needle" class="tl-needle"></div>
+    <div id="tl-marks"></div>
+    <div class="tl-months" aria-hidden="true"><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+  </div>
+  <div class="tl-controls">
+    <button id="tl-play" type="button" aria-label="Play or pause the year">❚❚</button>
+    <button id="tl-speed" type="button" aria-label="Playback speed">1×</button>
+    <div class="tl-readout"><span id="tl-month">January</span><span id="tl-time">4:48 PM</span></div>
+  </div>
 </div>
 <div id="bdbar" class="card" hidden>
-  <button id="bd-play" type="button" aria-label="Play or pause construction">❚❚</button>
-  <div class="tl-track"><input id="bd-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Construction progress"><div id="bd-marks"></div></div>
-  <span id="bd-month">September</span>
-  <button id="bd-exit" type="button" aria-label="Exit build">✕</button>
+  <div class="tl-track">
+    <input id="bd-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="Construction progress">
+    <div class="tl-rail bd-rail"><i class="s-fa"></i><i class="s-wi"></i><i class="s-sp"></i></div>
+    <div id="bd-needle" class="tl-needle"></div>
+    <div id="bd-marks"></div>
+    <div class="tl-months" aria-hidden="true"><span>S</span><span>O</span><span>N</span><span>D</span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span></div>
+  </div>
+  <div class="tl-controls">
+    <button id="bd-play" type="button" aria-label="Play or pause construction">❚❚</button>
+    <button id="bd-speed" type="button" aria-label="Playback speed">1×</button>
+    <div class="tl-readout"><span id="bd-month">Sep</span><span id="bd-stage">1 / 16</span></div>
+  </div>
 </div>
-<div id="tourbar" class="card hud" hidden>
-  <button id="tour-prev" class="btn" type="button" aria-label="Previous stop">◀</button>
-  <div class="tour-label"><b id="tour-name">Arrive</b><span id="tour-count">1 / 9</span></div>
-  <button id="tour-next" class="btn" type="button" aria-label="Next stop">▶</button>
-  <button id="tour-play" class="btn" type="button">Play</button>
-  <button id="tour-exit" class="btn" type="button">Exit</button>
+<div id="tourbar" class="card" hidden>
+  <div class="tl-track">
+    <input id="tour-scrub" type="range" min="0" max="14" step="1" value="0" aria-label="Tour stop">
+    <div class="tl-rail"></div>
+    <div id="tour-needle" class="tl-needle"></div>
+    <div id="tour-marks"></div>
+  </div>
+  <div class="tl-controls">
+    <button id="tour-play" type="button" aria-label="Play or pause tour">❚❚</button>
+    <button id="tour-speed" type="button" aria-label="Playback speed">1×</button>
+    <div class="tl-readout"><span id="tour-name">Arrive</span><span id="tour-count">1 / 15</span></div>
+  </div>
 </div>
 
 <script type="importmap">
@@ -2645,18 +2725,14 @@ function setEnvNight(dk) { for (const { mat, env } of ENV_MATS) mat.envMapIntens
 // Field of view (vertical degrees): narrow for the orbit view; much wider when you're inside (walk mode, indoor tour stops).
 const FOV = { orbit: 46, inside: 80 };
 const camera = new THREE.PerspectiveCamera(FOV.orbit, window.innerWidth / window.innerHeight, 0.12, 1200);
-const phoneFov = f => (camera.aspect < 0.9 ? (f <= 50 ? 56 : 86) : f);
+const phoneFov = f => f;
 const setFov = f => { camera.fov = f; camera.updateProjectionMatrix(); };
 camera.fov = phoneFov(FOV.orbit); camera.updateProjectionMatrix();
 const HOME = { pos: new THREE.Vector3(16.5, 26, 23.5), target: new THREE.Vector3(0.6, -0.4, 1.4) };
-// Pull the camera back on narrow (portrait) screens so the whole house fits.
+// Pull the camera back gently on narrow (portrait) screens so the house matches desktop framing.
 function homePos() {
   const a = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1.5;   // panel may be 0×0 at load
-  const f = Math.max(1, 1.5 / a), off = HOME.pos.clone().sub(HOME.target);
-  if (a < 0.9) {                                       // portrait phone: look along the long axis of the house so it fills the height
-    const th = 0.75, c = Math.cos(th), sn = Math.sin(th); off.set(off.x * c + off.z * sn, off.y, off.z * c - off.x * sn);
-    return HOME.target.clone().add(off.multiplyScalar(f * 0.44));
-  }
+  const f = Math.min(1.35, Math.max(1, 1.15 / a)), off = HOME.pos.clone().sub(HOME.target);
   return HOME.target.clone().add(off.multiplyScalar(f));
 }
 camera.position.copy(homePos());
@@ -2947,7 +3023,7 @@ function applyNight(on) {
   applySceneTheme();
 }
 // Sun by time of day (Andes, NY, roughly an autumn day): rises in the east, peaks ~1 PM in the south, sets west.
-function sunTimeLabel(h) { const hh = Math.floor(h), mm = Math.round((h - hh) * 60); const ap = hh >= 12 ? 'PM' : 'AM'; return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${ap}`; }
+function sunTimeLabel(h) { const total = Math.round(h * 60), hh = Math.floor(total / 60) % 24, mm = total % 60; const ap = hh >= 12 ? 'PM' : 'AM'; return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${ap}`; }
 function applySun() {
   if (nightOn) return;
   const h = state.sun, az = (h - 12.5) / 6.5 * (Math.PI / 2);
@@ -3426,6 +3502,8 @@ function applyState() {
   for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunTimeLabel(state.sun); }
   for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.disabled = state.night; }
   const wn = document.getElementById('walk-night'); if (wn) { wn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day; wn.setAttribute('aria-pressed', String(state.night)); }
+  const wlb = document.getElementById('walk-light-btn');
+  if (wlb) wlb.textContent = state.night ? '🌙 Night' : '☀ ' + sunTimeLabel(state.sun);
   const cn = document.getElementById('chip-night');
   if (cn) {
     cn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day;
@@ -4360,6 +4438,98 @@ function walkStep(dt) {
   if (fy !== -Infinity) WALK.feet = fy >= WALK.feet ? fy : WALK.feet + (fy - WALK.feet) * Math.min(1, dt * 10);
   camera.position.set(WALK.pos.x, WALK.feet + EYE, WALK.pos.z);
   camera.rotation.set(WALK.pitch, WALK.yaw, 0, 'YXZ');
+  walkSyncRoom();
+}
+const WALK_SPOTS = [
+  { sec: 'Ground', name: 'Entry deck', pos: [19.7, 0, 24], yaw: 0 },
+  { sec: 'Ground', name: 'Entry + stair', pos: [20.0, 0, 12.0], yaw: 0 },
+  { sec: 'Ground', name: 'Kitchen / dining', pos: [10.5, 0, 8.5], yaw: 1.57 },
+  { sec: 'Ground', name: 'Sunken living', pos: [12.5, LV.SUNKEN, 21.5], yaw: 1.57 },
+  { sec: 'Ground', name: 'Guest bedroom', pos: [28.0, 0, 8.5], yaw: 0 },
+  { sec: 'Ground', name: 'Guest bath', pos: [36.0, 0, 9.5], yaw: 0 },
+  { sec: 'Ground', name: 'Office', pos: [42.0, 0, 10.5], yaw: 0 },
+  { sec: 'Loft', name: 'Loft', pos: [19.5, LV.LOFT, 13.5], yaw: 1.57 },
+  { sec: 'Loft', name: 'Primary bedroom', pos: [32.5, LV.LOFT, 11.5], yaw: 0 },
+  { sec: 'Loft', name: 'Upstairs bath', pos: [44.5, LV.LOFT, 9.5], yaw: 0 },
+  { sec: 'Outside', name: 'West deck', pos: [-4.5, 0, 9.5], yaw: -1.57 },
+  { sec: 'Outside', name: 'South lawn', pos: [25.0, LV.GRADE, 44.0], yaw: 3.14 },
+];
+let lastWalkRoom = '';
+function walkRoomAt() {
+  const px = (WALK.pos.x - root.position.x) / FT, pz = (WALK.pos.z - root.position.z) / FT, py = WALK.feet / FT;
+  const fl = py >= LV.LOFT - 2.0 ? 'loft' : 'ground';
+  const sent = s => s === 'MECH' ? 'MECH' : s.charAt(0) + s.slice(1).toLowerCase();
+  for (const r of ROOMS) {
+    if (r.floor !== fl || r.nolabel) continue;
+    for (const [x0, x1, z0, z1] of r.rects) {
+      if (px >= x0 && px <= x1 && pz >= z0 && pz <= z1) return sent(r.name);
+    }
+  }
+  if (px >= 16.5 && px <= 24.5 && pz > 16.5 && pz <= 30.5 && py > -1.5) return 'Entry deck';
+  if (px >= -10 && px < 0.6 && pz >= 0 && pz <= 17 && py > -1.5) return 'West deck';
+  if (pz > 27) return 'South lawn';
+  return 'Outside';
+}
+function walkSyncRoom(force) {
+  const name = walkRoomAt();
+  if (!force && name === lastWalkRoom) return;
+  lastWalkRoom = name;
+  const sp = document.querySelector('#walk-room-btn span');
+  if (sp) sp.textContent = name;
+  document.querySelectorAll('#walk-room-pop button').forEach(b => b.classList.toggle('cur', b.dataset.room === name));
+}
+function closeWalkPops() {
+  for (const [btnId, popId] of [['walk-room-btn', 'walk-room-pop'], ['walk-light-btn', 'walk-light-pop']]) {
+    const b = document.getElementById(btnId), p = document.getElementById(popId);
+    if (b) b.setAttribute('aria-expanded', 'false');
+    if (p) p.hidden = true;
+  }
+}
+function toggleWalkPop(btnId, popId) {
+  const p = document.getElementById(popId), b = document.getElementById(btnId);
+  if (!p || !b) return;
+  const open = p.hidden;
+  closeWalkPops();
+  if (open) { p.hidden = false; b.setAttribute('aria-expanded', 'true'); }
+}
+function walkTeleport(spot) {
+  const w = toW(spot.pos[0], spot.pos[1], spot.pos[2]);
+  const fy = floorAt(w.x, w.z, w.y + 3 * FT);
+  WALK.pos.set(w.x, 0, w.z);
+  WALK.feet = fy !== -Infinity ? fy : w.y;
+  WALK.yaw = spot.yaw;
+  WALK.pitch = -0.04;
+  camera.position.set(WALK.pos.x, WALK.feet + EYE, WALK.pos.z);
+  camera.rotation.set(WALK.pitch, WALK.yaw, 0, 'YXZ');
+  takeOver();
+  walkSyncRoom(true);
+}
+{
+  const pop = document.getElementById('walk-room-pop');
+  if (pop) {
+    let curSec = '';
+    for (const spot of WALK_SPOTS) {
+      if (spot.sec !== curSec) {
+        curSec = spot.sec;
+        const hd = document.createElement('div');
+        hd.className = 'wp-sec';
+        hd.textContent = curSec;
+        pop.appendChild(hd);
+      }
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.dataset.room = spot.name;
+      btn.textContent = spot.name;
+      btn.addEventListener('click', () => { walkTeleport(spot); closeWalkPops(); });
+      pop.appendChild(btn);
+    }
+  }
+  document.getElementById('walk-room-btn')?.addEventListener('click', e => { e.stopPropagation(); toggleWalkPop('walk-room-btn', 'walk-room-pop'); });
+  document.getElementById('walk-light-btn')?.addEventListener('click', e => { e.stopPropagation(); toggleWalkPop('walk-light-btn', 'walk-light-pop'); });
+  document.addEventListener('pointerdown', e => {
+    if (!WALK.on) return;
+    if (!e.target.closest('#walkhud, #walk-room-pop, #walk-light-pop')) closeWalkPops();
+  });
 }
 function enterWalk() {
   if (TOUR.on) exitTour();
@@ -4371,11 +4541,13 @@ function enterWalk() {
   const start = toW(19.7, 0, 24);                                                // on the entry deck, facing Door 101
   WALK.pos.set(start.x, 0, start.z); WALK.feet = floorAt(start.x, start.z, 1.0); WALK.yaw = 0; WALK.pitch = -0.04;
   WALK.on = true; controls.enabled = false; setFov(phoneFov(FOV.inside));
+  closeWalkPops(); walkSyncRoom(true);
   document.getElementById('walkhud').hidden = false;
   document.body.classList.add('walking');
 }
 function exitWalk() {
   if (!WALK.on || TOUR.walking) return;
+  closeWalkPops();
   WALK.on = false; WALK.keys = {}; WALK.joy.x = WALK.joy.y = WALK.look.x = WALK.look.y = 0; setFov(phoneFov(FOV.orbit));
   document.getElementById('walkhud').hidden = true; document.body.classList.remove('walking');
   Object.assign(state, WALK.saved.state, { night: state.night, sun: state.sun }); applyState();   // keep the light set during the walk
@@ -4432,46 +4604,121 @@ document.querySelectorAll('#walkpad [data-k]').forEach(b => {
   b.addEventListener('pointerdown', on(true)); b.addEventListener('pointerup', on(false)); b.addEventListener('pointerleave', on(false)); b.addEventListener('pointercancel', on(false));
 });
 document.getElementById('btn-walk').addEventListener('click', enterWalk);
-document.getElementById('walk-exit').addEventListener('click', exitWalk);
+document.getElementById('mode-exit').addEventListener('click', () => {
+  closeSheet();
+  if (TOUR.on) exitTour();
+  if (WALK.on) exitWalk();
+  if (typeof TL !== 'undefined' && TL.on) exitTimeline();
+  if (typeof BD !== 'undefined' && BD.on) exitBuild();
+});
+let snapBusy = false;
+async function takeSnapshot() {
+  if (snapBusy) return;
+  snapBusy = true;
+  const flash = document.getElementById('snap-flash');
+  if (flash) {
+    flash.classList.add('on');
+    requestAnimationFrame(() => requestAnimationFrame(() => flash.classList.remove('on')));
+  }
+  const prevSize = renderer.getSize(new THREE.Vector2());
+  const prevPR = renderer.getPixelRatio();
+  const prevAspect = camera.aspect;
+  const prevFov = camera.fov;
+  let dataUrl = '';
+  try {
+    const SNAP_SIZE = 2048;
+    renderer.setPixelRatio(1);
+    renderer.setSize(SNAP_SIZE, SNAP_SIZE, false);
+    camera.aspect = 1;
+    camera.fov = prevFov > 60 ? Math.min(92, prevFov + 10) : Math.min(68, prevFov + 16);
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+    dataUrl = renderer.domElement.toDataURL('image/png');
+  } finally {
+    renderer.setPixelRatio(prevPR);
+    renderer.setSize(prevSize.x, prevSize.y, false);
+    camera.aspect = prevAspect;
+    camera.fov = prevFov;
+    camera.updateProjectionMatrix();
+    renderer.render(scene, camera);
+  }
+  try {
+    if (!dataUrl) return;
+    const bin = atob(dataUrl.split(',')[1]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const blob = new Blob([bytes], { type: 'image/png' });
+    const modeSlug = WALK.on ? walkRoomAt() : TOUR.on ? 'tour' : (typeof TL !== 'undefined' && TL.on) ? 'year' : (typeof BD !== 'undefined' && BD.on) ? 'build' : 'explore';
+    const slug = modeSlug.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+    const filename = `local-time-house-${slug || 'view'}.png`;
+    const file = new File([blob], filename, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'Local Time House' });
+        return;
+      } catch (err) {
+        if (err && err.name === 'AbortError') return;
+      }
+    }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    toast('Snapshot saved');
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } finally {
+    snapBusy = false;
+  }
+}
+document.getElementById('snap-btn')?.addEventListener('click', e => { e.stopPropagation(); takeSnapshot(); });
+addEventListener('keydown', e => {
+  if (e.code !== 'KeyP' || e.metaKey || e.ctrlKey || e.altKey || e.repeat) return;
+  if (e.target.closest && e.target.closest('input, textarea, select, [contenteditable]')) return;
+  takeSnapshot();
+});
 
 /* =====================================================================
    14. GUIDED TOUR — saved camera stops with eased fly-throughs. Positions in plan feet (x east, y up, z south).
    ===================================================================== */
 const TOUR_STOPS = [
-  { name: 'Arrive', pos: [62, 22, 66], look: [22, 6, 14], cap: 'Local Time House, Andes NY. Let\u2019s go inside.' },
+  { name: 'Arrive', pos: [62, 22, 66], look: [22, 6, 14], cap: 'Welcome to Local Time House in Andes, New York.' },
   { name: 'Entry deck', open: [/front door/i], walk: { y: 0, path: [[21.2, 32.0], [20.4, 28.2], [19.7, 24.3]], look: [19.7, 5.5, 17] },
-    cap: 'Up the steps onto the entry deck: light wood over a black skirt, under the porch roof.' },
+    cap: 'Up the steps onto the covered entry deck.' },
   { name: 'Entry + stair', walk: { y: 0, path: [[19.7, 24.3], [19.7, 14.2]], look: [20.5, 5.6, 3.5] },
-    cap: 'The entry: wine tile, a wood-clad stair, and a light switch by the door. Try it.' },
+    cap: 'Inside the entry, beside the stair to the loft.' },
   { name: 'Kitchen', shut: [{ rx: /front door/i, axis: 'z', lt: 13.8 }], walk: { y: 0, path: [[19.7, 14.2], [18.2, 13.2], [14.2, 14.6]], look: [4.5, 4, 2.5] },
-    cap: 'Reform kitchen in burgundy and oak. Try the corner cabinet (the whole shelf swivels out) and the fridge.' },
+    cap: 'The double-height kitchen and dining room, open to the loft above.' },
   { name: 'West deck', open: [/side door/i], walk: { y: 0, path: [[14.2, 14.6], [10.5, 15.2], [4.0, 15.2], [1.4, 14.7], [-1.8, 14.7], [-4.5, 14.2]], look: [-14, 6, 6] },
-    cap: 'Out the kitchen\u2019s side door onto the west deck: slate-blue Palissade lounge chairs and table facing the woods, with the grill centered at the north edge.' },
+    cap: 'Out the side door to the west deck, looking out toward the woods.' },
   { name: 'Conversation pit', shut: [{ rx: /side door/i, axis: 'x', gt: 4.5 }], walk: { y: 0, path: [[-4.5, 14.2], [-1.8, 14.7], [1.4, 14.7], [4.0, 15.2], [10.5, 15.2], [14.2, 14.6], [15.0, 18.4]], look: [6.5, 0.5, 24.5] },
-    cap: 'The sunken pit: fireplace, TV, and the sectional. Light the fire.' },
+    cap: 'Three steps down into the sunken living room, gathered around the fireplace.' },
   { name: 'Guest bedroom', walk: { y: 0, path: [[15.0, 18.4], [15.6, 14.8], [20.8, 14.8], [24.4, 15.0], [26.5, 15.0], [26.5, 12.6], [26.5, 10.2]], look: [30, 4, 5] },
-    cap: 'Through the pocket door into the corridor, then the guest bedroom: custom oak twin-over-queen bunk bed tucked into the northeast corner.' },
+    cap: 'Down the hall to the guest bedroom, with a built-in bunk bed in the corner.' },
   { name: 'Guest bath', walk: { y: 0, path: [[26.5, 10.2], [26.6, 14.8], [34.9, 14.9], [35.0, 11.5], [35.0, 8.8]], look: [36, 3, 3] },
-    cap: 'The guest bath, in Nautical Blue. Turn the shower on and watch the mirror fog.' },
+    cap: 'The guest bath, with a walk-in shower and corner vanity.' },
   { name: 'Office', walk: { y: 0, path: [[35.0, 8.8], [35.0, 14.8], [41.6, 15.0], [43.5, 12.0]], look: [43, 4, 15.6] },
-    cap: 'Through the second pocket door to the office: queen bed with headboard bookcase, north wall shelves, and the floating desk under the window.' },
+    cap: 'At the east end, a quiet office and spare bedroom with a desk under the window.' },
   { name: 'Loft', walk: { y: 0, path: [[43.5, 12.0], [41.6, 15.0], [30.0, 15.0], [24.4, 15.0], [21.0, 13.8], [18.4, 12.8], [18.6, 9.6], [18.6, 4.4], [19.0, 2.2], [21.8, 1.7], [22.7, 3.4], [22.7, 6.0], [22.7, 10.0], [22.6, 12.4]], look: [7, 7.5, 6] },
-    cap: 'Back to the stair and up to the loft, open to the kitchen below.' },
+    cap: 'Up the stairs to the loft, overlooking the kitchen and dining space below.' },
   { name: 'Primary bedroom', walk: { y: 9.33, path: [[22.6, 12.4], [27.5, 12.3]], look: [36, 11.5, 8.5] },
-    cap: 'The primary bedroom, with the laundry pocket door beside the bath.' },
+    cap: 'The primary bedroom, tucked under the shed dormer with broad views south.' },
   { name: 'Primary bath', walk: { y: 9.33, path: [[27.5, 12.3], [28.5, 14.8], [38.2, 14.8], [38.6, 7.8], [44.0, 7.6]], look: [44.5, 11, 12.5] },
-    cap: 'Through the pocket door to the bath. Open the shower door and turn the water on.' },
-  { name: 'Brick patio & fire pit', pos: [-4, 7, 56], look: [-14, 2, 41], cap: 'Down under the white birches: blue-gray brick terrace with outdoor dining and a Corten fire pit ringed by neutral timber lounge chairs.' },
+    cap: 'The upstairs bath, lit from above by a skylight.' },
+  { name: 'Patio & fire pit', open: [/front door/i], shut: [{ rx: /front door/i, axis: 'z', gt: 26 }], walk: { y: 9.33, path: [[44.0, 7.6], [38.6, 7.8], [38.2, 14.8], [28.5, 14.8], [27.5, 12.3], [22.6, 12.4], [22.7, 10.0], [22.7, 6.0], [22.7, 3.4], [21.8, 1.7], [19.0, 2.2], [18.6, 4.4], [18.6, 9.6], [18.4, 12.8], [19.7, 14.2], [19.7, 24.3], [20.4, 28.2], [21.2, 32.0], [14.0, 38.0], [4.0, 44.0], [-4.5, 48.0], [-11.5, 44.5]], look: [-18.5, LV.GRADE + 2.5, 42.5] },
+    cap: 'Out under the birches: an outdoor terrace with dining and a fire pit.' },
   { name: 'Dollhouse', world: true, cap: 'The whole house at a glance.' },
-  { name: 'Evening', pos: [70, 20, 70], look: [22, 7, 14], night: true, cap: 'And back outside as the lights come on.' },
+  { name: 'Evening', pos: [70, 20, 70], look: [22, 7, 14], night: true, cap: 'Back outside as dusk settles and the interior lights come on.' },
 ];
-const TOUR = { on: false, i: 0, fly: null, play: false, wait: 0, saved: null, walking: false };
+const TOUR = { on: false, i: 0, fly: null, play: true, speed: 1, wait: 0, saved: null, walking: false };
 const ease = t => t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 const cap$ = () => document.getElementById('tourcap');
 // --- walking tour: the real walk engine, steered along hand-placed waypoints
 function takeOver() {                                         // any touch of the controls hands the walk to you
   if (!WALK.auto) return;
-  WALK.auto = null; TOUR.play = false; document.getElementById('tour-play').textContent = 'Play';
+  WALK.auto = null; TOUR.play = false;
+  const p = document.getElementById('tour-play'); if (p) p.textContent = '▶';
 }
 function tourWalkOn() {
   if (WALK.on) return;
@@ -4530,13 +4777,30 @@ function autoSteer(dt) {
   if (Math.abs(d) < 0.03 && Math.abs(want - WALK.pitch) < 0.03) A.done = true;
   return { fwd: 0, side: 0 };
 }
-function showCap(text) { const el = cap$(); el.textContent = text || ''; el.hidden = !text; }
+function showCap(text, eyebrow, sub) {
+  const el = cap$();
+  if (!text) { el.hidden = true; el.textContent = ''; return; }
+  if (eyebrow || sub) {
+    el.textContent = '';
+    if (eyebrow) { const eb = document.createElement('span'); eb.className = 'cap-eyebrow'; eb.textContent = eyebrow; el.appendChild(eb); }
+    const tt = document.createElement('span'); tt.className = 'cap-title'; tt.textContent = text; el.appendChild(tt);
+    if (sub) { const sb = document.createElement('span'); sb.className = 'cap-sub'; sb.textContent = sub; el.appendChild(sb); }
+  } else {
+    el.textContent = text;
+  }
+  el.hidden = false;
+}
 function tourGo(i) {
   TOUR.i = (i + TOUR_STOPS.length) % TOUR_STOPS.length;
   const s = TOUR_STOPS[TOUR.i], world = !!s.world, walkStop = !!s.walk;
-  Object.assign(state, { floors: 'both', walls: 'up', roof: !world, explode: 0, labels: false, night: !!s.night }); applyState(); select(null);
+  Object.assign(state, { floors: 'both', walls: 'up', roof: true, explode: 0, labels: false, night: !!s.night }); applyState(); select(null);
   document.getElementById('tour-name').textContent = s.name;
   document.getElementById('tour-count').textContent = `${TOUR.i + 1} / ${TOUR_STOPS.length}`;
+  TOUR.prog = 0;
+  const pct = (TOUR.i / TOUR_STOPS.length) * 100;
+  const sc = document.getElementById('tour-scrub'); if (sc) sc.value = String(TOUR.i);
+  const nd = document.getElementById('tour-needle'); if (nd) nd.style.left = pct + '%';
+  document.querySelectorAll('#tour-marks button').forEach((b, k) => b.classList.toggle('active', k === TOUR.i));
   showCap(s.cap); TOUR.wait = 0; TOUR.fly = null;
   if (walkStop) {
     buildColliders();
@@ -4563,34 +4827,62 @@ function enterTour() {
   if (typeof TL !== 'undefined' && TL.on) exitTimeline();
   if (typeof BD !== 'undefined' && BD.on) exitBuild();
   TOUR.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
-  TOUR.on = true; document.body.classList.add('touring'); controls.minDistance = 0.3; document.getElementById('tourbar').hidden = false;
+  TOUR.on = true; TOUR.play = true; TOUR.speed = 1;
+  document.getElementById('tour-play').textContent = '❚❚';
+  document.getElementById('tour-speed').textContent = '1×';
+  document.body.classList.add('touring'); controls.minDistance = 0.3; document.getElementById('tourbar').hidden = false;
   tourGo(0);
 }
 function exitTour() {
   if (!TOUR.on) return;
   tourWalkOff();
-  TOUR.on = false; document.body.classList.remove('touring'); TOUR.fly = null; TOUR.play = false; controls.minDistance = 3; setFov(phoneFov(FOV.orbit)); showCap('');
-  document.getElementById('tourbar').hidden = true; document.getElementById('tour-play').textContent = 'Play';
+  TOUR.on = false; TOUR.play = false; document.body.classList.remove('touring'); TOUR.fly = null; controls.minDistance = 3; setFov(phoneFov(FOV.orbit)); showCap('');
+  document.getElementById('tourbar').hidden = true;
   Object.assign(state, TOUR.saved.state); applyState();
   camera.position.copy(TOUR.saved.pos); controls.target.copy(TOUR.saved.target); controls.enabled = true; controls.update();
 }
 function tourStep(dt) {
+  const s = TOUR_STOPS[TOUR.i], hasWalk = !!(s && s.walk);
+  let prog = TOUR.prog || 0;
   if (TOUR.fly) {
-    const F = TOUR.fly; F.t += dt; const k = ease(Math.min(1, F.t / F.dur));
+    const F = TOUR.fly; F.t += dt * TOUR.speed; const k = ease(Math.min(1, F.t / F.dur));
     camera.position.lerpVectors(F.p0, F.p1, k); controls.target.lerpVectors(F.q0, F.q1, k); camera.lookAt(controls.target);
     setFov(F.f0 + (F.f1 - F.f0) * k);
+    prog = k * (hasWalk ? 0.35 : 0.5);
     if (F.t >= F.dur) { TOUR.fly = null; if (F.after) F.after(); else controls.enabled = true; }
+  } else if (WALK.on && WALK.auto && !WALK.auto.done) {
+    const A = WALK.auto;
+    prog = 0.35 + 0.4 * (A.i / Math.max(1, A.pts.length));
   } else if (TOUR.play) {
-    const arrived = !WALK.on || !WALK.auto || WALK.auto.done;
-    if (!arrived) return;
-    TOUR.wait += dt; if (TOUR.wait > 4.5) tourGo(TOUR.i + 1);
+    TOUR.wait += dt * TOUR.speed;
+    const base = hasWalk ? 0.75 : 0.5;
+    prog = base + (1 - base) * Math.min(1, TOUR.wait / 3.5);
+    if (TOUR.wait > 3.5) { tourGo(TOUR.i + 1); return; }
+  }
+  TOUR.prog = Math.max(TOUR.prog || 0, Math.min(1, prog));
+  const nd = document.getElementById('tour-needle');
+  if (nd) nd.style.left = ((TOUR.i + TOUR.prog * 0.88) / TOUR_STOPS.length) * 100 + '%';
+}
+{
+  const mk = document.getElementById('tour-marks'), sc = document.getElementById('tour-scrub');
+  if (sc) sc.max = String(TOUR_STOPS.length - 1);
+  if (mk) {
+    TOUR_STOPS.forEach((s, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.dataset.tip = s.name;
+      b.setAttribute('aria-label', s.name);
+      b.style.left = (i / TOUR_STOPS.length * 100).toFixed(2) + '%';
+      b.style.width = Math.max(2.2, 100 / TOUR_STOPS.length - 0.8).toFixed(2) + '%';
+      b.addEventListener('click', () => tourGo(i));
+      mk.appendChild(b);
+    });
   }
 }
 document.getElementById('btn-tour').addEventListener('click', enterTour);
-document.getElementById('tour-prev').addEventListener('click', () => tourGo(TOUR.i - 1));
-document.getElementById('tour-next').addEventListener('click', () => tourGo(TOUR.i + 1));
-document.getElementById('tour-play').addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.target.textContent = TOUR.play ? 'Pause' : 'Play'; });
-document.getElementById('tour-exit').addEventListener('click', exitTour);
+document.getElementById('tour-scrub')?.addEventListener('input', e => tourGo(Number(e.target.value)));
+document.getElementById('tour-play')?.addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.currentTarget.textContent = TOUR.play ? '❚❚' : '▶'; });
+document.getElementById('tour-speed')?.addEventListener('click', e => { TOUR.speed = TOUR.speed === 1 ? 2 : 1; e.currentTarget.textContent = TOUR.speed + '×'; });
 
 /* =====================================================================
    15. PHONE LAYER — bottom bar, settings sheet, things-to-try list, hotspots, touch walking.
@@ -4728,7 +5020,6 @@ renderer.domElement.addEventListener('pointerdown', () => { clearTimeout(introT)
   }
   $$('usebtn').addEventListener('pointerdown', e => { e.preventDefault(); if (aimAct) { useAct(aimAct); aimTick = 4; } });
 }
-$$('walk-exit').addEventListener('click', closeSheet);
 // hotspots: pulsing dots on the nearest things you haven't tried yet
 const SPOTS = [], spotEl = $$('spots'); let spotTick = 0, lastFound = -1;
 const SC = { list: [], idx: 0, found: [], dots: [], wait: 0 };
@@ -4739,13 +5030,7 @@ function phoneStep(dt) {
   const tlOn = typeof TL !== 'undefined' && TL.on, bdOn = typeof BD !== 'undefined' && BD.on;
   const far = !WALK.on && (tlOn || bdOn || camera.position.distanceTo(controls.target) > 22);
   if (far !== TINY.far) { TINY.far = far; if (far) camera.layers.disable(1); else camera.layers.enable(1); }
-  if (!document.body.classList.contains('m')) { if (SPOTS.length) { SPOTS.forEach(s => s.style.display = 'none'); } if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; } return; }
-  {                                                      // keep the house in the part of the screen the sheet doesn't cover
-    const want = sheetPane ? Math.round(sheet.offsetHeight / 2) : 0; VO.cur += (want - VO.cur) * Math.min(1, dt * 9);
-    if (Math.abs(VO.cur - want) > 0.3) wake();
-    if (Math.abs(VO.cur) > 0.5) { camera.setViewOffset(innerWidth, innerHeight, 0, VO.cur, innerWidth, innerHeight); VO.on = true; }
-    else if (VO.on) { camera.clearViewOffset(); VO.on = false; VO.cur = 0; }
-  }
+  if (!document.body.classList.contains('m')) { if (SPOTS.length) { SPOTS.forEach(s => s.style.display = 'none'); } return; }
   if (FOUND.size !== lastFound) {
     lastFound = FOUND.size; const mf = $$('m-found'); if (mf) mf.textContent = `${FOUND.size} / ${KINDS()}`;
     if (sheetPane === 'found') buildTry();
@@ -4829,7 +5114,7 @@ function governor(drew) {                                  // phones: trade reso
    into the house or car (with the front door opening for them), and the
    picnic takes place in the wide open south clearing.
    ===================================================================== */
-const TL = { on: false, playing: false, t: 0, speed: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, swayCur: 0, snowK: 1, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, fallLeaves: null, tracks: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
+const TL = { on: false, playing: false, t: 0, speed: 1, speedMult: 1, saved: null, cur: -1, lastInteract: 0, sunCur: 16.5, hourTarget: 16.5, occupied: true, duskCur: 0, swayCur: 0, snowK: 1, fire: false, grill: false, tv: 0, fan: 0, doorOpen: false, sideDoorOpen: false, frontDoor: null, sideDoor: null, seasonCur: null, built: null, glow: null, wx: null, blooms: null, fallLeaves: null, tracks: null, carD: 0, carColor: 0xF3F3F1, ballPh: 0, scrubbing: false };
 const TL_LOOP = 58;
 const TL_MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const TL_SEASON_OF_MONTH = ['winter', 'winter', 'spring', 'spring', 'spring', 'summer', 'summer', 'summer', 'fall', 'fall', 'fall', 'winter'];
@@ -4839,79 +5124,134 @@ const P_CAR_TO_LIV = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [
 const P_CAR_TO_KIT = [[59, -2.25, 34.5], [46, -2.25, 33.6], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 15.5], [12.0, 0, 11.5], [7.8, 0, 4.2]];
 const P_LIV_TO_CAR = [...P_CAR_TO_LIV].reverse();
 const P_KIT_TO_CAR = [...P_CAR_TO_KIT].reverse();
-const P_KIT_TO_GRILL = [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-4.85, -0.167, 14.5]];
+const P_KIT_TO_GRILL = [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-4.34, -0.167, 2.6]];
 const P_GRILL_TO_KIT = [...P_KIT_TO_GRILL].reverse();
 const MOMENTS = [
-  { id: 'winter-arrival', title: 'Arrival in the snow', caption: 'Late January — arrival in the snow & plugging in', t: 18 / 365, dur: 0.085, hour: 16.8, occupied: true, fire: true, tv: 2, car: 'arrive',
+  { id: 'winter-arrival', title: 'Arrival in the snow', eyebrow: 'Winter', seasonTitle: 'Snowbound dusk', caption: 'Late January — arrival in the snow, snow angels & warming up by the fire', t: 18 / 365, dur: 0.085, hour: 16.8, occupied: true, fire: true, fireDelay: 0.80, tv: 2, car: 'arrive',
     floors: 'both', walls: 'up', roof: true, cam: { pos: [58, 26, 72], look: [32, 1, 26] },
+    pins: [
+      { at: [53.2, 2.2, 33.2], text: 'Plugging in the car', win: [0.26, 0.42] },
+      { at: [24.5, 1.5, 47.0], text: 'Snow angels in the yard', win: [0.42, 0.72] },
+      { at: [8.0, 4.2, 21.0], text: 'Starting the fire to warm up', win: [0.76, 0.98] },
+    ],
     cast: [
-      { who: 'a', path: [[55, -2.25, 34.5], [53.2, -2.25, 32.8]], sitWindow: [0.16, 0.50], exitPath: [[53.2, -2.25, 32.8], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5]], face: 1.4 },
-      { who: 'b', path: [[32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.16, span: 0.34, face: 3.1 },
-      { who: 'g', path: [[8.2, -1.5, 20.8], [6.2, -1.5, 19.2]], sitWindow: [0.06, 0.94], exitPath: [[6.2, -1.5, 19.2], [8.2, -1.5, 20.8]], face: 0.1 },
-      { who: 'g', path: [[7.5, 0, 8.53], [8.5, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[8.5, 0, 8.53], [7.5, 0, 8.53]], face: 3.14 },
+      { who: 'a', stand: true, angel: true, path: [[55, -2.25, 34.5], [53.2, -2.25, 32.8], [32, -2.25, 36.0], [23.5, -2.25, 46.5]], delay: 0.25, sitWindow: [0.42, 0.72], exitPath: [[23.5, -2.25, 46.5], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5], [13.2, -1.5, 19.5], [8.2, -1.5, 20.8]], face: 0.2 },
+      { who: 'b', stand: true, angel: true, path: [[55, -2.25, 34.5], [34, -2.25, 37.0], [27.5, -2.25, 47.5]], delay: 0.27, sitWindow: [0.43, 0.71], exitPath: [[27.5, -2.25, 47.5], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5], [13.2, -1.5, 19.5], [6.6, -1.5, 19.6]], face: -0.3 },
+      { who: 'g', kid: true, stand: true, angel: true, path: [[55, -2.25, 34.5], [31, -2.25, 37.5], [21.5, -2.25, 47.2]], delay: 0.28, sitWindow: [0.42, 0.72], exitPath: [[21.5, -2.25, 47.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5], [13.2, -1.5, 19.5], [9.2, -1.5, 19.2]], face: 0.1 },
     ] },
-  { id: 'spring-thaw', title: 'Spring thaw & first blooms', caption: 'Late March — morning coffee inside & first spring blooms', t: 78 / 365, dur: 0.08, hour: 10.5, occupied: true, car: 'parked',
-    floors: 'ground', walls: 'cutaway', roof: false, cam: { pos: [26, 34, 58], look: [22, 1, 16] },
+  { id: 'winter-ski', title: 'Ski day', eyebrow: 'Late winter', seasonTitle: 'Ski day', caption: 'Late February — heading out to ski & coming back from the slopes', t: 50 / 365, dur: 0.075, hour: 15.8, occupied: true, fire: true, car: 'ski-trip',
+    floors: 'both', walls: 'up', roof: true,
+    pins: [
+      { at: [36.0, 2.5, 33.2], text: 'Heading out to ski', win: [0.06, 0.28] },
+      { at: [36.0, 2.5, 33.2], text: 'Back from the slopes', win: [0.70, 0.95] },
+    ],
     cast: [
-      { who: 'g', path: [[20.7, -2.25, 29.5], [24.5, -2.25, 35.5]], sitWindow: [0.10, 0.90], exitPath: [[24.5, -2.25, 35.5], [20.7, -2.25, 29.5]], face: 0.4 },
-      { who: 'g', path: [[20.7, -2.25, 29.5], [16.5, -2.25, 36.0]], sitWindow: [0.12, 0.88], exitPath: [[16.5, -2.25, 36.0], [20.7, -2.25, 29.5]], face: -0.5 },
-      { who: 'a', path: [[43.5, 0, 14.5], [45.8, 0, 14.0]], sitWindow: [0.06, 0.94], exitPath: [[45.8, 0, 14.0], [43.5, 0, 14.5]], face: 1.57 },
+      { who: 'g', ski: true, path: [[19.8, 0, 16.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [32, -2.25, 33.2], [55, -2.25, 34.5]], delay: 0.02, span: 0.24, hideAtEnd: true, face: 0 },
+      { who: 'g', ski: true, path: [[19.8, 0, 16.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [32, -2.25, 33.2], [55, -2.25, 34.5]], delay: 0.04, span: 0.23, hideAtEnd: true, face: 0 },
+      { who: 'g', kid: true, ski: true, path: [[19.8, 0, 16.5], [20.2, 0, 22.5], [20.7, -2.25, 29.5], [32, -2.25, 33.2], [55, -2.25, 34.5]], delay: 0.06, span: 0.22, hideAtEnd: true, face: 0 },
+      { who: 'g', ski: true, path: [[55, -2.25, 34.5], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.70, span: 0.26, hideAtEnd: true, face: 3.1 },
+      { who: 'g', ski: true, path: [[55, -2.25, 34.5], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.73, span: 0.24, hideAtEnd: true, face: 3.1 },
+      { who: 'g', kid: true, ski: true, path: [[55, -2.25, 34.5], [32, -2.25, 33.2], [20.7, -2.25, 29.5], [20.2, 0, 22.5], [19.8, 0, 16.5]], delay: 0.75, span: 0.23, hideAtEnd: true, face: 3.1 },
+    ] },
+  { id: 'spring-thaw', title: 'Spring thaw & first sun', eyebrow: 'Early spring', seasonTitle: 'First thaw', caption: 'Late March — spring thaw, first blooms & morning sun on the lawn', t: 78 / 365, dur: 0.08, hour: 9.5, occupied: true, car: 'parked',
+    floors: 'both', walls: 'up', roof: true,
+    props: [
+      { kind: 'flowers', at: [29.1, -2.25, 48.9] },
+      { kind: 'flowers', at: [19.8, -2.25, 47.8] },
+      { kind: 'flowers', at: [24.6, -2.25, 49.4] },
+    ],
+    pins: [
+      { at: [24.0, 2.2, 47.0], text: 'First blooms on the lawn', win: [0.12, 0.88] },
+      { at: [-4.5, 4.2, 12.0], text: 'Morning coffee on the deck', win: [0.18, 0.86] },
+    ],
+    cast: [
+      { who: 'g', stand: true, smell: true, path: [[20.7, -2.25, 29.5], [24.5, -2.25, 42.0], [28.5, -2.25, 47.5]], sitWindow: [0.24, 0.78], exitPath: [[28.5, -2.25, 47.5], [24.0, -2.25, 40.0], [20.7, -2.25, 29.5]], face: 0.4 },
+      { who: 'g', stand: true, smell: true, path: [[20.7, -2.25, 29.5], [17.5, -2.25, 41.5], [20.5, -2.25, 46.5]], sitWindow: [0.26, 0.76], exitPath: [[20.5, -2.25, 46.5], [18.5, -2.25, 39.0], [20.7, -2.25, 29.5]], face: -0.5 },
+      { who: 'g', kid: true, path: [[4.0, -2.25, 34.0], [-4.5, -2.25, 36.5], [2.0, -2.25, 38.0]], delay: 0.08, span: 0.84 },
+      { who: 'a', path: [[-1.5, -0.167, 12.0], [-4.5, -0.167, 12.0]], sitWindow: [0.06, 0.94], exitPath: [[-4.5, -0.167, 12.0], [-1.5, -0.167, 12.0]], face: -1.57 },
       { who: 'b', path: [[8.8, 0, 8.53], [10.38, 0, 8.53]], sitWindow: [0.06, 0.94], exitPath: [[10.38, 0, 8.53], [8.8, 0, 8.53]], face: 1.57 },
     ] },
-  { id: 'spring-patio', title: 'Lunch under the birches', caption: 'Mid May — lunch at the brick patio table under the birches', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: true, fan: 2.4, car: 'parked',
-    floors: 'both', walls: 'up', roof: true, cam: { pos: [8, 22, 68], look: [-8, 1, 34] },
+  { id: 'spring-patio', title: 'Lunch under the birches', eyebrow: 'Late spring', seasonTitle: 'Fresh canopy', caption: 'Mid May — lunch under the birches & playing on the lawn', t: 130 / 365, dur: 0.09, hour: 13.0, occupied: true, fan: 2.4, car: 'parked', ball: true,
+    floors: 'both', walls: 'up', roof: true,
     props: [{ kind: 'basket', at: [-10.41, 0.42, 38.54] }],
+    pins: [
+      { at: [-9.8, 3.6, 39.5], text: 'Lunch under the birches', win: [0.10, 0.88] },
+      { at: [24.5, 2.2, 48.0], text: 'Catch on the lawn', win: [0.16, 0.86] },
+    ],
     cast: [
       { who: 'g', path: [[-4, -2.25, 37], [-9.99, -2.25, 41.62]], sitWindow: [0.06, 0.92], exitPath: [[-9.99, -2.25, 41.62], [-4, -2.25, 37]], face: 3.69 },
       { who: 'g', path: [[-3, -2.25, 36], [-7.86, -2.25, 40.31]], sitWindow: [0.08, 0.90], exitPath: [[-7.86, -2.25, 40.31], [-3, -2.25, 36]], face: 3.69 },
       { who: 'a', path: [[-5, -2.25, 35], [-11.87, -2.25, 36.15]], sitWindow: [0.08, 0.90], exitPath: [[-11.87, -2.25, 36.15], [-5, -2.25, 35]], face: 0.55 },
-      { who: 'b', path: [[-1.5, -0.167, 13.5], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.5]], face: -1.57 },
+      { who: 'b', path: [[-1.5, -0.167, 13.5], [-4.5, -0.167, 12.0]], sitWindow: [0.06, 0.94], exitPath: [[-4.5, -0.167, 12.0], [-1.5, -0.167, 13.5]], face: -1.57 },
+      { who: 'g', kid: true, path: [[18, -2.25, 46], [26, -2.25, 50], [19, -2.25, 48]], delay: 0.04, span: 0.90 },
+      { who: 'g', kid: true, path: [[31, -2.25, 49], [23, -2.25, 45], [30, -2.25, 50]], delay: 0.06, span: 0.88 },
     ] },
-  { id: 'summer-lawn', title: 'Deck cookout & south lawn picnic', caption: 'Early July — grilling, lounging on the west deck & picnic on the lawn', t: 182 / 365, dur: 0.10, hour: 15.5, occupied: true, grill: true, fan: 5, car: 'parked', ball: true,
-    floors: 'both', walls: 'up', roof: true, cam: { pos: [16, 28, 76], look: [16, 1, 28] },
-    props: [{ kind: 'blanket', at: [24, -2.25, 43], rot: -0.25 }, { kind: 'basket', at: [25.4, -2.25, 43.8] }],
+  { id: 'summer-lawn', title: 'Deck cookout & lawn picnic', eyebrow: 'Summer', seasonTitle: 'Long afternoon', caption: 'Early July — grilling, lounging on the deck & picnic on the lawn', t: 182 / 365, dur: 0.10, hour: 16.0, occupied: true, grill: true, fan: 5, car: 'parked', ball: true,
+    floors: 'both', walls: 'up', roof: true,
+    props: [{ kind: 'blanket', at: [24, -2.25, 48.5], rot: -0.25 }, { kind: 'basket', at: [25.4, -2.25, 49.3] }],
+    pins: [
+      { at: [-4.34, 4.4, 0.8], text: 'Grilling on the deck', win: [0.08, 0.86] },
+      { at: [29.0, 2.5, 48.5], text: 'Picnic & catch on the lawn', win: [0.16, 0.88] },
+    ],
     cast: [
-      { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.02, span: 0.94, face: -1.57 },
-      { who: 'b', path: [[-1.5, -0.167, 11.5], [-4.6, -0.167, 7.2]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 7.2], [-1.5, -0.167, 11.5]], face: -1.57 },
-      { who: 'g', path: [[21.5, -2.25, 40.5], [22.8, -2.25, 42.4]], sitWindow: [0.06, 0.94], exitPath: [[22.8, -2.25, 42.4], [21.5, -2.25, 40.5]], face: 0.9 },
-      { who: 'g', path: [[26.5, -2.25, 41.5], [25.2, -2.25, 43.5]], sitWindow: [0.08, 0.92], exitPath: [[25.2, -2.25, 43.5], [26.5, -2.25, 41.5]], face: -0.5 },
-      { who: 'g', kid: true, path: [[29.5, -2.25, 41.2], [30.5, -2.25, 41.8], [29.5, -2.25, 41.2], [30.2, -2.25, 41.5]], delay: 0.04, span: 0.92 },
-      { who: 'g', kid: true, path: [[36.5, -2.25, 43.8], [35.5, -2.25, 43.2], [36.5, -2.25, 43.8], [35.8, -2.25, 43.5]], delay: 0.06, span: 0.90 },
+      { who: 'a', stand: true, grill: true, path: [[-1.5, -0.167, 14.5], [-4.34, -0.167, 2.6]], sitWindow: [0.14, 0.90], exitPath: [[-4.34, -0.167, 2.6], [-1.5, -0.167, 14.5]], face: 3.14 },
+      { who: 'b', path: [[-1.5, -0.167, 11.5], [-4.5, -0.167, 7.0]], sitWindow: [0.06, 0.94], exitPath: [[-4.5, -0.167, 7.0], [-1.5, -0.167, 11.5]], face: -1.57 },
+      { who: 'g', path: [[8.2, 0, 11.5], [3.5, 0, 14.5], [-1.2, -0.167, 14.6], [-4.5, -0.167, 12.0]], sitWindow: [0.24, 0.76], exitPath: [[-4.5, -0.167, 12.0], [-1.2, -0.167, 14.6], [3.5, 0, 14.5]], face: -1.57 },
+      { who: 'g', path: [[21.5, -2.25, 46.0], [22.8, -2.25, 47.9]], sitWindow: [0.06, 0.94], exitPath: [[22.8, -2.25, 47.9], [21.5, -2.25, 46.0]], face: 0.9 },
+      { who: 'g', path: [[26.5, -2.25, 47.0], [25.2, -2.25, 49.0]], sitWindow: [0.08, 0.92], exitPath: [[25.2, -2.25, 49.0], [26.5, -2.25, 47.0]], face: -0.5 },
+      { who: 'g', kid: true, path: [[28.5, -2.25, 46.5], [31.5, -2.25, 48.5], [29.0, -2.25, 47.0], [31.2, -2.25, 48.0]], delay: 0.04, span: 0.92 },
+      { who: 'g', kid: true, path: [[38.5, -2.25, 50.5], [35.5, -2.25, 48.5], [38.0, -2.25, 50.0], [35.8, -2.25, 49.0]], delay: 0.06, span: 0.90 },
     ] },
-  { id: 'new-stay', title: 'A new stay begins', caption: 'Mid August — quick turnover & settling into the guest bunk room', t: 228 / 365, dur: 0.085, hour: 11.5, occupied: true, tv: 4, fan: 2.4, car: 'turnover',
-    floors: 'ground', walls: 'cutaway', roof: false, cam: { pos: [46, 30, 52], look: [26, 2, 16] },
+  { id: 'rainy-afternoon', title: 'Rainy afternoon indoors', eyebrow: 'Late summer', seasonTitle: 'Rainy afternoon', caption: 'Mid August — summer rain outside, snuggled on the couch watching TV', t: 228 / 365, dur: 0.085, hour: 17.6, occupied: true, tv: 2, fan: 1.5, rain: true, car: 'parked',
+    floors: 'both', walls: 'up', roof: true,
+    pins: [
+      { at: [5.5, 2.8, 21.5], text: 'Snuggled up watching TV', win: [0.08, 0.92] },
+    ],
     cast: [
-      { who: 'g', path: P_LIV_TO_CAR.slice(4), delay: 0.0, span: 0.16, hideAtEnd: true },
-      { who: 'g', path: P_KIT_TO_CAR.slice(4), delay: 0.02, span: 0.16, hideAtEnd: true },
-      { who: 'g', path: P_CAR_TO_LIV.slice(2, 6), delay: 0.68, span: 0.22, face: 0.2 },
-      { who: 'g', path: [[26.5, 0, 10.2], [26.5, 0, 5.5]], sitWindow: [0.72, 0.96], exitPath: [[26.5, 0, 5.5], [26.5, 0, 10.2]], face: 1.57 },
-      { who: 'a', path: [[24.4, 0, 15.0], [34.5, 0, 15.0], [43.5, 0, 14.0]], delay: 0.70, span: 0.24, face: 1.57 },
+      { who: 'a', sit: true, path: [[4.5, -1.5, 20.8]], delay: 0.02, span: 0.96, face: 1.57 },
+      { who: 'b', sit: true, path: [[4.5, -1.5, 22.1]], delay: 0.02, span: 0.96, face: 1.57 },
+      { who: 'g', kid: true, sit: true, path: [[7.2, -1.5, 18.2]], delay: 0.02, span: 0.96, face: 0.35 },
     ] },
-  { id: 'fall-patio', title: 'Golden hour grill & deck lounge', caption: 'Late September — grilling & lounging on the west deck at golden hour', t: 268 / 365, dur: 0.09, hour: 17.6, occupied: true, grill: true, patioFire: true, tv: 2, car: 'parked',
-    floors: 'both', walls: 'up', roof: true, cam: { pos: [-34, 18, 28], look: [-3, 1, 14] },
+  { id: 'fall-patio', title: 'Golden hour on the deck', eyebrow: 'Early fall', seasonTitle: 'Golden hour', caption: 'Late September — golden hour grilling & lounging on the deck', t: 268 / 365, dur: 0.09, hour: 17.35, occupied: true, grill: true, patioFire: true, patioFireDelay: 0.24, tv: 2, car: 'parked',
+    floors: 'both', walls: 'up', roof: true,
+    pins: [
+      { at: [-4.34, 4.4, 0.8], text: 'Grilling at golden hour', win: [0.10, 0.88] },
+      { at: [-18.0, 2.8, 42.5], text: 'Lighting the fire pit', win: [0.18, 0.88] },
+    ],
     cast: [
-      { who: 'a', path: [[-1.5, -0.167, 14.5], [-4.85, -0.167, 14.5], [-4.7, -0.167, 13.8], [-4.85, -0.167, 14.5], [-4.7, -0.167, 15.2], [-4.85, -0.167, 14.5]], delay: 0.04, span: 0.92, face: -1.57 },
-      { who: 'g', path: [[-1.5, -0.167, 13.0], [-4.6, -0.167, 10.6]], sitWindow: [0.06, 0.94], exitPath: [[-4.6, -0.167, 10.6], [-1.5, -0.167, 13.0]], face: -1.57 },
-      { who: 'g', path: [[-1.5, -0.167, 11.0], [-4.6, -0.167, 7.2]], sitWindow: [0.08, 0.92], exitPath: [[-4.6, -0.167, 7.2], [-1.5, -0.167, 11.0]], face: -1.57 },
-      { who: 'b', path: [[8.5, -1.5, 20.5], [6.2, -1.5, 19.2]], sitWindow: [0.06, 0.94], exitPath: [[6.2, -1.5, 19.2], [8.5, -1.5, 20.5]], face: 0.1 },
+      { who: 'a', stand: true, grill: true, path: [[-1.5, -0.167, 14.5], [-4.34, -0.167, 2.6]], sitWindow: [0.14, 0.90], exitPath: [[-4.34, -0.167, 2.6], [-1.5, -0.167, 14.5]], face: 3.14 },
+      { who: 'g', path: [[-1.5, -0.167, 13.0], [-4.5, -0.167, 12.0]], sitWindow: [0.06, 0.94], exitPath: [[-4.5, -0.167, 12.0], [-1.5, -0.167, 13.0]], face: -1.57 },
+      { who: 'g', path: [[-1.5, -0.167, 11.0], [-4.5, -0.167, 7.0]], sitWindow: [0.08, 0.92], exitPath: [[-4.5, -0.167, 7.0], [-1.5, -0.167, 11.0]], face: -1.57 },
+      { who: 'b', path: [[-11.5, -2.25, 36.0], [-15.53, -2.25, 43.71]], delay: 0.06, sitWindow: [0.22, 0.92], exitPath: [[-15.53, -2.25, 43.71], [-11.5, -2.25, 36.0]], face: -2.75 },
     ] },
-  { id: 'fall-fireside', title: 'Fire pit evening & hearth', caption: 'Late October — gathering around the Corten fire pit as leaves fall', t: 304 / 365, dur: 0.095, hour: 18.2, occupied: true, fire: true, patioFire: true, tv: 1, car: 'depart-end',
-    floors: 'both', walls: 'up', roof: true, cam: { pos: [4, 20, 72], look: [-14, 0, 38] },
+  { id: 'fall-fireside', title: 'Fireside as leaves fall', eyebrow: 'Autumn', seasonTitle: 'Peak foliage', caption: 'Late October — jumping in the leaves & sitting around the fire pit', t: 304 / 365, dur: 0.072, hour: 18.2, occupied: true, fire: true, patioFire: true, tv: 1, car: 'depart-end',
+    floors: 'both', walls: 'up', roof: true,
+    props: [{ kind: 'leafpile', at: [25.5, -2.25, 47.5] }],
+    pins: [
+      { at: [-18.5, 3.2, 42.5], text: 'Around the fire pit', win: [0.10, 0.86] },
+      { at: [25.5, 3.0, 47.5], text: 'Jumping in the leaves', win: [0.18, 0.84] },
+    ],
     cast: [
       { who: 'a', path: [[-12, -2.25, 40], [-15.53, -2.25, 43.71]], sitWindow: [0.06, 0.92], exitPath: [[-15.53, -2.25, 43.71], [-12, -2.25, 40]], face: -2.75 },
       { who: 'b', path: [[-12, -2.25, 41], [-19.51, -2.25, 46.15]], sitWindow: [0.08, 0.90], exitPath: [[-19.51, -2.25, 46.15], [-12, -2.25, 41]], face: 2.90 },
       { who: 'g', path: [[-12, -2.25, 39], [-21.95, -2.25, 42.17]], sitWindow: [0.08, 0.90], exitPath: [[-21.95, -2.25, 42.17], [-12, -2.25, 39]], face: 1.33 },
       { who: 'g', path: [[-12, -2.25, 38], [-17.97, -2.25, 39.73]], sitWindow: [0.10, 0.88], exitPath: [[-17.97, -2.25, 39.73], [-12, -2.25, 38]], face: -0.24 },
+      { who: 'g', jump: true, path: [[17.5, -2.25, 43.5], [24.8, -2.25, 47.1]], delay: 0.08, span: 0.78, face: 1.1 },
+      { who: 'g', jump: true, path: [[33.5, -2.25, 49.5], [26.2, -2.25, 47.9]], delay: 0.10, span: 0.76, face: -1.9 },
     ] },
-  { id: 'winter-quiet', title: 'First snow & quiet night', caption: 'Mid December — fresh snow, one window glowing', t: 346 / 365, dur: 0.08, hour: 20.0, occupied: false, car: 'away', glow: true,
-    floors: 'both', walls: 'up', roof: true, cam: { pos: [52, 27, 68], look: [18, 3, 14] } },
+  { id: 'winter-quiet', title: 'First snow & quiet night', eyebrow: 'Early winter', seasonTitle: 'First snow', caption: 'Mid December — fresh snow, one window glowing', t: 332 / 365, dur: 0.070, hour: 20.0, occupied: false, car: 'away', glow: true,
+    floors: 'both', walls: 'up', roof: true,
+    pins: [
+      { at: [12.0, 4.2, 23.0], text: 'Quiet snow · window glowing', win: [0.16, 0.86] },
+    ] },
 ];
 // --- low-poly figures: shared geometries + a small material cache, never allocated per frame
 const TL_GEO = {
   head: new THREE.BoxGeometry(0.62, 0.55, 0.55), hair: new THREE.BoxGeometry(0.64, 0.22, 0.57),
-  torso: new THREE.BoxGeometry(1.05, 1.9, 0.55), arm: new THREE.BoxGeometry(0.34, 1.8, 0.4), leg: new THREE.BoxGeometry(0.42, 2.5, 0.45),
+  torso: new THREE.BoxGeometry(1.05, 1.9, 0.55), arm: new THREE.BoxGeometry(0.34, 1.8, 0.4).translate(0, -0.9, 0), leg: new THREE.BoxGeometry(0.42, 2.5, 0.45).translate(0, -1.25, 0),
   blanket: new THREE.BoxGeometry(5.4, 0.12, 4.4), basket: new THREE.BoxGeometry(1.1, 0.7, 0.8), ball: new THREE.SphereGeometry(0.55, 10, 8),
   flake: new THREE.DodecahedronGeometry(0.28, 0), leaf: new THREE.BoxGeometry(0.48, 0.08, 0.36), bloom: new THREE.IcosahedronGeometry(0.42, 0),
+  ski: new THREE.BoxGeometry(0.18, 0.05, 4.8), pole: new THREE.BoxGeometry(0.05, 3.4, 0.05), goggle: new THREE.BoxGeometry(0.66, 0.22, 0.16),
 };
 const TL_MATS = new Map();
 function tlMat(hex) { let m = TL_MATS.get(hex); if (!m) { m = new THREE.MeshStandardMaterial({ color: hex, roughness: 0.85, flatShading: true }); TL_MATS.set(hex, m); } return m; }
@@ -4923,34 +5263,92 @@ const SHIRT_PAL = [0x3B6E8C, 0x5E8C4A, 0xC9702E, 0x8A5A8C, 0xB23A32, 0xE8B23C];
 const PANT_PAL = [0x2E2A26, 0x3A3F45, 0x4A4640];
 const SKINS = [0xC98E6A, 0xD9A986, 0x8C5A3B, 0xE8C39A];
 const HAIRS = [0x2A2018, 0x3A2A1A, 0x555555, 0x8C6A3A];
-function makePerson(who, kid, seed) {
+const SKI_PAL = [0xC85A2B, 0x2E5A88, 0xD9A441, 0x3E5C48];
+function makePerson(who, kid, seed, ski) {
   const c = CAST_PAIR[who] || { shirt: SHIRT_PAL[seed % SHIRT_PAL.length], pants: PANT_PAL[seed % PANT_PAL.length], skin: SKINS[seed % SKINS.length], hair: HAIRS[seed % HAIRS.length] };
+  const jacket = ski ? SKI_PAL[seed % SKI_PAL.length] : c.shirt;
+  const pants = ski ? 0x22252A : c.pants;
+  const helmet = ski ? (seed % 2 === 0 ? 0x25282D : 0xE6E0D4) : c.hair;
   const g = new THREE.Group();
   const add = (geo, hex, x, y, z) => { const m = new THREE.Mesh(geo, tlMat(hex)); m.castShadow = false; m.receiveShadow = false; m.position.set(x, y, z); g.add(m); return m; };
-  const legL = add(TL_GEO.leg, c.pants, -0.28, 1.25, 0), legR = add(TL_GEO.leg, c.pants, 0.28, 1.25, 0);
-  const torso = add(TL_GEO.torso, c.shirt, 0, 3.45, 0);
-  const armL = add(TL_GEO.arm, c.shirt, -0.72, 3.45, 0), armR = add(TL_GEO.arm, c.shirt, 0.72, 3.45, 0);
-  const head = add(TL_GEO.head, c.skin, 0, 4.68, 0), hair = add(TL_GEO.hair, c.hair, 0, 4.98, 0);
+  const legL = add(TL_GEO.leg, pants, -0.28, 2.5, 0), legR = add(TL_GEO.leg, pants, 0.28, 2.5, 0);
+  const torso = add(TL_GEO.torso, jacket, 0, 3.45, 0);
+  const armL = add(TL_GEO.arm, jacket, -0.72, 4.35, 0), armR = add(TL_GEO.arm, jacket, 0.72, 4.35, 0);
+  const head = add(TL_GEO.head, c.skin, 0, 4.68, 0), hair = add(TL_GEO.hair, helmet, 0, 4.98, 0);
+  if (ski) {
+    add(TL_GEO.goggle, 0x1A1E24, 0, 4.74, 0.24);
+    const skiCol = seed % 2 === 0 ? 0xB83A28 : 0x2B5B84;
+    const s1 = add(TL_GEO.ski, skiCol, 0.88, 4.42, 0), s2 = add(TL_GEO.ski, skiCol, 1.08, 4.42, 0);
+    s1.rotation.x = -0.24; s2.rotation.x = -0.24;
+    const pole = new THREE.Mesh(TL_GEO.pole, tlMat(0x8A9098));
+    pole.castShadow = false; pole.receiveShadow = false;
+    pole.position.set(0, -1.5, 0.25); pole.rotation.x = 0.42;
+    armL.add(pole);
+  }
   g.scale.setScalar(kid ? 0.72 : 1.1);
   g.userData = { legL, legR, armL, armR, torso, head, hair };
   return g;
 }
-function poseFigure(fig, sit, sw) {
+function poseFigure(fig, sit, sw, extra) {
   const u = fig.userData;
+  if (extra === 'angel') {
+    fig.rotation.x = -Math.PI / 2;
+    const sweep = 0.5 - 0.5 * Math.cos(sw);
+    u.legL.position.set(-0.28, 2.5, 0); u.legL.rotation.set(0, 0, -0.15 - sweep * 0.48);
+    u.legR.position.set(0.28, 2.5, 0); u.legR.rotation.set(0, 0, 0.15 + sweep * 0.48);
+    u.torso.position.set(0, 3.45, 0); u.torso.rotation.x = 0;
+    u.armL.position.set(-0.72, 4.35, 0); u.armL.rotation.set(0, 0, -0.45 - sweep * 1.65);
+    u.armR.position.set(0.72, 4.35, 0); u.armR.rotation.set(0, 0, 0.45 + sweep * 1.65);
+    u.head.position.set(0, 4.68, 0);
+    u.hair.position.set(0, 4.98, 0);
+    return;
+  }
+  fig.rotation.x = 0;
+  if (extra === 'jump') {
+    u.legL.position.set(-0.28, 2.5, 0); u.legL.rotation.set(0.45, 0, -0.12);
+    u.legR.position.set(0.28, 2.5, 0); u.legR.rotation.set(-0.35, 0, 0.12);
+    u.torso.position.set(0, 3.45, 0); u.torso.rotation.x = 0.08;
+    u.armL.position.set(-0.72, 4.35, 0); u.armL.rotation.set(-2.5, 0, -0.35);
+    u.armR.position.set(0.72, 4.35, 0); u.armR.rotation.set(-2.5, 0, 0.35);
+    u.head.position.set(0, 4.68, 0);
+    u.hair.position.set(0, 4.98, 0);
+    return;
+  }
+  if (extra === 'grill') {
+    u.legL.position.set(-0.28, 2.5, 0); u.legL.rotation.set(0, 0, 0);
+    u.legR.position.set(0.28, 2.5, 0); u.legR.rotation.set(0, 0, 0);
+    u.torso.position.set(0, 3.45, 0); u.torso.rotation.x = 0.04;
+    u.armL.position.set(-0.72, 4.35, 0); u.armL.rotation.set(-0.25, 0, 0);
+    u.armR.position.set(0.72, 4.35, 0); u.armR.rotation.set(-0.85 + Math.sin(sw) * 0.22, 0, -0.1);
+    u.head.position.set(0, 4.68, 0);
+    u.hair.position.set(0, 4.98, 0);
+    return;
+  }
+  if (extra === 'smell') {
+    const lean = 0.56 + Math.sin(sw) * 0.08;
+    u.legL.position.set(-0.28, 2.5, 0); u.legL.rotation.set(0, 0, 0);
+    u.legR.position.set(0.28, 2.5, 0); u.legR.rotation.set(0, 0, 0);
+    u.torso.position.set(0, 3.22, 0.35); u.torso.rotation.x = lean;
+    u.armL.position.set(-0.72, 3.85, 0.72); u.armL.rotation.set(-0.55, 0, 0);
+    u.armR.position.set(0.72, 3.85, 0.72); u.armR.rotation.set(-0.55, 0, 0);
+    u.head.position.set(0, 4.15, 0.95);
+    u.hair.position.set(0, 4.45, 0.95);
+    return;
+  }
   if (sit) {
-    u.legL.rotation.x = -1.45; u.legL.position.set(-0.28, 1.05, 0.75);
-    u.legR.rotation.x = -1.45; u.legR.position.set(0.28, 1.05, 0.75);
+    u.legL.rotation.set(-1.45, 0, 0); u.legL.position.set(-0.28, 1.35, 0.05);
+    u.legR.rotation.set(-1.45, 0, 0); u.legR.position.set(0.28, 1.35, 0.05);
     u.torso.position.set(0, 1.95, -0.25); u.torso.rotation.x = -0.10;
-    u.armL.position.set(-0.72, 1.95, -0.25); u.armL.rotation.x = -0.35;
-    u.armR.position.set(0.72, 1.95, -0.25); u.armR.rotation.x = -0.35;
+    u.armL.position.set(-0.72, 2.82, -0.15); u.armL.rotation.set(-0.35, 0, 0);
+    u.armR.position.set(0.72, 2.82, -0.15); u.armR.rotation.set(-0.35, 0, 0);
     u.head.position.set(0, 3.18, -0.35);
     u.hair.position.set(0, 3.48, -0.35);
   } else {
-    u.legL.rotation.x = sw; u.legL.position.set(-0.28, 1.25, 0);
-    u.legR.rotation.x = -sw; u.legR.position.set(0.28, 1.25, 0);
+    u.legL.rotation.set(sw, 0, 0); u.legL.position.set(-0.28, 2.5, 0);
+    u.legR.rotation.set(-sw, 0, 0); u.legR.position.set(0.28, 2.5, 0);
     u.torso.position.set(0, 3.45, 0); u.torso.rotation.x = 0;
-    u.armL.position.set(-0.72, 3.45, 0); u.armL.rotation.x = -sw * 0.7;
-    u.armR.position.set(0.72, 3.45, 0); u.armR.rotation.x = sw * 0.7;
+    u.armL.position.set(-0.72, 4.35, 0); u.armL.rotation.set(-sw * 0.7, 0, 0);
+    u.armR.position.set(0.72, 4.35, 0); u.armR.rotation.set(sw * 0.7, 0, 0);
     u.head.position.set(0, 4.68, 0);
     u.hair.position.set(0, 4.98, 0);
   }
@@ -5053,11 +5451,14 @@ const WX_PAL = {
   petals: [0xF7D8E2, 0xFFF5F8, 0xF2B8C6, 0xEDE7DC],
   fireflies: [0xFFE875, 0xFFD24C, 0xFFF2A6],
   leaves: [0xC3702C, 0xA6402C, 0xCF9B38, 0x8D5A33, 0xB23A32],
+  rain: [0xA8CDE8, 0xC4DEF2, 0x86B5D8],
 };
 function tlStepEnvFx(dt, day) {
   if (!TL.wx) return;
   let kind = 'snow', rate = 1;
-  if (day >= 65 && day < 160) { kind = 'petals'; rate = day < 85 ? (day - 65) / 20 : day > 145 ? (160 - day) / 15 : 1; }
+  const mCur = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
+  if (mCur && mCur.rain) { kind = 'rain'; rate = 1; }
+  else if (day >= 65 && day < 160) { kind = 'petals'; rate = day < 85 ? (day - 65) / 20 : day > 145 ? (160 - day) / 15 : 1; }
   else if (day >= 160 && day < 245) { kind = 'fireflies'; rate = 0.75; }
   else if (day >= 245 && day < 328) { kind = 'leaves'; rate = day < 260 ? (day - 245) / 15 : day > 315 ? (328 - day) / 13 : 1; }
   else { kind = 'snow'; rate = day >= 328 ? Math.min(1, (day - 328) / 12) : day < 50 ? 1 : Math.max(0, (65 - day) / 15); }
@@ -5080,6 +5481,12 @@ function tlStepEnvFx(dt, day) {
         const pulse = Math.max(0.01, Math.sin(p.ph * 1.7 + p.c) * 0.55);
         _wxO.position.set(p.x + Math.cos(p.ph * 0.6) * 1.4, LV.GRADE + p.y, p.z + Math.sin(p.ph * 0.6) * 1.4);
         _wxO.rotation.set(0, 0, 0); _wxO.scale.setScalar(pulse);
+      } else if (kind === 'rain') {
+        p.y -= dt * 26.0 * p.sp;
+        if (p.y < -2.1) p.y = 38 + (p.c % 9);
+        _wxO.position.set(p.x + 0.15, p.y, p.z);
+        _wxO.rotation.set(0, 0, 0.06);
+        _wxO.scale.set(0.16, 4.5, 0.16);
       } else {
         const fallSpeed = kind === 'leaves' ? 6.5 : kind === 'petals' ? 4.2 : 5.2;
         p.y -= dt * fallSpeed * p.sp;
@@ -5300,20 +5707,66 @@ function tlBuildMoment(m, idx) {
   const members = LITE ? cast.slice(0, 5) : cast;
   for (let k = 0; k < members.length; k++) {
     const c = members[k];
-    const fig = makePerson(c.who, !!c.kid, idx * 7 + k);
+    const fig = makePerson(c.who, !!c.kid, idx * 7 + k, !!c.ski);
     fig.visible = false; group.add(fig);
     walkers.push({
       fig, poly: tlPoly(c.path), exitPoly: c.exitPath ? tlPoly(c.exitPath) : null,
       sitWindow: c.sitWindow || null, delay: c.delay || 0, span: c.span || 0.01,
-      loop: !!c.loop, hideAtEnd: !!c.hideAtEnd, sit: !!c.sit, kid: !!c.kid, face: c.face || 0, bob: 0,
+      loop: !!c.loop, hideAtEnd: !!c.hideAtEnd, sit: !!c.sit, stand: !!c.stand, grill: !!c.grill, smell: !!c.smell, kid: !!c.kid, angel: !!c.angel, jump: !!c.jump, face: c.face || 0, bob: 0,
     });
   }
   let ball = null;
   if (m.ball && !LITE) { ball = new THREE.Mesh(TL_GEO.ball, tlMat(0xF2F3F1)); ball.castShadow = false; ball.visible = false; group.add(ball); }
   const props = [];
   for (const p of (m.props || [])) {
-    const mesh = p.kind === 'blanket' ? new THREE.Mesh(TL_GEO.blanket, tlMat(0x7A2E2E)) : new THREE.Mesh(TL_GEO.basket, tlMat(0x8A6A45));
-    mesh.castShadow = false; mesh.receiveShadow = true; mesh.position.set(p.at[0], p.at[1] + 0.06, p.at[2]); mesh.rotation.y = p.rot || 0; group.add(mesh);
+    let mesh;
+    if (p.kind === 'leafpile') {
+      mesh = new THREE.Group();
+      const cols = [0xB85228, 0xD4882A, 0x9E3B22, 0xC96E2E, 0xDF9E38];
+      const cMnd = new THREE.Mesh(TL_GEO.bloom, tlMat(cols[0]));
+      cMnd.scale.set(9.5, 4.2, 8.8); cMnd.position.set(0, 1.15, 0);
+      cMnd.castShadow = false; cMnd.receiveShadow = true; mesh.add(cMnd);
+      for (let j = 0; j < 6; j++) {
+        const a = j * (Math.PI / 3) + 0.2, r = 2.6;
+        const mnd = new THREE.Mesh(TL_GEO.bloom, tlMat(cols[(j + 1) % cols.length]));
+        mnd.scale.set(6.2, 2.8, 5.8);
+        mnd.position.set(Math.cos(a) * r, 0.78, Math.sin(a) * r);
+        mnd.rotation.y = a; mnd.castShadow = false; mnd.receiveShadow = true;
+        mesh.add(mnd);
+      }
+      for (let j = 0; j < 6; j++) {
+        const a = j * (Math.PI / 3) + 0.7, r = 4.4;
+        const mnd = new THREE.Mesh(TL_GEO.bloom, tlMat(cols[(j + 2) % cols.length]));
+        mnd.scale.set(4.2, 1.6, 3.8);
+        mnd.position.set(Math.cos(a) * r, 0.42, Math.sin(a) * r);
+        mnd.rotation.y = a; mnd.castShadow = false; mnd.receiveShadow = true;
+        mesh.add(mnd);
+      }
+      mesh.position.set(p.at[0], p.at[1], p.at[2]);
+    } else if (p.kind === 'flowers') {
+      mesh = new THREE.Group();
+      const flCols = [0xF2D44B, 0xE87BA6, 0x9B7AE0, 0xF7F3E8, 0xF08B49];
+      for (let j = 0; j < 12; j++) {
+        const a = j * 2.39996, r = 0.28 + Math.sqrt(j / 12) * 1.15;
+        const fx = Math.cos(a) * r, fz = Math.sin(a) * r, h = 0.7 + (j % 3) * 0.25;
+        const stem = new THREE.Mesh(TL_GEO.pole, tlMat(0x4F7A3E));
+        stem.scale.set(2.4, h / 3.4, 2.4);
+        stem.position.set(fx, h * 0.5, fz);
+        stem.castShadow = false; stem.receiveShadow = false;
+        mesh.add(stem);
+        const head = new THREE.Mesh(TL_GEO.bloom, tlMat(flCols[j % flCols.length]));
+        head.scale.setScalar(0.55 + (j % 3) * 0.14);
+        head.position.set(fx, h + 0.12, fz);
+        head.rotation.y = a;
+        head.castShadow = false; head.receiveShadow = false;
+        mesh.add(head);
+      }
+      mesh.position.set(p.at[0], p.at[1], p.at[2]);
+    } else {
+      mesh = p.kind === 'blanket' ? new THREE.Mesh(TL_GEO.blanket, tlMat(0x7A2E2E)) : new THREE.Mesh(TL_GEO.basket, tlMat(0x8A6A45));
+      mesh.castShadow = false; mesh.receiveShadow = true; mesh.position.set(p.at[0], p.at[1] + 0.06, p.at[2]); mesh.rotation.y = p.rot || 0;
+    }
+    group.add(mesh);
     props.push(mesh);
   }
   return { group, walkers, ball, props };
@@ -5333,7 +5786,9 @@ function tlApplyEnv(dt, immediate) {
   const dom = TL._dom || (TL._dom = {
     st: document.getElementById('suntime'), wst: document.getElementById('walk-sun'),
     sto: document.getElementById('suntime-out'), wsto: document.getElementById('walk-sun-out'),
-    ml: document.getElementById('tl-month'), sc: document.getElementById('tl-scrub')
+    ml: document.getElementById('tl-month'), sc: document.getElementById('tl-scrub'),
+    needle: document.getElementById('tl-needle'), time: document.getElementById('tl-time'),
+    pins: document.getElementById('tl-pins')
   });
   const sunLbl = sunTimeLabel(state.sun);
   if (sunLbl !== TL._sunLbl) {
@@ -5343,12 +5798,15 @@ function tlApplyEnv(dt, immediate) {
     if (dom.wst) dom.wst.value = sunStr;
     if (dom.sto) dom.sto.textContent = sunLbl;
     if (dom.wsto) dom.wsto.textContent = sunLbl;
+    if (dom.time) dom.time.textContent = sunLbl;
   }
-  // Dusk factor 0 (daytime <= 16.5) -> 1 (nighttime >= 19.2)
-  const wantDusk = Math.max(0, Math.min(1, (TL.sunCur - 16.5) / 2.7));
+  if (dom.needle) dom.needle.style.left = (TL.t * 100).toFixed(2) + '%';
+  // Dusk factor 0 (daytime <= 17.4) -> 1 (nighttime >= 19.3), with warm golden hour around 16.5..18.2
+  const wantDusk = Math.max(0, Math.min(1, (TL.sunCur - 17.4) / 1.9));
   if (immediate) TL.duskCur = wantDusk;
   else TL.duskCur += (wantDusk - TL.duskCur) * Math.min(1, dt * 1.6);
   const dk = TL.duskCur;
+  const goldK = Math.max(0, 1 - Math.abs(TL.sunCur - 17.35) / 1.05);
   // Position sun/moon along arc and smoothly blend sky, fog, hemi, fill, and sun intensity
   const h = state.sun, az = (h - 12.5) / 6.5 * (Math.PI / 2);
   const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
@@ -5356,21 +5814,26 @@ function tlApplyEnv(dt, immediate) {
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
   if (immediate || Math.abs(TL.sunCur - prevSun) > 0.025) { if (immediate || ((TL._shTick = (TL._shTick || 0) + 1) % (LITE ? 10 : 4) === 0)) markShadows(); }
   const sElev = Math.min(1, Math.sin(el) * 1.6);
-  const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
-  sun.intensity = daySunI * (1 - dk) + (TL.occupied ? NIGHTSET.sun : 0.44) * dk;
-  _tc1.setRGB(1, 0.8 + 0.15 * sElev, 0.62 + 0.27 * sElev);
+  const wantOcc = TL.occupied ? 1 : 0;
+  if (immediate || TL.occCur === undefined) TL.occCur = wantOcc;
+  else TL.occCur += (wantOcc - TL.occCur) * Math.min(1, dt * 1.4);
+  const occ = TL.occCur;
+  const daySunI = DAY.sun * (0.28 + 0.72 * sElev) + 0.45 * goldK, dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev) + 0.18 * goldK;
+  sun.intensity = daySunI * (1 - dk) + (0.56 + (NIGHTSET.sun - 0.56) * occ) * dk;
+  _tc1.setRGB(1, Math.max(0.55, 0.8 + 0.15 * sElev - 0.10 * goldK), Math.max(0.32, 0.62 + 0.27 * sElev - 0.22 * goldK));
   sun.color.lerpColors(_tc1, _tc2.setHex(NIGHTSET.sunColor), dk);
-  hemi.intensity = dayHemiI * (1 - dk) + (TL.occupied ? NIGHTSET.hemi : 0.36) * dk;
+  hemi.intensity = dayHemiI * (1 - dk) + (0.48 + (NIGHTSET.hemi - 0.48) * occ) * dk;
   hemi.color.lerpColors(_tc1.setHex(0xf4f1ea), _tc2.setHex(NIGHTSET.hemiSky), dk);
   hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x3d3a35), dk);
   fill.intensity = DAY.fill * (1 - dk) + NIGHTSET.fill * dk;
   renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
-  scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
+  if (goldK > 0.01) daySky.lerp(_tc2.setHex(0xeeb484), 0.42 * goldK);
+  scene.background.lerpColors(daySky, _tc2.setHex(0x222f46).lerp(_tc1.setHex(NIGHTSET.bg), occ), dk);
   if (scene.fog) scene.fog.color.copy(scene.background);
-  // Keep indoor rooms warmly lit whenever occupied so indoor activity is clearly visible through windows;
+  // Keep exterior sconces lit whenever it's evening/night (even when unoccupied in Mid December);
   // keep L.visible = true throughout timeline so Three.js never recompiles shaders mid-animation!
-  const extK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0)) : 0;
-  const intK = TL.occupied ? Math.max(0.55, extK) : 0;
+  const extK = Math.min(1, Math.max(0, (TL.sunCur - 16.0) / 2.0));
+  const intK = occ * Math.max(0.55, extK);
   for (const { L, cd } of nightRig) {
     const k = L.userData.ext ? extK : intK;
     L.visible = true;
@@ -5379,13 +5842,17 @@ function tlApplyEnv(dt, immediate) {
   lampMat.emissiveIntensity = 2.6 * intK;
   paperMat.emissiveIntensity = 1.2 * intK;
   creamMat.emissiveIntensity = 1.4 * intK;
-  const lanternK = TL.occupied ? Math.min(1, Math.max(0, (TL.sunCur - 16.2) / 1.4)) : 0;
+  const lanternK = occ * Math.min(1, Math.max(0, (TL.sunCur - 16.2) / 1.4));
   PATIO.lanternMat.emissiveIntensity = 3.2 * lanternK;
   PATIO.lanternHalo.visible = lanternK > 0.04;
   PATIO.lanternHalo.material.opacity = 0.28 * lanternK;
   if (typeof WEST_DECK !== 'undefined') WEST_DECK.setNightK(lanternK);
   const glass = MATS.glass;
-  if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = 0.28 * extK; }
+  if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = (0.08 + 0.20 * occ) * extK; }
+  if (TL.glow) {
+    const gm = TL.cur >= 0 ? MOMENTS[TL.cur] : null;
+    TL.glow.intensity = gm && gm.glow ? 8 * Math.sin(momentProgress(gm) * Math.PI) : 0;
+  }
   if (state.walls !== 'up') {
     for (const v of CUT.variants) {
       const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity;
@@ -5413,6 +5880,7 @@ function tlSetMoment(i) {
   if (TL.cur >= 0 && TL.built[TL.cur]) TL.built[TL.cur].group.visible = false;
   if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   TL.cur = i;
+  if (TL._markBtns) TL._markBtns.forEach((b, k) => b.classList.toggle('active', k === i));
   if (i < 0) {
     showCap('');
     tlSetFrontDoor(false);
@@ -5428,36 +5896,38 @@ function tlSetMoment(i) {
   for (const w of B.walkers) { w.fig.visible = false; w.bob = 0; }
   if (B.ball) { B.ball.visible = false; TL.ballPh = 0; }
   TL.hourTarget = m.hour; TL.occupied = !!m.occupied;
-  tlSetWallsRoof(m.walls || 'up', m.roof !== undefined ? m.roof : (m.walls !== 'cutaway'), m.floors || 'both');
-  tlSetFire(!!m.fire);
-  if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(!!m.patioFire);
+  tlSetWallsRoof(m.walls || 'up', m.roof !== undefined ? m.roof : true, m.floors || 'both');
+  tlSetFire(!!m.fire && !m.fireDelay);
+  if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(!!m.patioFire && !m.patioFireDelay);
   tlSetGrill(!!m.grill);
   tlSetTV(m.tv || 0);
   tlSetFan(m.fan || 0);
-  if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = m.glow ? 8 : 0; }
   if (m.car === 'arrive') setCarColor(0xF3F3F1);
   else if (m.car === 'turnover') setCarColor(SECOND_CAR);
-  showCap(m.caption);
+  showCap(m.seasonTitle || m.title, m.eyebrow);
 }
 function tlStepActors(dt) {
   if (TL.cur < 0) return;
   const m = MOMENTS[TL.cur], B = TL.built[TL.cur], ph = momentProgress(m);
+  if (m.fireDelay) tlSetFire(!!m.fire && ph >= m.fireDelay);
+  if (m.patioFireDelay && typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(!!m.patioFire && ph >= m.patioFireDelay);
   let nearFront = false, nearSide = false;
   for (const w of B.walkers) {
-    let pt = null, moving = false, sitting = false, heading = w.face;
+    let pt = null, moving = false, sitting = false, standing = false, heading = w.face, p = 0;
     if (w.sitWindow) {
-      const [s0, s1] = w.sitWindow;
+      const [s0, s1] = w.sitWindow, d0 = w.delay || 0;
+      if (ph < d0) { w.fig.visible = false; continue; }
       if (ph < s0) {
-        const p = Math.max(0, Math.min(1, ph / s0));
+        p = Math.max(0, Math.min(1, (ph - d0) / Math.max(0.01, s0 - d0)));
         pt = w.poly.at(p); moving = p > 0 && p < 1; heading = pt.h;
       } else if (ph <= s1) {
-        pt = w.poly.at(1); sitting = true; heading = w.face;
+        pt = w.poly.at(1); sitting = !w.stand; standing = !!w.stand; heading = w.face;
       } else if (w.exitPoly) {
-        const p = Math.max(0, Math.min(1, (ph - s1) / (1 - s1)));
+        p = Math.max(0, Math.min(1, (ph - s1) / (1 - s1)));
         pt = w.exitPoly.at(p); moving = p > 0 && p < 1; heading = pt.h;
       }
     } else {
-      let p = (ph - w.delay) / w.span;
+      p = (ph - w.delay) / w.span;
       if (w.loop) { if (p < 0) { w.fig.visible = false; continue; } p = p % 1; }
       else p = Math.max(0, Math.min(1, p));
       if (p <= 0 || (!w.loop && p >= 1 && w.hideAtEnd)) { w.fig.visible = false; continue; }
@@ -5466,11 +5936,38 @@ function tlStepActors(dt) {
       heading = w.poly.single ? w.face : (moving ? pt.h : (w.face || pt.h));
     }
     if (!pt) { w.fig.visible = false; continue; }
-    if (moving) w.bob += dt * 9.5;
+    let extra = null, yOff = 0, sw = 0;
+    if (standing && w.angel) {
+      const [s0, s1] = w.sitWindow;
+      const ap = (ph - s0) / Math.max(0.01, s1 - s0);
+      if (ap < 0.30) {
+        w.bob += dt * 7.5;
+        extra = 'jump'; yOff = Math.abs(Math.sin(w.bob)) * 1.5;
+      } else {
+        w.bob += dt * 4.2;
+        extra = 'angel'; yOff = 0.32; sw = w.bob;
+      }
+    } else if (w.angel && !w.sitWindow) {
+      w.bob += dt * 4.2;
+      extra = 'angel'; yOff = 0.32; sw = w.bob;
+    } else if (w.jump && p >= 0.45) {
+      w.bob += dt * 7.5;
+      extra = 'jump'; yOff = Math.abs(Math.sin(w.bob)) * 2.6;
+    } else if (standing && w.grill) {
+      w.bob += dt * 4.5;
+      extra = 'grill'; sw = w.bob;
+    } else if (standing && w.smell) {
+      w.bob += dt * 3.2;
+      extra = 'smell'; sw = w.bob;
+    } else {
+      if (moving) w.bob += dt * 9.5;
+      yOff = moving ? Math.abs(Math.sin(w.bob)) * 0.12 : 0;
+      sw = moving ? Math.sin(w.bob) * 0.55 : 0;
+    }
     w.fig.visible = true;
-    w.fig.position.set(pt.x, pt.y + (moving ? Math.abs(Math.sin(w.bob)) * 0.12 : 0), pt.z);
+    w.fig.position.set(pt.x, pt.y + yOff, pt.z);
     w.fig.rotation.y = heading;
-    poseFigure(w.fig, sitting || w.sit, moving ? Math.sin(w.bob) * 0.55 : 0);
+    poseFigure(w.fig, sitting || w.sit, sw, extra);
     if (Math.hypot(pt.x - 19.8, pt.z - 17.5) < 5.5) nearFront = true;
     if (Math.hypot(pt.x - 0.1, pt.z - 14.6) < 4.8) nearSide = true;
   }
@@ -5505,6 +6002,13 @@ function tlStepCar(dt) {
   else if (mode === 'away') target = 1;
   else if (mode === 'arrive') target = 1 - ease(Math.min(1, ph / 0.28));
   else if (mode === 'depart-end') target = ph < 0.72 ? 0 : ease((ph - 0.72) / 0.26);
+  else if (mode === 'ski-trip') {
+    if (ph < 0.26) target = 0;
+    else if (ph < 0.44) target = ease((ph - 0.26) / 0.18);
+    else if (ph < 0.52) target = 1;
+    else if (ph < 0.70) target = 1 - ease((ph - 0.52) / 0.18);
+    else target = 0;
+  }
   else if (mode === 'turnover') {
     if (ph < 0.25) target = 0;
     else if (ph < 0.46) target = ease((ph - 0.25) / 0.21);
@@ -5540,52 +6044,75 @@ function tlStepCamera(dt, immediate) {
   const idle = TL.lastInteract ? (performance.now() - TL.lastInteract) / 1000 : 99;
   if (idle < 3.5) return;
   const r = Math.min(1, (idle - 3.5) / 3.5), ramp = r * r * (3 - 2 * r);
-  const m = TL.cur >= 0 ? MOMENTS[TL.cur] : tlNextMoment();
-  if (m && m.cam) {
-    _tlCamTarget.copy(toW(m.cam.look[0], m.cam.look[1], m.cam.look[2]));
-    _tlCamGoal.copy(toW(m.cam.pos[0], m.cam.pos[1], m.cam.pos[2]));
-    _tlCamGoal.x += Math.sin(TL.t * Math.PI * 16) * 0.9;
-    _tlCamGoal.z += Math.cos(TL.t * Math.PI * 12) * 0.6;
-    if (camera.aspect < 0.9) {
-      const pull = Math.min(1.22, 0.88 / Math.max(0.45, camera.aspect));
-      _tlCamOff.copy(_tlCamGoal).sub(_tlCamTarget).multiplyScalar(pull);
-      _tlCamGoal.copy(_tlCamTarget).add(_tlCamOff);
-    }
-  } else {
-    const a = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1.5;
-    const f = Math.max(1, 1.5 / a);
-    _tlCamOff.copy(HOME.pos).sub(HOME.target);
-    if (a < 0.9) {
-      const th = 0.75, cs = Math.cos(th), sn = Math.sin(th);
-      _tlCamOff.set(_tlCamOff.x * cs + _tlCamOff.z * sn, _tlCamOff.y, _tlCamOff.z * cs - _tlCamOff.x * sn).multiplyScalar(f * 0.44);
-    } else _tlCamOff.multiplyScalar(f);
-    const targetSway = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30;
-    if (immediate) TL.swayCur = targetSway;
-    else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
-    const zoom = 0.78, lowY = 0.44;
-    const rx = _tlCamOff.x * zoom, rz = _tlCamOff.z * zoom, ry = _tlCamOff.y * lowY;
-    const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
-    _tlCamTarget.set(HOME.target.x + 1.0, HOME.target.y + 1.3, HOME.target.z + 1.0);
-    _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
-  }
+  const a = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1.5;
+  const f = Math.min(2.15, Math.max(1, 1.35 / a));
+  _tlCamOff.copy(HOME.pos).sub(HOME.target).multiplyScalar(f);
+  const targetSway = -0.62 + Math.cos(TL.t * Math.PI * 2) * 0.28;
+  if (immediate) TL.swayCur = targetSway;
+  else TL.swayCur += (targetSway - TL.swayCur) * Math.min(1, dt * 1.2);
+  const zoom = 1.26, lowY = 0.38;
+  const rx = _tlCamOff.x * zoom, rz = _tlCamOff.z * zoom, ry = _tlCamOff.y * lowY;
+  const c = Math.cos(TL.swayCur), s = Math.sin(TL.swayCur);
+  _tlCamTarget.set(HOME.target.x - 0.5, HOME.target.y + 1.8, HOME.target.z + 1.2);
+  _tlCamGoal.set(_tlCamTarget.x + rx * c + rz * s, _tlCamTarget.y + ry, _tlCamTarget.z - rx * s + rz * c);
   const k = immediate ? 1 : Math.min(1, dt * 1.9) * ramp;
   camera.position.lerp(_tlCamGoal, k);
   controls.target.lerp(_tlCamTarget, k);
   camera.lookAt(controls.target);
-  if (state.walls === 'cutaway') updateWalls();
+}
+const _tlPinV = new THREE.Vector3();
+function tlStepPins() {
+  const pool = TL._pinPool || (TL._pinPool = []);
+  const box = (TL._dom && TL._dom.pins) || document.getElementById('tl-pins');
+  if (!box || !TL.on || TL.cur < 0) {
+    for (const el of pool) el.style.opacity = '0';
+    return;
+  }
+  const m = MOMENTS[TL.cur], pins = m.pins || [], ph = momentProgress(m);
+  const w = window.innerWidth, h = window.innerHeight;
+  while (pool.length < pins.length) {
+    const el = document.createElement('div');
+    el.className = 'tl-pin';
+    el.style.opacity = '0';
+    const b = document.createElement('div'); b.className = 'tl-pin-bubble';
+    const s = document.createElement('div'); s.className = 'tl-pin-stem';
+    const d = document.createElement('div'); d.className = 'tl-pin-dot';
+    el.append(b, s, d);
+    el._bubble = b;
+    box.appendChild(el);
+    pool.push(el);
+  }
+  for (let i = 0; i < pool.length; i++) {
+    const el = pool[i];
+    if (i >= pins.length) { el.style.opacity = '0'; continue; }
+    const pin = pins[i], [p0, p1] = pin.win || [0, 1], fade = 0.10;
+    let alpha = 0;
+    if (ph >= p0 && ph <= p1) {
+      alpha = Math.min(Math.min(1, (ph - p0) / fade), Math.min(1, (p1 - ph) / fade));
+    }
+    if (alpha <= 0.01) { el.style.opacity = '0'; continue; }
+    _tlPinV.set((pin.at[0] - 24) * FT, pin.at[1] * FT, (pin.at[2] - 13.5) * FT).project(camera);
+    if (_tlPinV.z > 1 || _tlPinV.z < -1) { el.style.opacity = '0'; continue; }
+    const px = (_tlPinV.x * 0.5 + 0.5) * w, py = (-_tlPinV.y * 0.5 + 0.5) * h;
+    if (px < -80 || px > w + 80 || py < -40 || py > h + 40) { el.style.opacity = '0'; continue; }
+    if (el._bubble.textContent !== pin.text) el._bubble.textContent = pin.text;
+    el.style.transform = `translate3d(${px.toFixed(1)}px,${py.toFixed(1)}px,0) translate(-50%,-100%)`;
+    el.style.opacity = alpha.toFixed(3);
+  }
 }
 function tlTick(dt) {
   if (WALK.on || TOUR.on) { exitTimeline(); return; }
   const actNow = tlActiveMoment();
-  const targetSpeed = actNow >= 0 ? 1.0 : 1.35;
+  const targetSpeed = actNow >= 0 ? 0.55 : 1.75;
   TL.speed += (targetSpeed - TL.speed) * Math.min(1, dt * 2.5);
-  if (TL.playing) TL.t = (TL.t + dt * TL.speed / TL_LOOP) % 1;
+  if (TL.playing) TL.t = (TL.t + dt * TL.speed * TL.speedMult / TL_LOOP) % 1;
   tlApplyEnv(dt, false);
   const act = tlActiveMoment();
   if (act !== TL.cur) tlSetMoment(act);
   tlStepActors(dt);
   tlStepCar(dt);
   tlStepCamera(dt, false);
+  tlStepPins();
   if (!TL.scrubbing) { const sc = TL._dom ? TL._dom.sc : document.getElementById('tl-scrub'); if (sc) sc.value = String(Math.round(TL.t * 1000)); }
   wake();
 }
@@ -5596,7 +6123,28 @@ function tlEnsureBuilt() {
   TL.glow.visible = true; TL.glow.intensity = 0;
   tlBuildEnvFx();
   const marks = document.getElementById('tl-marks');
-  MOMENTS.forEach(m => { const d = document.createElement('i'); d.style.left = (m.t * 100) + '%'; d.title = m.title; marks.appendChild(d); });
+  TL._markBtns = MOMENTS.map((m, idx) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.style.left = (m.t * 100) + '%';
+    b.style.width = (m.dur * 100) + '%';
+    b.dataset.tip = m.title;
+    b.setAttribute('aria-label', m.title);
+    b.addEventListener('click', () => {
+      TL.t = m.t; TL.lastInteract = 0;
+      tlApplyEnv(0, true);
+      tlSetMoment(idx);
+      tlStepActors(0);
+      tlStepCar(0);
+      tlStepCamera(0, true);
+      tlStepPins();
+      const sc = TL._dom ? TL._dom.sc : document.getElementById('tl-scrub');
+      if (sc) sc.value = String(Math.round(TL.t * 1000));
+      wake(4);
+    });
+    marks.appendChild(b);
+    return b;
+  });
 }
 function enterTimeline() {
   if (TL.on) { exitTimeline(); return; }
@@ -5607,7 +6155,7 @@ function enterTimeline() {
   TL.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(), carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0, grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed };
   tlEnsureBuilt();
   for (const B of TL.built) B.group.visible = false;
-  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
+  TL.on = true; TL.playing = true; TL.t = MOMENTS[0].t; TL.speed = 0.55; TL.speedMult = 1; TL.cur = -1; TL.sunCur = MOMENTS[0].hour; TL.hourTarget = MOMENTS[0].hour; TL.occupied = true; TL.duskCur = 0; TL.swayCur = -0.14 + Math.cos(TL.t * Math.PI * 2) * 0.30; TL.seasonCur = null; TL.ballPh = 0; TL.lastInteract = 0; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
   Object.assign(state, { floors: 'both', explode: 0, labels: false, night: false });
   G.ground.visible = true; G.loft.visible = true; G.loft.position.y = 0; G.wingRoof.position.y = 0; G.mainRoof.position.y = 0;
   document.getElementById('labels').style.display = 'none';
@@ -5625,21 +6173,25 @@ function enterTimeline() {
   CAR.beams.forEach(sl => { sl.visible = true; sl.intensity = 0; });
   document.body.classList.add('timeline');
   document.getElementById('tlbar').hidden = false;
+  document.getElementById('tl-pins').hidden = false;
   document.getElementById('tl-play').textContent = '❚❚';
+  document.getElementById('tl-speed').textContent = '1×';
   document.querySelector('#btn-timeline b').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
   tlSetMoment(0);
   tlStepActors(0);
   tlStepCar(0);
   tlStepCamera(0, true);
+  tlStepPins();
   wake(10);
 }
 function exitTimeline() {
   if (!TL.on) return;
   document.body.classList.remove('timeline');
-  TL.on = false; TL.playing = false; TL.cur = -1; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
+  TL.on = false; TL.playing = false; TL.speedMult = 1; TL.cur = -1; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
   twigs.visible = true;
   for (const B of TL.built || []) B.group.visible = false;
+  for (const el of TL._pinPool || []) el.style.opacity = '0';
   if (TL.glow) { TL.glow.visible = true; TL.glow.intensity = 0; }
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
@@ -5672,12 +6224,16 @@ function exitTimeline() {
   }
   markShadows();
   document.getElementById('tlbar').hidden = true;
+  document.getElementById('tl-pins').hidden = true;
   document.querySelector('#btn-timeline b').textContent = 'A year here';
   showCap('');
 }
 document.getElementById('btn-timeline').addEventListener('click', enterTimeline);
-document.getElementById('tl-exit').addEventListener('click', exitTimeline);
 document.getElementById('tl-play').addEventListener('click', e => { TL.playing = !TL.playing; e.target.textContent = TL.playing ? '❚❚' : '▶'; });
+document.getElementById('tl-speed').addEventListener('click', e => {
+  TL.speedMult = TL.speedMult === 1 ? 2 : TL.speedMult === 2 ? 0.5 : 1;
+  e.target.textContent = TL.speedMult + '×';
+});
 document.getElementById('tl-scrub').addEventListener('input', e => {
   TL.scrubbing = true; TL.playing = false; document.getElementById('tl-play').textContent = '▶';
   TL.t = +e.target.value / 1000; tlApplyEnv(0, true);
@@ -5685,6 +6241,7 @@ document.getElementById('tl-scrub').addEventListener('input', e => {
   tlStepActors(0);
   tlStepCar(0);
   tlStepCamera(0, true);
+  tlStepPins();
 });
 document.getElementById('tl-scrub').addEventListener('change', () => { TL.scrubbing = false; });
 renderer.domElement.addEventListener('pointerdown', () => { TL.lastInteract = performance.now(); if (typeof BD !== 'undefined') BD.lastInteract = performance.now(); }, true);
@@ -6286,14 +6843,26 @@ function bdEnsureBuilt() {
     BD.workers.push(w);
   }
 
-  // Populate phase ticks on #bd-marks
+  // Populate stage pills on #bd-marks
   const marks = document.getElementById('bd-marks');
   if (marks && !marks.children.length) {
-    BD_STAGES.forEach(s => {
-      const d = document.createElement('i');
-      d.style.left = (s.t * 100) + '%';
-      d.title = s.title;
-      marks.appendChild(d);
+    BD._markBtns = BD_STAGES.map(s => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.style.left = (s.t * 100).toFixed(2) + '%';
+      b.style.width = Math.max(2.2, (s.end - s.t) * 100 - 0.5).toFixed(2) + '%';
+      b.setAttribute('data-tip', s.title);
+      b.setAttribute('aria-label', s.title);
+      b.addEventListener('click', () => {
+        BD.t = s.t + 0.002;
+        bdApplyPhases(BD.t, 0);
+        bdApplyEnv(0, true);
+        bdStepCamera(0, true);
+        markShadows();
+        wake(6);
+      });
+      marks.appendChild(b);
+      return b;
     });
   }
 }
@@ -6383,33 +6952,38 @@ function bdApplyPhases(t, dt) {
     else MATS.chalk.color.setHex(C.chalk);                        // Painted Chalk finish
   }
 
-  // 5. Granular permanent house mesh visibility
-  const visMesh = m => {
-    const p = m.userData.phase, fl = m.userData.bdFloor || '', mn = m.userData.bdMat || '', r = m.userData.room || '';
-    switch (p) {
-      case 'slab':      return fl === 'site' ? (mn === 'gravel' ? t >= 0.86 : t >= 0.105) : t >= 0.105;
-      case 'decks':     return mn === 'concrete' || mn === 'steel' ? t >= 0.185 : t >= 0.20;
-      case 'siding':    return t >= 0.382;
-      case 'roofing':   return t >= 0.386;
-      case 'windows':   return fl === 'ground' ? t >= 0.405 : fl === 'loft' ? t >= 0.425 : t >= 0.445;
-      case 'drywall':   return fl === 'ground' ? t >= 0.59 : t >= 0.605;
-      case 'floorTile': return mn === 'wood' ? t >= 0.655 : t >= 0.64;
-      case 'stair':     return t >= 0.68;
-      case 'millwork':  return mn === 'woodPanel' ? t >= 0.72 : t >= 0.745;
-      case 'doors':     return t >= 0.775;
-      case 'fixtures':  return (mn === 'lamp' || mn === 'creamGlass' || mn === 'paper') ? t >= 0.835 : t >= 0.81;
-      case 'mep':       return t >= 0.86;
-      case 'furniture': return (r === 'guestBed' || r === 'office' || r === 'bedroom' || r === 'loft') ? t >= 0.90 : t >= 0.925;
-      default:          return false;
-    }
-  };
+  // 5. Granular permanent house mesh visibility (only re-evaluate when crossing a phase threshold)
+  const BD_THRESH = [0.105, 0.185, 0.20, 0.382, 0.386, 0.405, 0.425, 0.445, 0.59, 0.605, 0.64, 0.655, 0.68, 0.72, 0.745, 0.775, 0.81, 0.835, 0.86, 0.90, 0.925];
+  let pk = 0; while (pk < BD_THRESH.length && t >= BD_THRESH[pk]) pk++;
   let anyChanged = false;
-  for (let i = 0; i < PHASE_MESHES.length; i++) {
-    const m = PHASE_MESHES[i], wantVis = visMesh(m), wantHid = !wantVis;
-    if (!!m.userData.phaseHidden !== wantHid) {
-      m.userData.phaseHidden = wantHid;
-      if (!m.userData.inCutSet) m.visible = wantVis;
-      anyChanged = true;
+  if (pk !== BD._phaseKey) {
+    BD._phaseKey = pk;
+    const visMesh = m => {
+      const p = m.userData.phase, fl = m.userData.bdFloor || '', mn = m.userData.bdMat || '', r = m.userData.room || '';
+      switch (p) {
+        case 'slab':      return fl === 'site' ? (mn === 'gravel' ? t >= 0.86 : t >= 0.105) : t >= 0.105;
+        case 'decks':     return mn === 'concrete' || mn === 'steel' ? t >= 0.185 : t >= 0.20;
+        case 'siding':    return t >= 0.382;
+        case 'roofing':   return t >= 0.386;
+        case 'windows':   return fl === 'ground' ? t >= 0.405 : fl === 'loft' ? t >= 0.425 : t >= 0.445;
+        case 'drywall':   return fl === 'ground' ? t >= 0.59 : t >= 0.605;
+        case 'floorTile': return mn === 'wood' ? t >= 0.655 : t >= 0.64;
+        case 'stair':     return t >= 0.68;
+        case 'millwork':  return mn === 'woodPanel' ? t >= 0.72 : t >= 0.745;
+        case 'doors':     return t >= 0.775;
+        case 'fixtures':  return (mn === 'lamp' || mn === 'creamGlass' || mn === 'paper') ? t >= 0.835 : t >= 0.81;
+        case 'mep':       return t >= 0.86;
+        case 'furniture': return (r === 'guestBed' || r === 'office' || r === 'bedroom' || r === 'loft') ? t >= 0.90 : t >= 0.925;
+        default:          return false;
+      }
+    };
+    for (let i = 0; i < PHASE_MESHES.length; i++) {
+      const m = PHASE_MESHES[i], wantVis = visMesh(m), wantHid = !wantVis;
+      if (!!m.userData.phaseHidden !== wantHid) {
+        m.userData.phaseHidden = wantHid;
+        if (!m.userData.inCutSet) m.visible = wantVis;
+        anyChanged = true;
+      }
     }
   }
 
@@ -6485,18 +7059,22 @@ function bdApplyEnv(dt, immediate) {
   const seasonDay = (day >= 298 && day < 355) ? 298 + ((day - 298) / 57) * 18 : day;
   const daySky = tlApplyContinuousSeasons(seasonDay);
   if (day >= 244 && day < 355) {
-    TL.snowK = 0;
-    if (MATS.snow) { MATS.snow.opacity = 0; MATS.snow.depthWrite = false; }
-    for (const m of snowParts) m.visible = false;
-  } else {
-    for (const m of snowParts) if (m.parent === G.site && BD.t < 0.20) m.visible = false;
+    if (TL.snowK !== 0 || TL._snowCache !== 0) {
+      TL.snowK = 0; TL._snowCache = 0;
+      if (MATS.snow) { MATS.snow.opacity = 0; MATS.snow.depthWrite = false; }
+      for (const m of snowParts) m.visible = false;
+    }
+  } else if (BD.t < 0.20) {
+    for (const m of snowParts) if (m.parent === G.site && m.visible) m.visible = false;
   }
   tlStepEnvFx(dt, (day >= 298 && day < 355) ? 327 : day);
 
   BD.hourTarget = stg.hour;
   if (sIdx !== BD.cur) {
     BD.cur = sIdx;
-    showCap(stg.caption);
+    const [eb, ttl] = stg.title.split(' · ');
+    showCap(ttl || stg.title, eb || '');
+    if (BD._markBtns) BD._markBtns.forEach((b, k) => b.classList.toggle('active', k === sIdx));
   }
   const prevSun = BD.sunCur;
   if (immediate) BD.sunCur = BD.hourTarget;
@@ -6512,7 +7090,7 @@ function bdApplyEnv(dt, immediate) {
   const el = Math.max(0.08, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
   const D = 27, ce = Math.cos(el);
   sun.position.set(-Math.sin(az) * ce * D, Math.sin(el) * D, Math.cos(az) * ce * D);
-  if (immediate || Math.abs(BD.sunCur - prevSun) > 0.025) { if (immediate || ++shTick % (LITE ? 10 : 4) === 0) markShadows(); }
+  if (immediate || Math.abs(BD.sunCur - prevSun) > 0.025) { if (immediate || ((BD._shTick = (BD._shTick || 0) + 1) % (LITE ? 10 : 4) === 0)) markShadows(); }
 
   const sElev = Math.min(1, Math.sin(el) * 1.6);
   const daySunI = DAY.sun * (0.28 + 0.72 * sElev), dayHemiI = DAY.hemi * (0.72 + 0.28 * sElev);
@@ -6524,7 +7102,10 @@ function bdApplyEnv(dt, immediate) {
   hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x3d3a35), dk);
   fill.intensity = DAY.fill * (1 - dk) + NIGHTSET.fill * dk;
   renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
-  setEnvNight(dk);
+  if (BD._lastDk === undefined || Math.abs(dk - BD._lastDk) > 0.002) {
+    BD._lastDk = dk;
+    setEnvNight(dk);
+  }
   scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
   if (scene.fog) scene.fog.color.copy(scene.background);
 
@@ -6542,13 +7123,18 @@ function bdApplyEnv(dt, immediate) {
   creamMat.emissiveIntensity = BD.t >= 0.83 ? 1.4 * intK : 0;
   const glass = MATS.glass;
   if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = BD.t >= 0.83 ? 0.28 * extK : 0; }
-  for (const v of CUT.variants) {
-    const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.envMapIntensity = b.envMapIntensity;
+  if (state.walls !== 'up') {
+    for (const v of CUT.variants) {
+      const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.envMapIntensity = b.envMapIntensity;
+    }
   }
   tlSetFire(BD.t >= 0.95);
 
-  const ml = document.getElementById('bd-month');
-  if (ml && ml.textContent !== BD_MONTHS[mIdx]) ml.textContent = BD_MONTHS[mIdx];
+  const bdom = BD._dom || (BD._dom = { ml: document.getElementById('bd-month'), stg: document.getElementById('bd-stage'), sc: document.getElementById('bd-scrub'), nd: document.getElementById('bd-needle') });
+  if (bdom.ml && bdom.ml.textContent !== BD_MONTHS[mIdx]) bdom.ml.textContent = BD_MONTHS[mIdx];
+  const stgTxt = `${sIdx + 1} / ${BD_STAGES.length}`;
+  if (bdom.stg && bdom.stg.textContent !== stgTxt) bdom.stg.textContent = stgTxt;
+  if (bdom.nd) bdom.nd.style.left = (BD.t * 100).toFixed(2) + '%';
 }
 
 const _bdCamGoal = new THREE.Vector3(), _bdCamTarget = new THREE.Vector3();
@@ -6580,7 +7166,7 @@ function bdTick(dt) {
   bdApplyEnv(dt, false);
   bdStepCamera(dt, false);
   if (!BD.scrubbing) {
-    const sc = document.getElementById('bd-scrub');
+    const sc = BD._dom ? BD._dom.sc : document.getElementById('bd-scrub');
     if (sc) sc.value = String(Math.round(BD.t * 1000));
   }
   wake();
@@ -6595,10 +7181,12 @@ function enterBuild() {
   BD.saved = {
     state: { ...state }, pos: camera.position.clone(), target: controls.target.clone(),
     carColor: CAR.paint.color.getHex(), fire: fireLight.visible && fireLight.intensity > 0,
+    patioFire: typeof PATIO !== 'undefined' && PATIO.getPatioFire ? PATIO.getPatioFire() : true,
     grill: GRILL.actDef.on, tv: tvD ? tvD.ch : 0, fan: FAN.speed
   };
   bdEnsureBuilt();
-  BD.on = true; BD.playing = true; BD.t = 0; BD.speed = 1; BD.cur = -1;
+  BD.on = true; BD.playing = true; BD.t = 0; BD.speed = 1; BD.cur = -1; BD._phaseKey = -1; BD._lastDk = undefined;
+  TL._treeCache = null; TL._snowCache = undefined;
   BD.sunCur = BD_STAGES[0].hour; BD.hourTarget = BD_STAGES[0].hour; BD.duskCur = 0; BD.lastInteract = 0;
   Object.assign(state, { floors: 'both', explode: 0, labels: false, night: false });
   G.ground.visible = true; G.loft.visible = true;
@@ -6611,6 +7199,7 @@ function enterBuild() {
   document.body.classList.add('building');
   document.getElementById('bdbar').hidden = false;
   document.getElementById('bd-play').textContent = '❚❚';
+  document.getElementById('bd-speed').textContent = '1×';
   document.querySelector('#btn-build b').textContent = 'Exit build';
   bdApplyPhases(0, 0);
   bdApplyEnv(0, true);
@@ -6622,7 +7211,8 @@ function enterBuild() {
 function exitBuild() {
   if (!BD.on) return;
   document.body.classList.remove('building');
-  BD.on = false; BD.playing = false; BD.cur = -1;
+  BD.on = false; BD.playing = false; BD.cur = -1; BD._phaseKey = -1; BD._lastDk = undefined;
+  TL._treeCache = null; TL._snowCache = undefined; twigs.visible = true;
   if (BD.grp) BD.grp.visible = false;
   if (TL.wx) TL.wx.mesh.visible = false;
   if (TL.blooms) { TL.blooms.mesh.visible = false; TL.blooms.lastK = -1; }
@@ -6645,8 +7235,10 @@ function exitBuild() {
   }
   if (typeof PATIO !== 'undefined' && PATIO.grp) {
     PATIO.grp.visible = true;
-    if (PATIO.setPatioFire) PATIO.setPatioFire(true);
+    if (PATIO.setPatioFire) PATIO.setPatioFire(BD.saved ? BD.saved.patioFire : false);
   }
+  for (const w of TWEENS) w.obj[w.key] = w.to;
+  TWEENS.length = 0;
   if (typeof WEST_DECK !== 'undefined' && WEST_DECK.grp) {
     WEST_DECK.grp.visible = true;
     WEST_DECK.setNight(nightOn);
@@ -6681,8 +7273,12 @@ function exitBuild() {
 }
 
 document.getElementById('btn-build').addEventListener('click', enterBuild);
-document.getElementById('bd-exit').addEventListener('click', exitBuild);
 document.getElementById('bd-play').addEventListener('click', e => { BD.playing = !BD.playing; e.target.textContent = BD.playing ? '❚❚' : '▶'; });
+document.getElementById('bd-speed').addEventListener('click', e => {
+  const speeds = [1, 1.5, 2, 0.5];
+  BD.speed = speeds[(speeds.indexOf(BD.speed) + 1) % speeds.length];
+  e.target.textContent = BD.speed + '×';
+});
 document.getElementById('bd-scrub').addEventListener('input', e => {
   BD.scrubbing = true; BD.playing = false; document.getElementById('bd-play').textContent = '▶';
   BD.t = +e.target.value / 1000;
