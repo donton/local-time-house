@@ -2848,28 +2848,33 @@ function fixtures() {
 // Recessed downlight zones (SpotLights aimed straight down from the actual ceilings — zero upward spill onto ceilings)
 const RECESS_SPOTS = [
   // [group, x, y, z, targetY, candela, angle, dist]
-  ['ground', 5.2, 17.5, 5.2, 0, 48, 0.65, 7.5],                                                     // kitchen vaulted recessed cans + island
-  ['ground', 12.2, 17.5, 5.2, 0, 38, 0.65, 7.5],                                                    // dining vaulted recessed cans
-  ['ground', 19.2, 7.95, 13.0, 0, 16, 0.72, 5.0],                                                   // entry + stair hall (below 8'-0" ceiling)
-  ['ground', 9.5, 8.78, 21.5, 0, 22, 0.75, 5.5],                                                    // sunken living wing (below 8'-10" ceiling)
-  ['ground', 31.2, 7.95, 6.5, 0, 18, 0.74, 5.2],                                                    // guest bedroom & bath (centered in 0.5..13.1)
+  ['ground', 5.2, 17.5, 5.2, 0, 44, 0.65, 7.5],                                                     // kitchen vaulted recessed cans + island
+  ['ground', 12.2, 17.5, 5.2, 0, 36, 0.65, 7.5],                                                    // dining vaulted recessed cans
+  ['ground', 19.2, 7.95, 14.0, 0, 16, 0.72, 5.0],                                                   // entry + stair hall
+  ['ground', 9.5, 8.78, 19.1, 0, 14, 0.72, 5.2],                                                    // sunken living north pair
+  ['ground', 9.5, 8.78, 24.0, 0, 14, 0.72, 5.2],                                                    // sunken living south pair
+  ['ground', 28.75, 7.95, 2.6, 0, 12, 0.70, 4.5],                                                   // guest bed north cans (over bed)
+  ['ground', 28.75, 7.95, 8.8, 0, 12, 0.70, 4.5],                                                   // guest bed south cans (in front of closet)
+  ['ground', 35.0, 7.95, 5.9, 0, 14, 0.72, 4.8],                                                    // guest bath cans
   ['ground', 26.4, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor west can
   ['ground', 30.8, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor mid can
   ['ground', 35.0, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor east can
-  ['ground', 43.5, 7.95, 8.5, 0, 16, 0.72, 5.0],                                                    // east office
-  ['loft', 32.5, LV.LOFT_CEIL - 0.05, 11.2, LV.LOFT, 22, 0.74, 5.2],                                // loft primary bedroom
+  ['ground', 43.5, 7.95, 4.5, 0, 12, 0.72, 4.8],                                                    // east office north cans
+  ['ground', 43.5, 7.95, 12.5, 0, 12, 0.72, 4.8],                                                   // east office south cans
+  ['loft', 32.5, LV.LOFT_CEIL - 0.05, 8.45, LV.LOFT, 14, 0.72, 4.8],                                // loft primary bed north cans
+  ['loft', 32.5, LV.LOFT_CEIL - 0.05, 14.05, LV.LOFT, 14, 0.72, 4.8],                               // loft primary bed south cans
   ['loft', 33.2, 16.9, 3.0, LV.LOFT, 14, 0.72, 4.5],                                                // loft laundry & MECH
-  ['loft', 44.5, 19.5, 9.9, LV.LOFT, 22, 0.70, 5.5],                                                // upstairs bath (vaulted)
+  ['loft', 44.5, 19.5, 9.9, LV.LOFT, 20, 0.70, 5.5],                                                // upstairs bath (vaulted)
 ];
-// Soft indirect bounce + dining paper lantern (localized distance so rooms don't bleed through partitions)
+// Soft indirect bounce + dining paper lantern (kept subtle so mid-room points don't create fake wall/door hotspots)
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela, dist]
-  ['ground', 8.4, 6.25, 6.2, 7.5, 5.5],                                                             // dining paper lantern (24" globe) + kitchen bounce
-  ['ground', 19.2, 4.6, 13.0, 4.0, 4.5],                                                            // entry + stair hall bounce
-  ['ground', 9.5, 4.5, 21.5, 5.0, 5.5],                                                             // sunken living bounce
-  ['ground', 31.2, 4.5, 8.5, 4.5, 4.8],                                                             // guest + corridor bounce
-  ['ground', 43.5, 4.5, 8.5, 3.8, 4.5],                                                             // east office bounce
-  ['loft', 34.5, LV.LOFT + 4.2, 9.5, 5.5, 5.2],                                                     // loft bounce
+  ['ground', 8.4, 6.25, 6.2, 5.5, 5.5],                                                             // dining paper lantern (24" globe) + kitchen bounce
+  ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
+  ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
+  ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
+  ['ground', 43.5, 4.5, 8.5, 1.5, 4.5],                                                             // east office bounce
+  ['loft', 33.0, LV.LOFT + 4.2, 11.2, 1.8, 5.2],                                                    // loft bounce
 ];
 const nightRig = [];
 for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
