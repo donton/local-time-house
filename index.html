@@ -4251,10 +4251,11 @@ function applySeason(name) {
   decid.forEach((t, i) => {
     const bare = t.k < S.bare;
     // hide a canopy by scaling it to zero
-    canopies.getMatrixAt(i, mtx); mtx.decompose(ps, q, sc);
+    if (!t._q) t._q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), t.k * 6);
     const w = 5.5 + t.k * 6.5;
+    ps.set(t.x, t.y + t.h * 0.74, t.z);
     sc.set(bare ? 0.0001 : w, bare ? 0.0001 : t.h * 0.26, bare ? 0.0001 : w);
-    mtx.compose(ps, q, sc); canopies.setMatrixAt(i, mtx);
+    mtx.compose(ps, t._q, sc); canopies.setMatrixAt(i, mtx);
     if (S.leaves.length) canopies.setColorAt(i, c.set(S.leaves[Math.floor(t.k * 97) % S.leaves.length]));
     else canopies.setColorAt(i, c.set(0x6f6259));
   });
@@ -5645,7 +5646,7 @@ function exitTimeline() {
   if (TL.fallLeaves) { TL.fallLeaves.mesh.visible = false; TL.fallLeaves.lastK = -1; }
   if (TL.tracks) TL.tracks.mesh.visible = false;
   PATIO.lanternMat.emissiveIntensity = 0; PATIO.lanternHalo.visible = false;
-  if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(true);
+  if (typeof PATIO !== 'undefined' && PATIO.setPatioFire) PATIO.setPatioFire(TL.saved ? TL.saved.patioFire : false);
   if (typeof WEST_DECK !== 'undefined') WEST_DECK.setNight(nightOn);
   tlSetFire(TL.saved ? TL.saved.fire : false);
   tlSetGrill(TL.saved ? TL.saved.grill : false);
@@ -5653,6 +5654,8 @@ function exitTimeline() {
   tlSetFan(TL.saved ? TL.saved.fan : 0);
   tlSetFrontDoor(false);
   tlSetSideDoor(false);
+  for (const w of TWEENS) w.obj[w.key] = w.to;
+  TWEENS.length = 0;
   if (MATS.snow) { MATS.snow.transparent = false; MATS.snow.opacity = 1; MATS.snow.depthWrite = true; }
   snowParts.forEach(m => { m.position.y = 0; m.scale.y = 1; });
   TL.carD = 0; const pt = tlDrive.at(0);
