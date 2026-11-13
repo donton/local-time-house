@@ -2962,7 +2962,8 @@ function applySun() {
 const DAY_SKY = { winter: 0xcfdbe8, spring: 0xc8ddf0, summer: 0xb8d4ee, fall: 0xcedbe6 };
 function applySceneTheme() {
   if (nightOn) { scene.background = new THREE.Color(NIGHTSET.bg); if (scene.fog) scene.fog.color.copy(scene.background); return; }
-  scene.background = new THREE.Color(DAY_SKY[state.season] || 0xcedbe6);
+  const s = typeof state !== 'undefined' ? state.season : 'fall';
+  scene.background = new THREE.Color(DAY_SKY[s] || 0xcedbe6);
   if (scene.fog) scene.fog.color.copy(scene.background);
 }
 
