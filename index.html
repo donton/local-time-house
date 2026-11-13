@@ -2606,6 +2606,8 @@ const scene = new THREE.Scene();
 scene.add(root);
 // Reflections for polished metals only (materials with an `env` strength): a painted interior panorama —
 // bright ceiling, a band of window light around the horizon, warm floor — so steel reads as polished.
+const ENV_MATS = [];
+function setEnvNight(dk) { for (const { mat, env } of ENV_MATS) mat.envMapIntensity = env * (1 - 0.88 * dk); }
 {
   const pmrem = new THREE.PMREMGenerator(renderer);
   const c = document.createElement('canvas'); c.width = 256; c.height = 128;
@@ -2621,7 +2623,7 @@ scene.add(root);
   const envTex = pmrem.fromEquirectangular(pano).texture;
   pano.dispose(); pmrem.dispose();
   for (const [name, d] of Object.entries(MAT_DEFS)) {
-    if (d.env && MATS[name]) { MATS[name].envMap = envTex; MATS[name].envMapIntensity = d.env; MATS[name].needsUpdate = true; }
+    if (d.env && MATS[name]) { MATS[name].envMap = envTex; MATS[name].envMapIntensity = d.env; MATS[name].needsUpdate = true; ENV_MATS.push({ mat: MATS[name], env: d.env }); }
   }
 }
 // Field of view (vertical degrees): narrow for the orbit view; much wider when you're inside (walk mode, indoor tour stops).
@@ -2719,9 +2721,9 @@ function fixtures() {
     // Recessed: 4" in the kitchen / dining, 2" everywhere else (owner's selection). Thin black trim + lens.
     const inKitchen = (x, z) => floor === 'ground' && x > 0.51 && x < 16.52 && z > 0.52 && z < 16.54 && !(x > 15 && z > 12);   // the two at the kitchen edge by the foyer are 2" like the other two
     const recessed = (x, z, gg) => inKitchen(x, z) ? disc(x, z, 0.2, 0.03, 0.14, gg) : disc(x, z, 1 / 12, 0.02, 0.06, gg);
-    (F.L1 || []).forEach(([x, z]) => recessed(x, z));
-    (F.L2 || []).forEach(([x, z]) => recessed(x, z, (floor === 'loft' && x > 24.7 && x < 40.86 && z > 5.97) ? g : R));
-    (F.L4 || []).forEach(([x, z]) => disc(x, z, 0.3, 0.2, 0.26));                // 5" semi-flush
+    (F.L1 || []).forEach(([x, z]) => recessed(x, z, floor === 'ground' ? G.loft : R));
+    (F.L2 || []).forEach(([x, z]) => recessed(x, z, R));
+    (F.L4 || []).forEach(([x, z]) => disc(x, z, 0.3, 0.2, 0.26, G.wingRoof));    // 5" semi-flush on wing ceiling
     (F.D6 || []).forEach(([x, z]) => {                                            // directional spot, aimed down
       const top = ceilAt(floor, x, z);
       const can = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.45, 16), trimMat); can.position.set(x, top - 0.35, z); R.add(can);
@@ -2737,18 +2739,18 @@ function fixtures() {
       }
       const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.08, 16), trimMat); cap.position.set(x, cy + r + 0.03, z); g.add(cap);
     });
-    (F.F1 || []).forEach(([x, z]) => {                                            // ceiling fan with light kit
+    (F.F1 || []).forEach(([x, z]) => {                                            // ceiling fan with light kit (mounted to dormer ceiling)
       const top = ceilAt(floor, x, z);
-      const rodM = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8), trimMat); rodM.position.set(x, top - 0.3, z); g.add(rodM);
-      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.25, 20), trimMat); hub.position.set(x, top - 0.7, z); g.add(hub);
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 20), lampMat); lens.position.set(x, top - 0.84, z); g.add(lens);
-      const spin = new THREE.Group(); spin.position.set(x, top - 0.68, z); g.add(spin);
+      const rodM = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8), trimMat); rodM.position.set(x, top - 0.3, z); R.add(rodM);
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.25, 20), trimMat); hub.position.set(x, top - 0.7, z); R.add(hub);
+      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 20), lampMat); lens.position.set(x, top - 0.84, z); R.add(lens);
+      const spin = new THREE.Group(); spin.position.set(x, top - 0.68, z); R.add(spin);
       for (let k = 0; k < 3; k++) {
         const bl = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.03, 0.4), M('oak'));
         bl.geometry.translate(1.35, 0, 0); bl.rotation.y = k * Math.PI * 2 / 3 + 0.4; bl.castShadow = true; spin.add(bl);
       }
-      const fanGrp = new THREE.Group(); g.add(fanGrp); for (const m of [rodM, hub, lens]) { g.remove(m); fanGrp.add(m); }
-      g.remove(spin); fanGrp.add(spin);
+      const fanGrp = new THREE.Group(); R.add(fanGrp); for (const m of [rodM, hub, lens]) { R.remove(m); fanGrp.add(m); }
+      R.remove(spin); fanGrp.add(spin);
       const SPEEDS = ['off', 'low', 'medium', 'high'];
       act(fanGrp, { kind: 'fan', step: 0, label: d => 'Fan: ' + SPEEDS[(d.step + 1) % 4], run: d => { d.step = (d.step + 1) % 4; d.on = d.step > 0; FAN.speed = [0, 2.4, 5, 9][d.step]; } });
       FAN.spin = spin;
@@ -2841,26 +2843,26 @@ function fixtures() {
   G.loft.add(P);
 })();
 
-// Recessed downlight zones (SpotLights aimed straight down from the ceiling — zero upward spill onto ceilings)
+// Recessed downlight zones (SpotLights aimed straight down from the actual ceilings — zero upward spill onto ceilings)
 const RECESS_SPOTS = [
   // [group, x, y, z, targetY, candela, angle, dist]
-  ['ground', 5.2, 8.85, 6.2, 0, 26, 0.85, 13],                                                      // kitchen recessed cans + island
-  ['ground', 12.2, 8.85, 6.2, 0, 20, 0.85, 13],                                                     // dining recessed cans
-  ['ground', 19.2, 8.35, 13.0, 0, 18, 0.82, 12],                                                    // entry + stair hall
-  ['ground', 9.5, 9.15, 21.5, 0, 24, 0.90, 14],                                                     // sunken living wing
-  ['ground', 31.2, 8.35, 8.5, 0, 20, 0.86, 12],                                                     // guest bedroom, bath & corridor
-  ['ground', 43.5, 8.35, 8.5, 0, 18, 0.84, 12],                                                     // east office
-  ['loft', 34.5, LV.LOFT_CEIL - 0.15, 9.5, LV.LOFT, 26, 0.88, 13],                                  // loft primary bedroom, bath & laundry
+  ['ground', 5.2, 17.5, 5.2, 0, 48, 0.65, 7.5],                                                     // kitchen vaulted recessed cans + island
+  ['ground', 12.2, 17.5, 5.2, 0, 38, 0.65, 7.5],                                                    // dining vaulted recessed cans
+  ['ground', 19.2, 7.95, 13.0, 0, 16, 0.72, 5.0],                                                   // entry + stair hall (below 8'-0" ceiling)
+  ['ground', 9.5, 8.78, 21.5, 0, 22, 0.75, 5.5],                                                    // sunken living wing (below 8'-10" ceiling)
+  ['ground', 31.2, 7.95, 8.5, 0, 18, 0.72, 5.0],                                                    // guest bedroom, bath & corridor
+  ['ground', 43.5, 7.95, 8.5, 0, 16, 0.72, 5.0],                                                    // east office
+  ['loft', 34.5, LV.LOFT_CEIL - 0.05, 9.5, LV.LOFT, 22, 0.74, 5.2],                                 // loft primary bedroom, bath & laundry
 ];
-// Soft indirect bounce + dining paper lantern (placed at mid-room / lantern height so ceilings stay evenly lit, never glossy)
+// Soft indirect bounce + dining paper lantern (localized distance so rooms don't bleed through partitions)
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela, dist]
-  ['ground', 8.4, 6.25, 6.2, 7.5, 13],                                                              // dining paper lantern (24" globe) + kitchen bounce
-  ['ground', 19.2, 4.6, 13.0, 4.5, 11],                                                             // entry + stair hall bounce
-  ['ground', 9.5, 4.5, 21.5, 5.5, 13],                                                              // sunken living bounce
-  ['ground', 31.2, 4.5, 8.5, 5.0, 11],                                                              // guest + corridor bounce
-  ['ground', 43.5, 4.5, 8.5, 4.2, 10],                                                              // east office bounce
-  ['loft', 34.5, LV.LOFT + 4.2, 9.5, 6.5, 13],                                                      // loft bounce
+  ['ground', 8.4, 6.25, 6.2, 7.5, 5.5],                                                             // dining paper lantern (24" globe) + kitchen bounce
+  ['ground', 19.2, 4.6, 13.0, 4.0, 4.5],                                                            // entry + stair hall bounce
+  ['ground', 9.5, 4.5, 21.5, 5.0, 5.5],                                                             // sunken living bounce
+  ['ground', 31.2, 4.5, 8.5, 4.5, 4.8],                                                             // guest + corridor bounce
+  ['ground', 43.5, 4.5, 8.5, 3.8, 4.5],                                                             // east office bounce
+  ['loft', 34.5, LV.LOFT + 4.2, 9.5, 5.5, 5.2],                                                     // loft bounce
 ];
 const nightRig = [];
 for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
@@ -2880,30 +2882,34 @@ for (const [axis, x, z, y, n] of RCP.ground.D5) {                               
   L.shadow.camera.near = 0.03; L.shadow.camera.far = 6;
   nightRig.push({ L, cd: 3 });
 }
-// Outside surfaces take light only from the exterior sconces. Three.js orders shadow-casting point lights first,
-// and only the exterior sconces cast shadows, so these materials loop over just those lights; room lights
-// (unshadowed) can no longer shine through walls onto the siding, roof, trim or ground.
+// Outside surfaces take light only from the exterior sconces. Three.js orders shadow-casting lights first,
+// and only the exterior sconces cast shadows, so these materials loop over just those lights; unshadowed
+// interior PointLights and SpotLights can no longer shine through walls/floors onto siding, roof, trim or ground.
 function exteriorLightsOnly(m) {
   if (!m || m.__extLights) return;
   m.__extLights = true; m.userData.extLights = true;
   m.onBeforeCompile = sh => {
     sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_begin>',
-      THREE.ShaderChunk.lights_fragment_begin.replace('for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ )', 'for ( int i = 0; i < NUM_POINT_LIGHT_SHADOWS; i ++ )'));
+      THREE.ShaderChunk.lights_fragment_begin
+        .replace('for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ )', 'for ( int i = 0; i < NUM_POINT_LIGHT_SHADOWS; i ++ )')
+        .replace('for ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ )', 'for ( int i = 0; i < NUM_SPOT_LIGHT_SHADOWS; i ++ )'));
   };
   m.customProgramCacheKey = () => 'extLights';
   m.needsUpdate = true;
 }
 for (const n of ['siding', 'sidingWood', 'skirt', 'foundation', 'roof', 'membrane', 'soffit', 'snow', 'concrete', 'deck', 'gravel', 'frame', 'steel', 'ground']) exteriorLightsOnly(MATS[n]);
 let nightOn = false;
-const DAY = { hemi: 1.35, sun: 2.3, fill: 0, exposure: 1.05 };
-const NIGHTSET = { bg: 0x1c2536, hemi: 0.42, hemiSky: 0x8296ba, sun: 0.52, sunColor: 0xbfd2f5, fill: 0.14, exposure: 1.18, dim: 0.68 };
+const DAY = { hemi: 0.85, sun: 2.5, fill: 0, exposure: 1.05 };
+const NIGHTSET = { bg: 0x1c2536, hemi: 0.22, hemiSky: 0x8296ba, sun: 0.35, sunColor: 0xbfd2f5, fill: 0, exposure: 1.05, dim: 0.72 };
 function applyNight(on) {
   nightOn = on;
   hemi.intensity = on ? NIGHTSET.hemi : DAY.hemi;
   hemi.color.set(on ? NIGHTSET.hemiSky : 0xf4f1ea); hemi.groundColor.set(on ? 0x3d3a35 : 0xd9d1c4);
+  if (on) sun.position.set(-9, 22, 14);
   sun.intensity = on ? NIGHTSET.sun : DAY.sun; sun.color.set(on ? NIGHTSET.sunColor : 0xfff3e2);
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
+  setEnvNight(on ? 1 : 0);
   for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = true; if (on && L.castShadow) L.shadow.needsUpdate = true; }
   if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
   lampMat.emissiveIntensity = on ? 2.6 : 0;
@@ -3410,7 +3416,7 @@ function applyState() {
     if (cse) cse.innerHTML = SEASON_UI[state.season] || SEASON_UI.fall;
   }
   updateWalls();                                                                  // last, after night mode has set the glass
-  const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}`;
+  const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}|${state.night}`;
   if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }
 }
 ['ground', 'both'].forEach(k => document.getElementById('fl-' + k).addEventListener('click', () => { state.floors = k; applyState(); }));
@@ -6448,6 +6454,7 @@ function bdApplyEnv(dt, immediate) {
   hemi.groundColor.lerpColors(_tc1.setHex(0xd9d1c4), _tc2.setHex(0x3d3a35), dk);
   fill.intensity = DAY.fill * (1 - dk) + NIGHTSET.fill * dk;
   renderer.toneMappingExposure = DAY.exposure * (1 - dk) + NIGHTSET.exposure * dk;
+  setEnvNight(dk);
   scene.background.lerpColors(daySky, _tc2.setHex(NIGHTSET.bg), dk);
   if (scene.fog) scene.fog.color.copy(scene.background);
 
@@ -6456,7 +6463,7 @@ function bdApplyEnv(dt, immediate) {
   const extK = BD.t >= 0.85 ? Math.min(1, Math.max(0, (BD.sunCur - 16.0) / 2.0)) : 0;
   const intK = hasLight ? Math.max(0.55, extK) : 0;
   for (const { L, cd } of nightRig) {
-    const k = L.castShadow ? extK : intK;
+    const k = L.userData.ext ? extK : intK;
     L.visible = true;
     L.intensity = k > 0.01 ? cd * NIGHTSET.dim * k : 0;
   }
@@ -6465,6 +6472,9 @@ function bdApplyEnv(dt, immediate) {
   creamMat.emissiveIntensity = BD.t >= 0.83 ? 1.4 * intK : 0;
   const glass = MATS.glass;
   if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = BD.t >= 0.83 ? 0.28 * extK : 0; }
+  for (const v of CUT.variants) {
+    const b = v.userData.base; v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.envMapIntensity = b.envMapIntensity;
+  }
   tlSetFire(BD.t >= 0.95);
 
   const ml = document.getElementById('bd-month');
