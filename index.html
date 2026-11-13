@@ -2959,10 +2959,10 @@ function applySun() {
   sun.color.setRGB(1, 0.8 + 0.15 * k, 0.62 + 0.27 * k);                               // warm at the ends of the day
   hemi.intensity = DAY.hemi * (0.7 + 0.3 * k);
 }
+const DAY_SKY = { winter: 0xcfdbe8, spring: 0xc8ddf0, summer: 0xb8d4ee, fall: 0xcedbe6 };
 function applySceneTheme() {
   if (nightOn) { scene.background = new THREE.Color(NIGHTSET.bg); if (scene.fog) scene.fog.color.copy(scene.background); return; }
-  const css = getComputedStyle(document.documentElement).getPropertyValue('--scene').trim();
-  scene.background = new THREE.Color(css || '#e4e1d9');
+  scene.background = new THREE.Color(DAY_SKY[state.season] || 0xcedbe6);
   if (scene.fog) scene.fog.color.copy(scene.background);
 }
 
@@ -4266,6 +4266,7 @@ function applySeason(name) {
   PLANTS.fernMat.color.set({ summer: 0x4D7A38, fall: 0x8C6A3A, winter: 0x6A5A46, spring: 0x5E8A44 }[name]);
   PATIO.leaf.color.set((name === 'summer' || name === 'spring') ? 0x9DBF5A : 0xE0C04A); PATIO.crowns.forEach(c => { c.visible = name !== 'winter'; });
   PATIO.brickMat.roughness = 0.9; PATIO.brickMat.metalness = 0; PATIO.mortarMat.roughness = 1;
+  applySceneTheme();
   markShadows();
 }
 applySceneTheme();
@@ -5139,10 +5140,10 @@ const _tc1 = new THREE.Color(), _tc2 = new THREE.Color(), _tc3 = new THREE.Color
 function tlApplyContinuousSeasons(day) {
   // 4-anchor seasonal keyframes: Jan 25 (25), Apr 25 (115), Jul 25 (206), Oct 25 (298)
   const KEYS = [
-    { d: 25,  s: 'winter', grass: 0xA39A86, fern: 0x6A5A46, pine: 0x3f5546, birch: 0xE0C04A, sky: 0xdfe4eb },
-    { d: 115, s: 'spring', grass: 0x86AC58, fern: 0x5E8A44, pine: 0x2f4a2e, birch: 0x9DBF5A, sky: 0xe5e3dc },
-    { d: 206, s: 'summer', grass: 0x7F9B4E, fern: 0x4D7A38, pine: 0x2f4a2e, birch: 0x8DAE4E, sky: 0xe7e3d8 },
-    { d: 298, s: 'fall',   grass: 0xB49A5E, fern: 0x8C6A3A, pine: 0x2f4a2e, birch: 0xE0C04A, sky: 0xe4dfd4 },
+    { d: 25,  s: 'winter', grass: 0xA39A86, fern: 0x6A5A46, pine: 0x3f5546, birch: 0xE0C04A, sky: DAY_SKY.winter },
+    { d: 115, s: 'spring', grass: 0x86AC58, fern: 0x5E8A44, pine: 0x2f4a2e, birch: 0x9DBF5A, sky: DAY_SKY.spring },
+    { d: 206, s: 'summer', grass: 0x7F9B4E, fern: 0x4D7A38, pine: 0x2f4a2e, birch: 0x8DAE4E, sky: DAY_SKY.summer },
+    { d: 298, s: 'fall',   grass: 0xB49A5E, fern: 0x8C6A3A, pine: 0x2f4a2e, birch: 0xE0C04A, sky: DAY_SKY.fall },
   ];
   let k0 = KEYS[3], k1 = KEYS[0], span = (365 - 298) + 25, dist = day >= 298 ? day - 298 : (365 - 298) + day;
   for (let i = 0; i < 3; i++) {
