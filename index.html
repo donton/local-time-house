@@ -2895,27 +2895,28 @@ for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
   G[grp].add(L, L.target);
   nightRig.push({ L, cd });
 }
+for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding (first in G.ground so indices 0..5 on mobile)
+  const L = new THREE.PointLight(0xffc98a, 0, 6, 2); L.visible = true; L.userData.ext = true;
+  L.position.set(x + (axis === 'x' ? n * 0.5 : 0), y - 0.5, z + (axis === 'z' ? n * 0.5 : 0)); G.ground.add(L);   // just under the cone's mouth
+  L.castShadow = !LITE; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;   // crisp cone cut-off
+  L.shadow.camera.near = 0.03; L.shadow.camera.far = 6;
+  nightRig.push({ L, cd: 5 });
+}
 for (const [grp, x, y, z, cd, dist] of NIGHT_LIGHTS) {
   const L = new THREE.PointLight(0xffcf96, 0, dist, 1.8); L.visible = true; L.position.set(x, y, z); G[grp].add(L);
   nightRig.push({ L, cd });
 }
-for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding
-  const L = new THREE.PointLight(0xffc98a, 0, 5, 2); L.visible = true;
-  L.position.set(x + (axis === 'x' ? n * 0.5 : 0), y - 0.5, z + (axis === 'z' ? n * 0.5 : 0)); G.ground.add(L);   // just under the cone's mouth
-  L.castShadow = !LITE; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true; L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;   // crisp cone cut-off
-  L.shadow.camera.near = 0.03; L.shadow.camera.far = 6;
-  nightRig.push({ L, cd: 3 });
-}
-// Outside surfaces take light only from the exterior sconces. Three.js orders shadow-casting lights first,
-// and only the exterior sconces cast shadows, so these materials loop over just those lights; unshadowed
-// interior PointLights and SpotLights can no longer shine through walls/floors onto siding, roof, trim or ground.
+// Outside surfaces take light only from the exterior sconces. Three.js orders shadow-casting lights first
+// (and on mobile LITE mode, D5 sconces are the first 6 PointLights in G.ground), so these materials loop
+// over just those lights; unshadowed interior PointLights and SpotLights never shine through walls/floors.
 function exteriorLightsOnly(m) {
   if (!m || m.__extLights) return;
   m.__extLights = true; m.userData.extLights = true;
+  const ptLimit = LITE ? String(RCP.ground.D5.length) : 'NUM_POINT_LIGHT_SHADOWS';
   m.onBeforeCompile = sh => {
     sh.fragmentShader = sh.fragmentShader.replace('#include <lights_fragment_begin>',
       THREE.ShaderChunk.lights_fragment_begin
-        .replace('for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ )', 'for ( int i = 0; i < NUM_POINT_LIGHT_SHADOWS; i ++ )')
+        .replace('for ( int i = 0; i < NUM_POINT_LIGHTS; i ++ )', `for ( int i = 0; i < ${ptLimit}; i ++ )`)
         .replace('for ( int i = 0; i < NUM_SPOT_LIGHTS; i ++ )', 'for ( int i = 0; i < NUM_SPOT_LIGHT_SHADOWS; i ++ )'));
   };
   m.customProgramCacheKey = () => 'extLights';
