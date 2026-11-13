@@ -3422,7 +3422,7 @@ function applyState() {
   for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.value = String(state.sun); }
   for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunTimeLabel(state.sun); }
   for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.disabled = state.night; }
-  const wn = document.getElementById('walk-night'); if (wn) wn.setAttribute('aria-pressed', String(state.night));
+  const wn = document.getElementById('walk-night'); if (wn) { wn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day; wn.setAttribute('aria-pressed', String(state.night)); }
   const cn = document.getElementById('chip-night');
   if (cn) {
     cn.innerHTML = state.night ? LIGHT_UI.night : LIGHT_UI.day;
