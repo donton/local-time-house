@@ -210,6 +210,8 @@ body.walking #reticle { display: block; }
 .walk-light { display: flex; align-items: center; gap: 8px; }
 .walk-light input { width: 120px; accent-color: var(--accent); }
 .walk-light output { font-family: var(--font-mono); font-size: 11px; color: var(--muted); width: 58px; font-variant-numeric: tabular-nums; }
+#walk-night { display: inline-flex; align-items: center; gap: 5px; }
+#walk-night svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
 #walk-night[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 #walkpad { display: none; gap: 6px; }
 #walkpad button { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 16px; touch-action: none; }
@@ -494,7 +496,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   <div class="walk-light">
     <input id="walk-sun" type="range" min="6" max="19.5" step="0.25" value="14" aria-label="Time of day">
     <output id="walk-sun-out" for="walk-sun">2:00 PM</output>
-    <button id="walk-night" class="btn" type="button" aria-pressed="false">Night</button>
+    <button id="walk-night" class="btn" type="button" aria-pressed="false" title="Click to toggle Day / Night"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg> Day</button>
   </div>
   <button id="walk-exit" class="btn" type="button">Exit walk</button>
 </div>
