@@ -1437,10 +1437,9 @@ function buildGround(g) {
   box(g, [pcx - 0.6, pcx + 0.6], [3.75, 6.25], [13.54, 13.58], 'panel', { room: 'corridor', name: 'Electrical panel' });
   box(g, [pcx - 0.56, pcx + 0.56], [4.98, 5.0], [13.58, 13.59], 'steel', { room: 'corridor' });
 
-  buildKitchen(g); NOCUT = true; buildStair(g); NOCUT = false; buildStairCladding(g); buildLiving(g); buildGuestBath(g);
+  NOCUT = true; buildKitchen(g); NOCUT = true; buildStair(g); NOCUT = false; buildStairCladding(g); buildLiving(g); buildGuestBath(g);
   // Guest bedroom: Custom oak Twin-over-Queen bunk bed in northeast corner
-  buildGuestBunkBed(g);
-  buildOffice(g);                                                       // office: queen bed, headboard bookcase, north wall shelves, desk & chair
+  NOCUT = true; buildGuestBunkBed(g); buildOffice(g); NOCUT = false;    // office: queen bed, headboard bookcase, north wall shelves, desk & chair
 }
 
 // Bed sized from the mattress: [w, l] in feet, headboard against the wall at zHead, centered on cx.
@@ -1453,7 +1452,7 @@ function bedSized(g, cx, zHead, [mw, ml], y, room) {
   box(g, [x0 - e, x1 + e], [y, y + 3.6], [zHead, zHead + hb], 'millwork', { room });        // headboard
 }
 
-// Guest bedroom: Custom oak Twin-over-Queen bunk bed in the northeast corner with integrated vertical foot ladder
+// Guest bedroom: Minimalist standalone oak Twin-over-Queen bunk bed in the northeast corner
 function buildGuestBunkBed(g) {
   const room = 'guestBed';
   const B = (xs, ys, zs, m = 'oak') => box(g, xs, ys, zs, m, { room });
@@ -1464,80 +1463,49 @@ function buildGuestBunkBed(g) {
   // Lower Queen mattress: 60" wide (5.0 ft) × 80" long (6.67 ft)
   // Upper Twin mattress: 38" wide (3.17 ft) × 75" long (6.25 ft)
   const xWall = 32.86, zWall = 0.52;
-  const e = 0.12, pw = 0.26, ph = 6.30;
+  const e = 0.12, pw = 0.20, ph = 5.85;
 
-  // Lower Queen mattress bounds (kept clear of north headboard posts and W05):
-  const qx1 = xWall - 0.10, qx0 = qx1 - 5.0;       // [27.76, 32.76] - W05 ends at 27.62
-  const qz0 = zWall + pw + 0.04, qz1 = qz0 + 6.67; // [0.82, 7.49]
+  // Lower Queen mattress bounds (kept clear of headboard posts and W05):
+  const qx1 = xWall - 0.10, qx0 = qx1 - 5.0;       // [27.76, 32.76]
+  const qz0 = zWall + pw + 0.04, qz1 = qz0 + 6.67; // [0.76, 7.43]
 
-  // Upper Twin mattress bounds (aligned against east wall):
+  // Upper Twin mattress bounds (aligned against east side):
   const tx1 = xWall - 0.10, tx0 = tx1 - 3.17;      // [29.59, 32.76]
-  const tz0 = qz0, tz1 = tz0 + 6.25;               // [0.82, 7.07]
+  const tz0 = qz0, tz1 = tz0 + 6.25;               // [0.76, 7.01]
+  const fz0 = qz1 + e, fz1 = fz0 + pw;             // footboard z-span [7.55, 7.75]
 
-  // --- 1. LOWER QUEEN BED (y = 0 to 1.76) ---
-  // Platform base frame & side aprons in warm natural oak
-  B([qx0 - e, xWall], [0, 0.95], [zWall, qz1 + e], 'oak');
-  B([qx0 - e + 0.08, xWall - 0.04], [0, 0.25], [zWall + 0.08, qz1 + e - 0.08], 'millwork');
-  // Queen mattress in crisp white linen
-  B([qx0, qx1], [0.95, 1.68], [qz0, qz1], 'porcelain');
-  // Woven fabric throw over the lower half of queen bed
-  B([qx0 + 0.05, qx1 - 0.05], [1.68, 1.76], [qz0 + 2.2, qz1 - 0.05], 'fabric');
-  // Two queen pillows at the north headboard
+  // --- 1. LOWER QUEEN PLATFORM (y = 0 to 1.76) ---
+  B([qx0 - e, xWall], [0, 0.95], [zWall, fz1], 'oak'); // unified oak platform + footboard
+  B([qx0, qx1], [0.95, 1.68], [qz0, qz1], 'porcelain'); // queen mattress
+  B([qx0 + 0.05, qx1 - 0.05], [1.68, 1.76], [qz0 + 2.2, qz1 - 0.05], 'fabric'); // throw
   const qpw = 2.15, qph = 0.32, qpd = 1.35;
   B([qx0 + 0.25, qx0 + 0.25 + qpw], [1.68, 1.68 + qph], [qz0 + 0.15, qz0 + 0.15 + qpd], 'porcelain');
   B([qx1 - 0.25 - qpw, qx1 - 0.25], [1.68, 1.68 + qph], [qz0 + 0.15, qz0 + 0.15 + qpd], 'porcelain');
+  // Unified headboard panel
+  B([qx0 - e, xWall], [0.95, 3.60], [zWall, zWall + 0.16], 'oak');
 
-  // --- 2. BUNK BED STRUCTURAL TIMBER POSTS (outer perimeter, clear of mattress) ---
-  const fz0 = qz1 + e, fz1 = fz0 + pw; // foot post z-span [7.61, 7.87] outside queen mattress
-  // North-East corner post (behind mattress against corner)
-  B([xWall - pw, xWall], [0, ph], [zWall, zWall + pw], 'oak');
-  // North-West lower corner post (headboard outer corner)
-  B([qx0 - e, qx0 - e + pw], [0, 3.80], [zWall, zWall + pw], 'oak');
-  // South-East full-height corner post (at foot of queen bed along east wall)
-  B([xWall - pw, xWall], [0, ph], [fz0, fz1], 'oak');
-  // South-West corner post (at foot of queen bed, supporting upper bunk crossbeam)
-  B([qx0 - e, qx0 - e + pw], [0, 4.45], [fz0, fz1], 'oak');
-  // Upper-bunk foot crossbeam spanning from SW queen post to SE wall post
-  B([qx0 - e, xWall], [4.25, 4.45], [fz0, fz1], 'oak');
-  // Upper-bunk North-West post (starts at headboard ledger, clear of lower pillows)
-  B([tx0 - pw, tx0], [3.65, ph], [zWall, zWall + pw], 'oak');
-  // Upper-bunk South-West post (starts on the foot crossbeam, clear of lower mattress)
-  B([tx0 - pw, tx0], [4.25, ph], [fz0, fz1], 'oak');
+  // --- 2. UPPER TWIN SUPPORT POSTS (standalone; SW post rises from middle of queen footboard) ---
+  B([xWall - pw, xWall], [0, ph], [zWall, zWall + pw], 'oak');    // NE corner post
+  B([xWall - pw, xWall], [0, ph], [fz0, fz1], 'oak');             // SE corner post
+  B([tx0 - pw, tx0], [0.95, ph], [zWall, zWall + pw], 'oak');     // NW post (from headboard)
+  B([tx0 - pw, tx0], [0.95, ph], [fz0, fz1], 'oak');              // SW post (from middle of queen footboard)
 
-  // Headboard millwork panel on north wall
-  B([qx0 - e, xWall], [0.95, 3.80], [zWall, zWall + 0.15], 'millwork');
-  B([tx0 - pw, xWall], [4.40, 5.95], [zWall, zWall + 0.15], 'oak');
+  // --- 3. UPPER TWIN BUNK (y = 4.25 to 5.85) ---
+  B([tx0 - pw, xWall], [4.25, 4.45], [zWall, fz1], 'oak');        // support deck
+  B([tx0 - pw, xWall], [4.45, 5.75], [zWall, zWall + 0.16], 'oak'); // upper headboard panel
+  B([tx0, tx1], [4.45, 5.15], [tz0, tz1], 'porcelain');           // upper twin mattress
+  B([tx0 + 0.05, tx1 - 0.05], [5.15, 5.22], [tz0 + 1.6, tz1 - 0.05], 'fabric'); // throw
+  B([tx0 + 0.50, tx1 - 0.50], [5.15, 5.45], [tz0 + 0.15, tz0 + 0.15 + qpd], 'porcelain'); // pillow
+  // Solid minimalist low guardrail along open room side
+  B([tx0 - pw, tx0 - pw + 0.08], [4.45, 5.75], [zWall + pw, fz0], 'oak');
 
-  // --- 3. UPPER TWIN BUNK (y = 4.25 to 6.30) ---
-  // Heavy timber perimeter side rails & support deck (spanning cleanly to foot crossbeam)
-  B([tx0 - pw, xWall], [4.25, 4.45], [zWall, fz1], 'oak');
-  B([tx0 - pw, tx0], [4.25, 4.70], [zWall, fz1], 'oak');
-  // Upper twin mattress
-  B([tx0, tx1], [4.45, 5.15], [tz0, tz1], 'porcelain');
-  // Upper twin duvet/throw
-  B([tx0 + 0.05, tx1 - 0.05], [5.15, 5.22], [tz0 + 1.6, tz1 - 0.05], 'fabric');
-  // Upper twin pillow at head
-  B([tx0 + 0.50, tx1 - 0.50], [5.15, 5.45], [tz0 + 0.15, tz0 + 0.15 + qpd], 'porcelain');
-
-  // Safety guardrails on room-side (x = tx0 - pw)
-  B([tx0 - pw, tx0 - pw + 0.09], [5.85, 6.00], [zWall + pw, fz0], 'oak'); // top rail
-  B([tx0 - pw, tx0 - pw + 0.09], [5.10, 5.25], [zWall + pw, fz0], 'oak'); // mid rail
-  for (let sz = zWall + pw + 1.2; sz < fz0; sz += 1.3) {
-    B([tx0 - pw, tx0 - pw + 0.08], [4.45, 6.00], [sz, sz + 0.12], 'oak'); // vertical balusters
-  }
-
-  // Safety guardrail on foot end (z = fz1, left of ladder)
-  B([tx0 - pw, xWall - 1.45], [5.85, 6.00], [fz1 - 0.09, fz1], 'oak');
-  B([tx0 - pw, xWall - 1.45], [5.10, 5.25], [fz1 - 0.09, fz1], 'oak');
-
-  // --- 4. BUILT-IN VERTICAL WOOD LADDER AT FOOT OF BUNK (standing on the floor) ---
-  const lx0 = xWall - 1.40, lx1 = xWall - 0.32;
-  B([lx0, lx0 + 0.12], [0, 6.05], [fz1, fz1 + 0.12], 'oak');
-  B([lx1 - 0.12, lx1], [0, 6.05], [fz1, fz1 + 0.12], 'oak');
-  // 6 horizontal solid oak ladder rungs from floor to upper bunk
-  for (let r = 0; r < 6; r++) {
-    const ry = 0.85 + r * 0.85;
-    B([lx0 + 0.10, lx1 - 0.10], [ry, ry + 0.10], [fz1 + 0.01, fz1 + 0.11], 'oak');
+  // --- 4. INTEGRATED FLUSH LADDER AT FOOT ---
+  const lx0 = xWall - 1.35, lx1 = xWall - 0.30;
+  B([lx0, lx0 + 0.08], [0, 4.45], [fz1, fz1 + 0.08], 'oak');
+  B([lx1 - 0.08, lx1], [0, 4.45], [fz1, fz1 + 0.08], 'oak');
+  for (let r = 0; r < 4; r++) {
+    const ry = 0.90 + r * 0.90;
+    B([lx0 + 0.08, lx1 - 0.08], [ry, ry + 0.08], [fz1, fz1 + 0.08], 'oak');
   }
 }
 // Office layout: queen bed (60" × 80") with its head on the east against a headboard bookcase,
@@ -2322,6 +2290,7 @@ function buildLiving(g) {
   clad(g, 'z', [16.55, 26.55], 2.51, +1, LY, [], 'living');
   clad(g, 'x', [2.51, 16.52], 26.55, -1, LY, [[3.01, 8.02, 0, 8]], 'living');
   clad(g, 'z', [16.55, 26.55], 16.52, -1, LY, [[23.55, 26.55, 0, 8]], 'living');
+  NOCUT = true;
   // A401.3: north wall = 8'-0" bench | 4'-6" stair | 1'-6" TV unit; west wall = 8'-0" bench | 2'-0" hearth
   // Pit edge: the main-floor slab face, 1'-6" tall, along the kitchen side
   box(g, [2.51, 16.52], [s, 0], [16.5, 16.54], 'concreteFloor', R);
@@ -2394,6 +2363,7 @@ function buildLiving(g) {
   for (const [z0, z1] of [[18.5, 20.67], [20.84, 22.75], [22.92, 24.4]]) box(g, [15.0, 15.02], [s + 0.2, s + 1.3], [z0, z1], 'woodRiser', R);
   const tvBox = box(g, [16.4, 16.5], [s + 3.1, s + 6.3], [17.54, 22.98], 'frame', R);
   FX_TV = { box: tvBox, center: [16.395, s + 4.7, 20.26], w: 5.3, h: 3.06, group: g };
+  NOCUT = false;
 }
 
 function buildGuestBath(g) {
@@ -2420,6 +2390,7 @@ function buildGuestBath(g) {
     pv.traverse(o => { o.userData.cutAxis = 'z'; });
     act(pv, { kind: 'door', label: d => d.on ? 'Close the shower door' : 'Open the shower door', run: d => tweenTo(pv.rotation, 'y', d.on ? -1.75 : 0, 0.9) }); }
   box(g, [36.14, 38.75], [3.5, 7.0], [4.06, 4.12], 'glass', { ...R, cast: false });
+  NOCUT = true;
   // mirror over the sink with D4 sconces either side (elev. 1)
   const GUEST_MIRROR = M('mirror').clone();
   box(g, [38.72, 38.77], [4.0, 7.0], [7.6, 9.6], 'mirror', R).material = GUEST_MIRROR;
@@ -2435,6 +2406,7 @@ function buildGuestBath(g) {
   box(g, [36.6, 38.23], [1.0, 1.4], [5.4, 6.75], 'porcelain', R);
   box(g, [37.0, 38.23], [2.6, 3.0], [7.9, 9.3], 'porcelain', R);
   box(g, [36.8, 38.77], [0, 7.0], [10.45, 13.14], 'millwork', R);
+  NOCUT = false;
 }
 
 /* ---------- 5d. Loft walls, openings, fixtures ---------- */
@@ -2503,6 +2475,7 @@ function buildLoft(g) {
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
   // MECH (west, revised): hot water heater (keynote 28), HRV
+  NOCUT = true;
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
   box(g, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
   // Laundry (east, revised): side-by-side washer + dryer (keynote 25)
@@ -2512,6 +2485,7 @@ function buildLoft(g) {
 
   // Primary bedroom: bed (dashed on A101.2), wardrobes
   bedSized(g, 32.9, 5.97, [76 / 12, 80 / 12], LV.LOFT, 'bedroom');                 // king: 76" × 80" mattress, centered as drawn
+  NOCUT = false;
 
   buildUpperBath(g);
 }
@@ -2544,6 +2518,7 @@ function buildUpperBath(g) {
   const HW = 47.56 - 5 / 12;
   box(g, [HW, 47.56], [y, y + 4.0], [1.94, PONY_N], 'biscuit', R);
   // chrome shower head + valve on the east wall
+  NOCUT = true;
   const showerParts = [box(g, [46.9, 47.53], [y + 6.6, y + 6.68], [12.06, 12.14], 'chrome', R),
     cyl(g, [46.85, 12.1], [y + 6.5, y + 6.6], 0.3, 'chrome', R),
     box(g, [47.47, 47.53], [y + 3.9, y + 4.3], [13.2, 13.4], 'chrome', R)];
@@ -2565,6 +2540,7 @@ function buildUpperBath(g) {
   }
   // two 2'-0" mirrors over the basins, 4'-0" → 7'-0"; two D4 sconces stacked between them (see RCP.loft.D4)
   for (const zc of SINKS) box(g, [47.51, 47.56], [y + 4.0, y + 7.0], [zc - 1.0, zc + 1.0], 'mirror', R).material = BATH_MIRROR;
+  NOCUT = false;
 }
 
 /* ---------- 5e. Roofs ---------- */
@@ -3151,13 +3127,12 @@ function clipVariant(el) {
       rel.multiplyMatrices(inv, m.matrixWorld);
       bb.copy(m.geometry.boundingBox).applyMatrix4(rel);
       const w = bb.max.x - bb.min.x, d = bb.max.z - bb.min.z, h = bb.max.y - bb.min.y;
-      if (m.userData.nocut && !(Math.min(w, d) <= 1.0 && h >= 6)) continue;          // stairs stay, but their full-height walls cut
+      if (m.userData.nocut) continue;                                                // furniture, cabinets, stairs, fixtures stay whole
       if (bb.max.y <= top + 0.01) continue;
       const above = bb.min.y >= top - 0.01;
       if (above && h < 0.05 && w < 1 && d < 1 && bb.min.y >= F + 6.5) continue;      // ceiling trims (recessed lights)
-      const wallish = Math.min(w, d) <= 1.0 && (h >= 1.0 || above);                  // walls, tile, glazing, sills, heads, coping
-      const mounted = bb.min.y >= F + 3.8 && !(w > 3 && d > 3);                     // wall cabinets, ledges, sconces
-      if (!wallish && !mounted) continue;
+      const wallish = Math.min(w, d) <= 1.0 && (h >= 1.0 || above);                  // walls, tile, glazing, doors, sills, heads, coping
+      if (!wallish) continue;
       const axis = m.userData.cutAxis || (w < d ? 'x' : 'z');
       const c = axis === 'x' ? (bb.min.x + bb.max.x) / 2 : (bb.min.z + bb.max.z) / 2;
       const cxm = (bb.min.x + bb.max.x) / 2, czm = (bb.min.z + bb.max.z) / 2;
