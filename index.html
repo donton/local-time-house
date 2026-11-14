@@ -33,7 +33,7 @@
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/renderers/CSS2DRenderer.js">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/geometries/RoundedBoxGeometry.js">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Instrument+Serif&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif&display=swap">
 <style>
 /* Layout: full-bleed 3D viewport; a flat brand-colored bottom dock + top-right room detail card. */
 :root {
@@ -53,7 +53,7 @@
   --active-bg: #181516;
   --active-ink: #F3F0EA;
   --font-brand: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-display: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
   --font-body: "Instrument Sans", "Helvetica Neue", Arial, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
 }
@@ -122,10 +122,9 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .mode-btn.primary:hover { filter: brightness(1.1); border-color: var(--accent); }
 .mode-btn.primary .m-tx span { color: rgba(243, 240, 234, 0.78); }
 
-.controls { padding: 9px 14px 11px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 12px; }
+.controls { padding: 9px 14px 11px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px 14px; }
 .row { display: grid; gap: 4px; flex: 0 1 auto; }
-.row.sep { border-left: 1px solid var(--rule); padding-left: 12px; }
-.lbl { font-size: 9.5px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.lbl { font-size: 10.5px; font-weight: 600; color: var(--muted); }
 .seg { display: flex; gap: 2px; padding: 2px; background: var(--chip); border: 1px solid var(--rule); border-radius: 7px; }
 .seg button { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 500 12px var(--font-body); padding: 5px 8px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; text-align: center; white-space: nowrap; transition: background 0.15s ease, color 0.15s ease; }
 .seg button svg { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -157,7 +156,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 #status { font-size: 11.5px; color: var(--olive); min-height: 0; }
 #status:empty { display: none; }
 .found-wrap, .more-wrap { position: relative; }
-.found { font-family: var(--font-mono); font-size: 11px; color: var(--olive); background: rgba(102, 101, 25, 0.10); border: 1px solid rgba(102, 101, 25, 0.24); padding: 3px 10px; border-radius: 999px; white-space: nowrap; cursor: pointer; }
+.found { font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--olive); background: rgba(102, 101, 25, 0.10); border: 1px solid rgba(102, 101, 25, 0.24); padding: 3px 10px; border-radius: 999px; white-space: nowrap; cursor: pointer; }
 .found:hover, .found[aria-expanded="true"] { background: var(--olive); border-color: var(--olive); color: var(--accent-ink); }
 :root[data-theme="dark"] .found { color: var(--blue); background: rgba(169, 196, 214, 0.12); border-color: rgba(169, 196, 214, 0.28); }
 :root[data-theme="dark"] .found:hover, :root[data-theme="dark"] .found[aria-expanded="true"] { background: var(--blue); border-color: var(--blue); color: var(--ink); }
@@ -183,9 +182,9 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
   right: max(16px, env(safe-area-inset-right, 0px)); top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto;
   width: 300px; max-height: 55%; overflow: auto; padding: 14px 16px; display: grid; gap: 10px;
 }
-#info h2 { margin: 0; font-family: var(--font-display); font-size: 18px; font-weight: 600; letter-spacing: 0.02em; }
+#info h2 { margin: 0; font-family: var(--font-display); font-size: 22px; font-weight: 400; line-height: 1.1; letter-spacing: -0.01em; }
 #info .dims { font-family: var(--font-mono); font-size: 13px; font-variant-numeric: tabular-nums; }
-#info .lvl { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+#info .lvl { font-size: 11.5px; font-weight: 500; color: var(--muted); }
 #info dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px; }
 #info dt { color: var(--muted); }
 #info dd { margin: 0; min-width: 0; }
@@ -195,7 +194,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 
 .rlabel { font-family: var(--font-body); text-align: center; pointer-events: none; color: #1f1c19;
   background: rgba(252, 250, 246, 0.86); border: 1px solid rgba(0,0,0,0.08); border-radius: 3px; padding: 2px 6px; white-space: nowrap; }
-.rlabel b { display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; }
+.rlabel b { display: block; font-size: 11.5px; font-weight: 600; }
 .rlabel span { display: block; font-family: var(--font-mono); font-size: 10px; color: #5f584f; font-variant-numeric: tabular-nums; }
 
 .hud { box-sizing: border-box; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); padding: 10px 12px;
@@ -206,7 +205,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .act-toast { top: 22%; }
 #reticle { position: fixed; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: rgba(255,255,255,0.9); box-shadow: 0 0 0 1.5px rgba(0,0,0,0.45); z-index: 4; pointer-events: none; display: none; }
 body.walking #reticle { display: block; }
-#walk-found { font-family: var(--font-mono); font-size: 11px; color: var(--accent); white-space: nowrap; }
+#walk-found { font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--accent); white-space: nowrap; }
 .walk-light { display: flex; align-items: center; gap: 8px; }
 .walk-light input { flex: 1; min-width: 110px; accent-color: var(--accent); }
 .walk-light output { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); min-width: 56px; font-variant-numeric: tabular-nums; white-space: nowrap; }
@@ -221,7 +220,7 @@ body.walking #reticle { display: block; }
 .walk-pop { position: fixed; z-index: 10; padding: 10px 12px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 28px rgba(0,0,0,0.18); }
 .walk-pop[hidden] { display: none !important; }
 #walk-room-pop { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: min(260px, calc(100% - 32px)); max-height: 55vh; overflow: auto; display: grid; gap: 4px; }
-#walk-room-pop .wp-sec { font: 600 10px/1.2 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); padding: 6px 8px 2px; }
+#walk-room-pop .wp-sec { font: 600 11px/1.2 var(--font-body); color: var(--muted); padding: 6px 8px 2px; }
 #walk-room-pop button { border: 0; background: transparent; text-align: left; padding: 8px 10px; border-radius: 8px; font: 500 13px/1.2 var(--font-body); color: var(--ink); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
 #walk-room-pop button:hover, #walk-room-pop button.cur { background: var(--chip); color: var(--accent); font-weight: 600; }
 #walk-light-pop { bottom: calc(74px + env(safe-area-inset-bottom, 0px)); left: 50%; transform: translateX(-50%); width: min(300px, calc(100% - 32px)); }
@@ -229,8 +228,8 @@ body.walking #reticle { display: block; }
 #walkpad button { width: 44px; height: 44px; border-radius: 6px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); font-size: 16px; touch-action: none; }
 @media (pointer: coarse) { #walkpad { display: flex; } .hud-text { display: none; } }
 .tour-label { display: grid; text-align: center; min-width: 140px; }
-.tour-label b { font-family: var(--font-display); font-weight: 600; font-size: 15px; }
-.tour-label span { font-family: var(--font-mono); font-size: 11px; color: var(--muted); }
+.tour-label b { font-family: var(--font-display); font-weight: 400; font-size: 18px; line-height: 1.1; }
+.tour-label span { font-family: var(--font-mono); font-size: 11px; font-variant-numeric: tabular-nums; color: var(--muted); }
 body.walking #panel, body.timeline #panel, body.building #panel, body.touring #panel, body.walking #info, body.building #info { display: none; }
 @media (max-width: 640px) {
   #panel { width: calc(100% - 24px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)); max-height: 44vh; }
@@ -258,7 +257,7 @@ body.m.walking #mbar, body.m.touring #mbar, body.m.timeline #mbar, body.m.buildi
 #mbar button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 #mbar button[aria-pressed="true"] { color: var(--accent); background: var(--chip); }
 #mbar .starbtn { color: var(--accent); }
-#mbar .starbtn b { font: 600 11px var(--font-mono); }
+#mbar .starbtn b { font: 600 11px var(--font-mono); font-variant-numeric: tabular-nums; }
 body.m #mchips { display: flex; gap: 7px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); bottom: calc(74px + env(safe-area-inset-bottom, 0px)); overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; padding: 2px 0; }
 body.m #mchips::-webkit-scrollbar { display: none; }
 body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips, body.m.building #mchips { display: none; }
@@ -291,7 +290,7 @@ body.m #msheet .more-tips { margin: 0; font-size: 12px; line-height: 1.4; color:
 body.m #info { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 body.m #mintro { display: block; position: fixed; z-index: 7; left: 12px; right: 12px; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px; border-radius: 10px; background: rgba(20,18,16,0.82); color: #fff; font: 500 14px/1.35 var(--font-body); text-align: center; transition: opacity 0.4s; }
 body.m #mintro.gone { opacity: 0; pointer-events: none; }
-body.m #mintro b { display: block; font: 700 15px var(--font-display); margin-bottom: 2px; }
+body.m #mintro b { display: block; font: 400 18px/1.15 var(--font-display); margin-bottom: 3px; }
 /* walking on a phone: stick on the left, big Use button on the right, slim HUD on top */
 body.m.walking #walkpad, body.m.walking .hud-text { display: none; }
 body.m.walking #walkhud { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto; left: max(66px, calc(16px + env(safe-area-inset-left, 0px) + 50px)); right: max(66px, calc(16px + env(safe-area-inset-right, 0px) + 50px)); transform: none; max-width: none; height: 40px; padding: 0 6px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; border-radius: 999px; }
@@ -373,7 +372,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <aside id="panel" class="card">
   <div class="titleblock">
     <div class="tb-text">
-      <h1><img class="brandmark" src="brandmark.png" alt="" width="30" height="27"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="90"></h1>
+      <h1><img class="brandmark" src="brandmark.png" alt="" width="30" height="27"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="93"></h1>
       <div class="meta"><span>Andes, NY</span></div>
     </div>
     <div class="tb-actions">
@@ -385,39 +384,37 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
   <div id="panel-body">
     <div class="hero-modes">
       <button id="btn-walk" class="mode-btn" type="button">
-        <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M8.2 10.5c-1.4 0-2.3 1.2-2.1 2.8.1 1 .7 2.2 1.2 3.1.4.8 1.3 1.1 2 .7.7-.3 1-1.2.8-2-.3-1-.4-2.1-.3-3.1.1-.9-.7-1.5-1.6-1.5zm5.6-4.5c-1.4 0-2.3 1.2-2.1 2.8.1 1 .7 2.2 1.2 3.1.4.8 1.3 1.1 2 .7.7-.3 1-1.2.8-2-.3-1-.4-2.1-.3-3.1.1-.9-.7-1.5-1.6-1.5z"/><circle cx="7.2" cy="8.2" r="0.8" fill="currentColor" stroke="none"/><circle cx="9.2" cy="8.0" r="0.7" fill="currentColor" stroke="none"/><circle cx="12.8" cy="3.7" r="0.8" fill="currentColor" stroke="none"/><circle cx="14.8" cy="3.5" r="0.7" fill="currentColor" stroke="none"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>
         <div class="m-tx"><b>Walk through</b><span>Stroll room to room</span></div>
       </button>
       <button id="btn-tour" class="mode-btn" type="button">
-        <svg viewBox="0 0 22 22" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M14.2 7.8l-2 4.6-4.4 1.8 2-4.6z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
         <div class="m-tx"><b>Guided tour</b><span>9 curated stops</span></div>
       </button>
       <button id="btn-timeline" class="mode-btn" type="button">
-        <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 11.5V19.5M11 16.5c0-2 2-3.2 4-3-1.2 1.8-2.2 3-4 3z"/><circle cx="11" cy="7.5" r="1.8"/><path d="M11 5.7c-1.1-1.8-.8-3.7 0-3.7s1.1 1.9 0 3.7zm1.7 1.2c1.4-1.5 3.3-1.8 3.6-1s-1.4 1.9-3.6 1zm-.6 1.9c2 .5 3.1 2.1 2.4 2.8s-2-.4-2.4-2.8zm-2.2 0c-.4 2.4-1.8 3.5-2.4 2.8s.4-2.3 2.4-2.8zm-.6-1.9c-2.2.9-3.9-.2-3.6-1s2.2-.5 3.6 1z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="1.5"/><path d="M12 11v11"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>
         <div class="m-tx"><b>A year here</b><span>Life across four seasons</span></div>
       </button>
       <button id="btn-build" class="mode-btn" type="button">
-        <svg viewBox="0 0 22 22" aria-hidden="true"><path d="M4.5 17.5l8-8M10.8 7.8l3.4 3.4M14.5 11.5l2.5-2.5-3.2-3.2c-1.3-1.3-3.2-1.7-4.8-.8l2.5 1.3-1.2 1.5z"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>
         <div class="m-tx"><b>Build the house</b><span>Sep → May, slab to move-in</span></div>
       </button>
     </div>
     <div class="controls">
       <div class="row">
-        <span class="lbl" id="floors-lbl">Floors</span>
-        <div class="seg" role="group" aria-labelledby="floors-lbl">
+        <div class="seg" role="group" aria-label="Floors">
           <button id="fl-ground" type="button" aria-pressed="false">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" opacity="0.35"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>
-            1
+            Floor 1
           </button>
           <button id="fl-both" type="button" aria-pressed="true">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 6l6-2.5L14 6l-6 2.5z" fill="currentColor"/><path d="M2 10.5L8 8l6 2.5L8 13z" fill="currentColor"/></svg>
-            2
+            Floor 2
           </button>
         </div>
       </div>
       <div class="row sep">
-        <span class="lbl" id="walls-lbl">Shell</span>
-        <div class="seg" role="group" aria-labelledby="walls-lbl">
+        <div class="seg" role="group" aria-label="Shell">
           <button id="wl-roof" type="button" aria-pressed="false">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 7.5L8 3l6 4.5M3.5 6.5V13h9V6.5"/></svg>
             Roof
@@ -433,15 +430,13 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
         </div>
       </div>
       <div class="row sep">
-        <span class="lbl" id="season-lbl">Season</span>
-        <button id="btn-season" class="tog icon-tog" type="button" aria-labelledby="season-lbl" title="Click to cycle season">
+        <button id="btn-season" class="tog icon-tog" type="button" aria-label="Season" title="Click to cycle season">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M13 3C8.5 3 4.5 6 4.5 10.5c0 .7.1 1.3.3 1.8L3 14M4.8 12.2c.5.2 1.1.3 1.7.3C11 12.5 13 8.5 13 3zM5 11.5L10.5 6"/></svg>
           Fall
         </button>
       </div>
       <div class="row sep">
-        <span class="lbl" id="light-lbl">Light</span>
-        <button id="btn-night" class="tog icon-tog" type="button" aria-labelledby="light-lbl" title="Click to toggle Day / Night">
+        <button id="btn-night" class="tog icon-tog" type="button" aria-label="Light" title="Click to toggle Day / Night">
           <svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg>
           Day
         </button>
@@ -511,7 +506,7 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 <div id="act-toast" class="act-hint act-toast" hidden></div>
 <div id="reticle" aria-hidden="true"></div>
 <div id="spots" aria-hidden="true"></div>
-<div id="mtitle"><img class="brandmark" src="brandmark.png" alt="" width="22" height="20"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="90"></div>
+<div id="mtitle"><img class="brandmark" src="brandmark.png" alt="" width="22" height="20"><img class="wordmark" src="wordmark.png" alt="Local Time House" width="1024" height="93"></div>
 <div id="mintro"><b>Tap anything.</b>Drag to look around · pinch to zoom · try the fridge</div>
 <div id="mchips">
   <button id="chip-floors" type="button" aria-label="Toggle floors"></button>
@@ -521,10 +516,10 @@ body.m.touring .tour-label { flex: 1; min-width: 0; }
 </div>
 <nav id="mbar" aria-label="Modes">
   <button id="mb-explore" type="button" aria-pressed="true"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M14 8l-2 4.5L7.5 14l2-4.5z"/></svg>Explore</button>
-  <button id="mb-walk" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M8.2 10.5c-1.4 0-2.3 1.2-2.1 2.8.1 1 .7 2.2 1.2 3.1.4.8 1.3 1.1 2 .7.7-.3 1-1.2.8-2-.3-1-.4-2.1-.3-3.1.1-.9-.7-1.5-1.6-1.5zm5.6-4.5c-1.4 0-2.3 1.2-2.1 2.8.1 1 .7 2.2 1.2 3.1.4.8 1.3 1.1 2 .7.7-.3 1-1.2.8-2-.3-1-.4-2.1-.3-3.1.1-.9-.7-1.5-1.6-1.5z"/><circle cx="7.2" cy="8.2" r="0.8" fill="currentColor" stroke="none"/><circle cx="9.2" cy="8.0" r="0.7" fill="currentColor" stroke="none"/><circle cx="12.8" cy="3.7" r="0.8" fill="currentColor" stroke="none"/><circle cx="14.8" cy="3.5" r="0.7" fill="currentColor" stroke="none"/></svg>Walk</button>
-  <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M9.3 7.5l5.2 3.5-5.2 3.5z"/></svg>Tour</button>
-  <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M11 11.5V19.5M11 16.5c0-2 2-3.2 4-3-1.2 1.8-2.2 3-4 3z"/><circle cx="11" cy="7.5" r="1.8"/><path d="M11 5.7c-1.1-1.8-.8-3.7 0-3.7s1.1 1.9 0 3.7zm1.7 1.2c1.4-1.5 3.3-1.8 3.6-1s-1.4 1.9-3.6 1zm-.6 1.9c2 .5 3.1 2.1 2.4 2.8s-2-.4-2.4-2.8zm-2.2 0c-.4 2.4-1.8 3.5-2.4 2.8s.4-2.3 2.4-2.8zm-.6-1.9c-2.2.9-3.9-.2-3.6-1s2.2-.5 3.6 1z"/></svg>Year</button>
-  <button id="mb-build" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M4.5 17.5l8-8M10.8 7.8l3.4 3.4M14.5 11.5l2.5-2.5-3.2-3.2c-1.3-1.3-3.2-1.7-4.8-.8l2.5 1.3-1.2 1.5z"/></svg>Build</button>
+  <button id="mb-walk" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>Walk</button>
+  <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Tour</button>
+  <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="1.5"/><path d="M12 11v11"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>Year</button>
+  <button id="mb-build" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>Build</button>
   <button id="mb-more" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M3 7h16M3 15h16"/><circle cx="8" cy="7" r="2.3" fill="var(--card)"/><circle cx="14" cy="15" r="2.3" fill="var(--card)"/></svg>More</button>
 </nav>
 <div id="mscrim" aria-hidden="true"></div>
@@ -614,6 +609,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { Reflector } from 'three/addons/objects/Reflector.js';
 /* =====================================================================
    0. COORDINATES
    All geometry is in FEET. Plan origin = grid 01 (x) / grid A (z).
@@ -875,6 +871,11 @@ function M(name) {
   if (d.emissive) { m.emissive = new THREE.Color(d.emissive); m.emissiveIntensity = d.emissiveI ?? 1; }
   return (MATS[name] = m);
 }
+const lampMat = new THREE.MeshStandardMaterial({ color: 0xf3eee6, emissive: 0xffd09a, emissiveIntensity: 0, roughness: 0.5 });
+const creamMat = new THREE.MeshStandardMaterial({ color: 0xF0DDA6, emissive: 0xffd28f, emissiveIntensity: 0, roughness: 0.18 });   // cream opal glass, glossy
+creamMat.name = 'creamGlass'; lampMat.name = 'lamp';
+const paperMat = new THREE.MeshStandardMaterial({ color: 0xf8f4ec, emissive: 0xffd8a8, emissiveIntensity: 0, roughness: 0.95 });
+paperMat.name = 'paper';
 
 /* =====================================================================
    3. GEOMETRY HELPERS (all inputs in feet, world-aligned)
@@ -898,7 +899,22 @@ const ACTS = [];
 let FX_FIRE = null, FX_TV = null;
 const FX_SHOWERS = [];                                       // every shower stall: { parts, head, floor, zone, group, mirror, tap }
 const FAN = { speed: 0, spin: null };
-const BATH_MIRROR = M('mirror').clone();                    // its own material so the upstairs mirrors can fog
+const FX_MIRRORS = [];                                       // real-time planar mirrors: { ref, fogMesh, fogMat, pos, floorKey }
+const makeMirrorFogMat = () => new THREE.MeshStandardMaterial({ color: 0xe6ecee, roughness: 0.92, metalness: 0, transparent: true, opacity: 0, depthWrite: false });
+const BATH_MIRROR = makeMirrorFogMat();                      // its own material so the upstairs mirrors can fog
+function addMirror(g, xFace, [y0, y1], [z0, z1], fogMat, room, floorKey) {
+  box(g, [xFace, xFace + 0.05], [y0, y1], [z0, z1], 'mirror', { room });
+  const w = z1 - z0, h = y1 - y0, cy = (y0 + y1) / 2, cz = (z0 + z1) / 2;
+  const ref = new Reflector(new THREE.PlaneGeometry(w, h), { clipBias: 0.003, textureWidth: 512, textureHeight: 512, color: 0xd0dce2 });
+  ref.position.set(xFace - 0.002, cy, cz); ref.rotation.y = -Math.PI / 2;
+  ref.userData = { room, nocut: true, noMerge: true };
+  g.add(ref);
+  const fogMesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), fogMat);
+  fogMesh.position.set(xFace - 0.005, cy, cz); fogMesh.rotation.y = -Math.PI / 2;
+  fogMesh.visible = false; fogMesh.userData = { room, nocut: true, noMerge: true };
+  g.add(fogMesh);
+  FX_MIRRORS.push({ ref, fogMesh, fogMat, pos: [xFace, cy, cz], floorKey });
+}
 const TWEENS = [];
 function tweenTo(obj, key, to, dur) {
   for (let i = TWEENS.length - 1; i >= 0; i--) if (TWEENS[i].obj === obj && TWEENS[i].key === key) TWEENS.splice(i, 1);
@@ -2149,7 +2165,7 @@ function buildKitchen(g) {
         W([xd, xo - 0.05], [2.98, 4.35], [zc + 0.12, zc + hw]);                                       // right block
         W([xo - 0.05, xo - 0.04], [3.2, 4.2], [zc + 0.2, zc + 0.5], 'steelTop');                      // stainless plate
         const cv = document.createElement('canvas'); cv.width = 320; cv.height = 56; const cx = cv.getContext('2d');
-        cx.fillStyle = '#6d7175'; cx.font = '500 30px "IBM Plex Sans", Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('Beverage Center', 160, 30);
+        cx.fillStyle = '#6d7175'; cx.font = '500 30px "Instrument Sans", Arial, sans-serif'; cx.textAlign = 'center'; cx.textBaseline = 'middle'; cx.fillText('Beverage Center', 160, 30);
         const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace;
         const lab = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 0.9 * 56 / 320).rotateY(Math.PI / 2), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false }));
         lab.position.set(xo + 0.004, 4.72, zc); lab.userData.room = 'kitchen'; g.add(lab);
@@ -2392,8 +2408,8 @@ function buildGuestBath(g) {
   box(g, [36.14, 38.75], [3.5, 7.0], [4.06, 4.12], 'glass', { ...R, cast: false });
   NOCUT = true;
   // mirror over the sink with D4 sconces either side (elev. 1)
-  const GUEST_MIRROR = M('mirror').clone();
-  box(g, [38.72, 38.77], [4.0, 7.0], [7.6, 9.6], 'mirror', R).material = GUEST_MIRROR;
+  const GUEST_MIRROR = makeMirrorFogMat();
+  addMirror(g, 38.72, [4.0, 7.0], [7.6, 9.6], GUEST_MIRROR, 'guestBath', 'ground');
   for (const z of [7.3, 9.9]) cyl(g, [38.68, z], [5.55, 6.05], 0.12, 'chrome', R);
   // chrome: shower arm/head, valve, faucet, towel bar
   const guestShowerParts = [box(g, [38.2, 38.74], [6.7, 6.78], [2.06, 2.14], 'chrome', R),
@@ -2459,17 +2475,21 @@ function buildLoft(g) {
   const top = z => loftWallTop(z);
   const inDormer = x => x >= LV.DORMER_X[0] && x <= LV.DORMER_X[1];
   const topDormer = z => z > LV.RIDGE_Z ? LV.LOFT_CEIL : loftWallTop(z);   // flat 8'-0" ceiling under the shed dormer
-  const P = (axis, u, t, holes = []) => {
-    const y1 = axis === 'x' ? Math.min(LV.LOFT_CEIL, roofUnder(t[0]), roofUnder(t[1])) : LV.LOFT_CEIL;
-    intWall(g, axis, u, t, [LV.LOFT, y1], holes, { top: axis === 'z' ? (inDormer(t[0]) ? topDormer : top) : undefined });
+  const topDormerFull = z => z > LV.RIDGE_Z ? Math.max(LV.LOFT_CEIL, roofUnder(z)) : roofUnder(z);
+  const P = (axis, u, t, holes = [], fullRoof = false) => {
+    const y1 = axis === 'x'
+      ? Math.min(fullRoof ? LV.RIDGE : LV.LOFT_CEIL, roofUnder(t[0]), roofUnder(t[1]))
+      : (fullRoof ? LV.RIDGE : LV.LOFT_CEIL);
+    const topFn = axis === 'z' ? (fullRoof ? topDormerFull : (inDormer(t[0]) ? topDormer : top)) : undefined;
+    intWall(g, axis, u, t, [LV.LOFT, y1], holes, { top: topFn });
   };
-  P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]]);        // stair/loft | bedroom, door 201
+  P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
   P('z', [0.52, 5.42], [30.23, 30.77], [[2.3, 5.42, LV.LOFT, LV.LOFT + 5]]);           // MECH | laundry, door 203 (5' tall)
-  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]]);         // MECH+laundry | bedroom; pocket 202 (8'-0", same as 204) at the east end (revised), 3" jamb
-  P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]]);          // bedroom | bath, pocket 204
+  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+laundry | bedroom (full height to sloped roof)
+  P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+laundry | bath (full height to sloped roof)
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
-  doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, wt: 0.54 });            // 201
+  doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, open: 2.85, wt: 0.54 }); // 201
   doorLeaf(g, { axis: 'z', u: [2.3, 5.42], face: 30.77, swing: +1, hinge: 'b', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });      // 203 (shown closed, behind the figure)
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (laundry | bedroom)
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
@@ -2478,12 +2498,30 @@ function buildLoft(g) {
   NOCUT = true;
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
   box(g, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
-  // Laundry (east, revised): side-by-side washer + dryer (keynote 25)
-  box(g, [36.0, 38.35], [LV.LOFT, LV.LOFT + 3.2], [0.6, 3.1], 'porcelain', { room: 'laundry' });
-  box(g, [38.45, 40.8], [LV.LOFT, LV.LOFT + 3.2], [0.6, 3.1], 'porcelain', { room: 'laundry' });
+  // Laundry (east, revised): side-by-side front-loading washer + dryer with interactive doors (keynote 25)
+  const addLaundry = (x0, x1, label, hingeDir, clothMat) => {
+    const cx = (x0 + x1) / 2, cy = LV.LOFT + 1.4, y0 = LV.LOFT, R = { room: 'laundry' };
+    box(g, [x0, x1], [y0, y0 + 3.2], [0.6, 3.04], 'porcelain', R);
+    box(g, [x0 + 0.08, x1 - 0.08], [y0 + 2.72, y0 + 3.12], [3.04, 3.08], 'steel', R);          // control console strip
+    box(g, [cx - 0.35, cx + 0.15], [y0 + 2.82, y0 + 3.02], [3.08, 3.10], 'frame', R);          // LED display
+    addGeo(g, new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16).rotateX(Math.PI / 2).translate(x1 - 0.35, y0 + 2.92, 3.10), 'chrome', R); // dial
+    // recessed drum cavity
+    addGeo(g, new THREE.CylinderGeometry(0.68, 0.68, 0.06, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.02), 'frame', R);
+    addGeo(g, new THREE.CylinderGeometry(0.56, 0.56, 0.05, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.04), 'steel', R);
+    if (clothMat) box(g, [cx - 0.32, cx + 0.30], [cy - 0.48, cy - 0.14], [2.95, 3.05], clothMat, R);
+    // pivoting porthole door
+    const n0 = g.children.length;
+    addGeo(g, new THREE.TorusGeometry(0.68, 0.06, 10, 28).translate(cx, cy, 3.09), 'chrome', R);
+    addGeo(g, new THREE.CylinderGeometry(0.63, 0.63, 0.04, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.09), 'glass', { ...R, cast: false });
+    const hx = hingeDir < 0 ? cx - 0.72 : cx + 0.72;
+    const pv = pivotFrom(g, n0, hx, cy, 3.09);
+    act(pv, { kind: 'laundry', label: d => d.on ? 'Close ' + label : 'Open ' + label, run: d => tweenTo(pv.rotation, 'y', d.on ? hingeDir * 1.55 : 0, 0.7) });
+  };
+  addLaundry(36.0, 38.35, 'washer', -1, 'nautical');
+  addLaundry(38.45, 40.8, 'dryer', +1, 'fabric');
   box(g, [35.8, 40.86], [LV.LOFT + 3.2, LV.LOFT + 3.3], [0.55, 3.15], 'millwork', { room: 'laundry' });
 
-  // Primary bedroom: bed (dashed on A101.2), wardrobes
+  // Primary bedroom: bed (dashed on A101.2)
   bedSized(g, 32.9, 5.97, [76 / 12, 80 / 12], LV.LOFT, 'bedroom');                 // king: 76" × 80" mattress, centered as drawn
   NOCUT = false;
 
@@ -2539,7 +2577,7 @@ function buildUpperBath(g) {
     box(g, [HW - 0.42, HW - 0.12], [y + 4.04, y + 4.1], [zc - 0.04, zc + 0.04], 'chrome', R);
   }
   // two 2'-0" mirrors over the basins, 4'-0" → 7'-0"; two D4 sconces stacked between them (see RCP.loft.D4)
-  for (const zc of SINKS) box(g, [47.51, 47.56], [y + 4.0, y + 7.0], [zc - 1.0, zc + 1.0], 'mirror', R).material = BATH_MIRROR;
+  for (const zc of SINKS) addMirror(g, 47.51, [y + 4.0, y + 7.0], [zc - 1.0, zc + 1.0], BATH_MIRROR, 'bath2', 'loft');
   NOCUT = false;
 }
 
@@ -2598,21 +2636,22 @@ function buildMainRoof(g) {
   const CT = 0.04, uz = z => roofUnder(z) + 0.005;
   for (const [x0, x1, hole] of xSegments(0.51, 47.56)) {                              // north slope, cut for the skylights
     if (!hole) { slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [rz, uz(rz)], CT, 'ceiling', { cast: false }); continue; }
-    slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [zA, uz(zA)], CT, 'ceiling', { cast: false });
-    slopedSlab(g, [x0, x1], [zB, uz(zB)], [rz, uz(rz)], CT, 'ceiling', { cast: false });
-    // white light-well sides from the ceiling up to the skylight
-    // white light-well lining, inside the curb, hiding the roof framing and curb (c = curb width)
-    const yA = uz(zA) - 0.06, yB = uz(zB) - 0.06, tA = atZ(zA) - 0.45, tB = atZ(zB) + 0.02;   // low end stays below the roof skin and curb
+    const dPerp = 0.585, zCA = zA + dPerp, zCB = zB + dPerp;                               // 45° perpendicular offset from roof top to ceiling
+    slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [zCA, uz(zCA)], CT, 'ceiling', { cast: false });
+    slopedSlab(g, [x0, x1], [zCB, uz(zCB)], [rz, uz(rz)], CT, 'ceiling', { cast: false });
+    // white light-well sides + perpendicular sill/head from the ceiling up to the skylight curb
+    const yCA = uz(zCA) - 0.04, yCB = uz(zCB) - 0.04;
     for (const [a, b] of [[x0, x0 + 0.05], [x1 - 0.05, x1]])
-      prism(g, 'z', [[zA, yA], [zB, yB], [zB, tB], [zA, tA]], [a, b], 'ceiling', { cast: false });
-    box(g, [x0, x1], [yA, tA], [zA + 0.12, zA + 0.62], 'ceiling', { cast: false });        // low end, tucked under the curb
-    box(g, [x0, x1], [yB, tB], [zB - 0.05, zB + 0.02], 'ceiling', { cast: false });        // high end
+      prism(g, 'z', [[zCA, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.40], [zA + 0.15, atZ(zA + 0.15) + 0.40]], [a, b], 'ceiling', { cast: false });
+    prism(g, 'z', [[zA, atZ(zA) + 0.40], [zCA, yCA], [zCA + 0.06, yCA], [zA + 0.16, atZ(zA + 0.16) + 0.40]], [x0, x1], 'ceiling', { cast: false });   // low end (perpendicular)
+    prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.40], [zCB - 0.06, yCB], [zCB, yCB], [zB, atZ(zB) + 0.40]], [x0, x1], 'ceiling', { cast: false });   // high end (perpendicular)
   }
   slopedSlab(g, [0.51, 24.16], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [41.4, 47.56], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [rz, uz(rz)], [LV.DORMER_JOIN_Z, uz(LV.DORMER_JOIN_Z)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.6], [16.54, LV.DORMER_WALL_TOP + 0.01], CT, 'ceiling', { cast: false });
   box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [5.97, 16.54], 'ceiling', { cast: false });
+  box(g, [0.51, 47.56], [uz(rz) - 0.06, uz(rz) + 0.02], [rz - 0.06, rz + 0.06], 'ceiling', { cast: false }); // seal ridge V-notch
   // ridge cap
   box(g, [-0.5, 48.56], [ry - 0.05, ry + 0.12], [rz - 0.35, rz + 0.35], 'roof');
   // eave soffits (close the overhang above the wall plate)
@@ -2767,14 +2806,7 @@ const ceilAt = (floor, x, z) => {
   if (x < 14.52) return z < 16.54 ? roofUnder(z) - 0.07 : 8.83;                   // vaulted kitchen / living ceiling above joists
   return LV.CEIL1;
 };
-const lampMat = new THREE.MeshStandardMaterial({ color: 0xf3eee6, emissive: 0xffd09a, emissiveIntensity: 0, roughness: 0.5 });
-const creamMat = new THREE.MeshStandardMaterial({ color: 0xF0DDA6, emissive: 0xffd28f, emissiveIntensity: 0, roughness: 0.18 });   // cream opal glass, glossy
-creamMat.name = 'creamGlass';
-lampMat.name = 'lamp';
 const trimMat = M('frame');
-// rice-paper lantern: soft warm white; glows with the other fixtures at night
-const paperMat = new THREE.MeshStandardMaterial({ color: 0xf8f4ec, emissive: 0xffd8a8, emissiveIntensity: 0, roughness: 0.95 });
-paperMat.name = 'paper';
 const ribMat = new THREE.MeshStandardMaterial({ color: 0xe8e1d4, roughness: 1 });
 function fixtures() {
   for (const floor of ['ground', 'loft']) {
@@ -2930,7 +2962,9 @@ const RECESS_SPOTS = [
   ['loft', 28.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed west cans
   ['loft', 37.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed east cans
   ['loft', 33.2, 16.9, 3.0, LV.LOFT, 14, 0.72, 4.5],                                                // loft laundry & MECH
-  ['loft', 44.5, 21.2, 9.9, LV.LOFT, 24, 0.68, 6.2],                                                // upstairs bath (vaulted)
+  ['loft', 44.47, 21.25, 7.22, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath north can (vanity)
+  ['loft', 44.47, 21.25, 9.86, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath mid can
+  ['loft', 44.47, 18.52, 12.58, LV.LOFT, 20, 0.78, 5.8],                                             // upstairs bath south can (shower)
 ];
 // Soft indirect bounce + dining paper lantern (kept subtle so mid-room points don't create fake wall/door hotspots)
 const NIGHT_LIGHTS = [
@@ -2939,8 +2973,11 @@ const NIGHT_LIGHTS = [
   ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
+  ['ground', 35.8, 4.5, 6.5, 1.4, 4.2],                                                             // guest bath bounce
   ['ground', 43.5, 4.5, 8.5, 1.5, 4.5],                                                             // east office bounce
   ['loft', 33.0, LV.LOFT + 4.2, 11.2, 1.8, 5.2],                                                    // loft bounce
+  ['loft', 44.5, LV.LOFT + 5.2, 9.2, 2.2, 5.5],                                                     // upstairs bath bounce
+  ['loft', 46.8, LV.LOFT + 5.78, 7.19, 3.0, 4.2],                                                   // upstairs bath vanity sconces
 ];
 const nightRig = [];
 for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
@@ -3413,7 +3450,15 @@ function interactStep(dt) {
     }
     S.fog = Math.max(0, Math.min(1, S.fog + dt * (on ? 1 / 8 : -1 / 14)));
     S.steam.material.opacity = 0.2 * S.fog; S.steam.visible = S.fog > 0.01;
-    S.mirror.color.setRGB(0.706 + 0.2 * S.fog, 0.765 + 0.15 * S.fog, 0.792 + 0.12 * S.fog); S.mirror.roughness = 0.12 + 0.8 * S.fog;
+    S.mirror.opacity = S.fog * 0.85;
+  }
+  _cv.copy(camera.position).sub(root.position).divideScalar(FT);
+  for (const m of FX_MIRRORS) {
+    const show = _cv.x < m.pos[0] && state.explode < 0.05 && !m.ref.userData.phaseHidden
+      && (m.floorKey === 'ground' || state.floors === 'both')
+      && Math.hypot(_cv.x - m.pos[0], _cv.y - m.pos[1], _cv.z - m.pos[2]) < 18;
+    m.ref.visible = show;
+    m.fogMesh.visible = show && m.fogMat.opacity > 0.01;
   }
   for (const f of skyFx) {
     f.pts.visible = f.on; if (!f.on) continue;
@@ -3679,6 +3724,34 @@ const PLANTS = (() => {
   const mBoulders = inst(new THREE.DodecahedronGeometry(1, 0), stoneMat, boulders, (o, [x, z, k]) => { o.position.set(x, y0 + 0.25 * k, z); o.rotation.set(rnd(), rnd() * 3, rnd() * 0.3); o.scale.set(1.5 * k, 0.8 * k, 1.2 * k); });
   return { grassMat, fernMat, shrubMat, meshes: [mGrass, mFerns, mShrubs, mStones], boulders: mBoulders };
 })();
+// Architectural path bollard lights: entry stone path, parking spot, and patio perimeter
+const PATH_BOLLARDS = [
+  [24.2, 33.4], [41.0, 35.1],   // entry stone path
+  [55.2, 36.2], [65.0, 30.8],   // parking spot & EV charger
+  [-5.0, 42.5], [-23.5, 45.5],  // patio perimeter (clear of table & firepit)
+];
+{
+  const postG = new THREE.CylinderGeometry(0.14, 0.14, 1.52, 12).translate(0, 0.76, 0);
+  const lensG = new THREE.CylinderGeometry(0.125, 0.125, 0.22, 12).translate(0, 1.63, 0);
+  const capG = new THREE.CylinderGeometry(0.16, 0.15, 0.12, 12).translate(0, 1.80, 0);
+  for (const [bx, bz] of PATH_BOLLARDS) {
+    const by = terrainY(bx, bz);
+    const gB = new THREE.Group(); gB.position.set(bx, by, bz);
+    const post = new THREE.Mesh(postG, M('frame')); post.castShadow = true; post.receiveShadow = true;
+    const lens = new THREE.Mesh(lensG, lampMat);
+    const cap = new THREE.Mesh(capG, M('frame')); cap.castShadow = true;
+    gB.add(post, lens, cap); LAND.add(gB);
+    const L = new THREE.SpotLight(0xffcf96, 0, 26, 1.38, 0.95, 1.1);
+    L.position.set(bx, by + 1.72, bz); L.target.position.set(bx, by, bz); L.userData.ext = true;
+    if (!LITE) {
+      L.castShadow = true; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true;
+      L.shadow.mapSize.set(256, 256); L.shadow.bias = -0.002; L.shadow.normalBias = 0.02;
+      L.shadow.camera.near = 0.1; L.shadow.camera.far = 26;
+    }
+    LAND.add(L, L.target);
+    nightRig.push({ L, cd: 4.5 });
+  }
+}
 
 /* White sedan (Model 3 proportions: 15'-5" × 6'-1" × 4'-9"), backed into the parking spot and plugged into a
    wall-box charger on a bright orange post. Click the car to flash the headlights. */
@@ -4424,7 +4497,7 @@ const WALK_SPOTS = [
   { sec: 'Ground', name: 'Guest bath', pos: [36.0, 0, 9.5], yaw: 0 },
   { sec: 'Ground', name: 'Office', pos: [42.0, 0, 10.5], yaw: 0 },
   { sec: 'Loft', name: 'Loft', pos: [19.5, LV.LOFT, 13.5], yaw: 1.57 },
-  { sec: 'Loft', name: 'Primary bedroom', pos: [32.5, LV.LOFT, 11.5], yaw: 0 },
+  { sec: 'Loft', name: 'Primary bedroom', pos: [26.5, LV.LOFT, 12.3], yaw: -1.25 },
   { sec: 'Loft', name: 'Upstairs bath', pos: [44.5, LV.LOFT, 9.5], yaw: 0 },
   { sec: 'Outside', name: 'West deck', pos: [-4.5, 0, 9.5], yaw: -1.57 },
   { sec: 'Outside', name: 'South lawn', pos: [25.0, LV.GRADE, 44.0], yaw: 3.14 },
@@ -4870,7 +4943,7 @@ const KIND_INFO = {
   door: ['Doors', 'Open any door'], lights: ['Light switch', 'The switch by the front door'], cabinet: ['Cabinets & drawers', 'Try the corner one: it swivels out'],
   dishwasher: ['Dishwasher', 'Panel-ready, next to the sink'], freezer: ['Freezer drawer', 'Bottom of the fridge'], fridge: ['Fridge', 'French doors'],
   fan: ['Ceiling fan', 'Give it a spin'], fireplace: ['Fireplace', 'Light a fire'], tv: ['TV', 'Flip through the channels'],
-  shower: ['Shower', 'Fogs up the mirror'], car: ['The car', 'Flash the headlights'],
+  shower: ['Shower', 'Fogs up the mirror'], laundry: ['Washer & dryer', 'Open the front doors'], car: ['The car', 'Flash the headlights'],
 };
 const FLY = { cur: null };
 function flyTo(p1, q1, dur = 1.3) {
@@ -7349,7 +7422,7 @@ const TINY = [];
   for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
     const grp = G[key], buckets = new Map();
     for (const m of grp.children.slice()) {
-      if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || cutSet.has(m) || snowSet.has(m) || actOf(m)) continue;
+      if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || cutSet.has(m) || snowSet.has(m) || actOf(m) || m.userData.noMerge) continue;
       if (FX_FIRE && m === FX_FIRE.glass) continue;
       if (m === tvScreen) continue;
       const g = m.geometry;
