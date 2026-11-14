@@ -1524,64 +1524,131 @@ function buildGuestBunkBed(g) {
     B([lx0 + 0.08, lx1 - 0.08], [ry, ry + 0.08], [fz1, fz1 + 0.08], 'oak');
   }
 }
-// Office layout: queen bed (60" × 80") with its head on the east against a headboard bookcase,
-// shelves along the north wall, floating desk under W04, and desk chair. No rug.
+// Office layout: built-in oak platform bed with drawers, rust/navy throw, floating shelves, leaning art,
+// red reading lamp, textured wool rug, floating oak desk with conical lamp, and green/chrome chair.
 function buildOffice(g) {
   const room = 'office';
   const B = (xs, ys, zs, m = 'millwork') => box(g, xs, ys, zs, m, { room });
+  const makeTex = (w, h, draw, rough = 0.92) => {
+    const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+    draw(cv.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace;
+    return new THREE.MeshStandardMaterial({ map: t, roughness: rough });
+  };
+  const throwMat = makeTex(256, 256, (c, w, h) => {
+    c.fillStyle = '#8f3f19'; c.fillRect(0, 0, w, h);
+    c.fillStyle = '#15253a';
+    c.fillRect(0, 0, w, 34); c.fillRect(0, h - 38, w, 38);
+    c.fillRect(68, 34, 48, h - 72);
+    c.beginPath(); c.moveTo(116, 40); c.lineTo(w, 130); c.lineTo(w, 175); c.lineTo(116, 85); c.closePath(); c.fill();
+    c.fillRect(150, 155, 106, 28);
+  });
+  const rugMat = makeTex(256, 256, (c, w, h) => {
+    c.fillStyle = '#cfc3b2'; c.fillRect(0, 0, w, h);
+    for (let y0 = 0; y0 < h; y0 += 4) for (let x0 = 0; x0 < w; x0 += 4) {
+      c.fillStyle = ((x0 + y0) % 8 === 0) ? 'rgba(92,78,64,0.28)' : 'rgba(245,238,228,0.25)';
+      c.fillRect(x0, y0, 3, 3);
+    }
+  }, 0.98);
+  const artMat = makeTex(240, 160, (c, w, h) => {
+    c.fillStyle = '#8cb1cc'; c.fillRect(0, 0, w, 78);                                                // sky
+    c.fillStyle = '#5c7c46'; c.fillRect(0, 78, w, 82);                                               // meadow
+    c.fillStyle = '#d8b848'; for (let x = 8; x < w; x += 14) c.fillRect(x, 96, 6, 46);              // wildflowers
+    c.fillStyle = '#3d5a35'; c.fillRect(168, 42, 24, 62); c.fillRect(54, 58, 18, 36);               // cypresses
+  }, 0.85);
+  const greenChairM = new THREE.MeshStandardMaterial({ color: 0x355c35, roughness: 0.55 });
+  const redLampM = new THREE.MeshStandardMaterial({ color: 0xa62a24, roughness: 0.4 });
 
-  // 1. SHELVES wall-mounted along the north wall above the bed (y: 4.5 and 5.8)
-  B([39.35, 47.52], [4.50, 4.58], [0.52, 1.15], 'oak');
-  B([39.35, 47.52], [5.80, 5.88], [0.52, 1.15], 'oak');
-  for (const bx of [39.6, 41.8, 44.0, 46.2]) {
-    B([bx, bx + 0.05], [4.35, 4.50], [0.52, 1.12], 'steel');
-    B([bx, bx + 0.05], [5.65, 5.80], [0.52, 1.12], 'steel');
+  // 1. TWO LONG OAK FLOATING SHELVES along the north wall (y: 4.65 and 5.95)
+  B([39.35, 47.52], [4.65, 4.74], [0.52, 1.25], 'oak');
+  B([39.35, 47.52], [5.95, 6.04], [0.52, 1.25], 'oak');
+  for (const bx of [39.7, 42.2, 44.7, 47.0]) {
+    B([bx, bx + 0.05], [4.48, 4.65], [0.52, 1.18], 'steel');
+    B([bx, bx + 0.05], [5.78, 5.95], [0.52, 1.18], 'steel');
   }
-  B([40.0, 41.2], [4.58, 5.15], [0.55, 1.05], 'burgundy');
-  B([41.3, 42.3], [4.58, 5.05], [0.55, 1.05], 'fabric');
-  B([43.5, 44.8], [4.58, 5.20], [0.55, 1.05], 'nautical');
-  B([41.5, 42.8], [5.88, 6.45], [0.55, 1.05], 'sage');
-  B([44.0, 45.5], [5.88, 6.50], [0.55, 1.05], 'burgundy');
+  // Books styled on the shelves (varied widths, heights & colors)
+  const addBooks = (xStart, yBase, specs) => {
+    let bx = xStart;
+    for (const [w, h, m, tilt] of specs) {
+      const bm = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.52), M(m));
+      bm.position.set(bx + w / 2, yBase + h / 2, 0.85);
+      if (tilt) bm.rotation.z = tilt;
+      bm.castShadow = true; bm.userData = { room }; g.add(bm);
+      bx += w + 0.025;
+    }
+  };
+  addBooks(39.65, 6.04, [[0.14, 0.72, 'sage'], [0.11, 0.64, 'biscuit'], [0.15, 0.76, 'nautical'], [0.12, 0.68, 'burgundy'], [0.10, 0.60, 'fabric'], [0.14, 0.70, 'frame', -0.14]]);
+  addBooks(42.20, 6.04, [[0.13, 0.68, 'nautical'], [0.11, 0.62, 'fabric'], [0.15, 0.74, 'burgundy'], [0.12, 0.65, 'sage'], [0.10, 0.58, 'biscuit']]);
+  addBooks(40.10, 4.74, [[0.14, 0.70, 'burgundy'], [0.12, 0.64, 'fabric'], [0.11, 0.60, 'sage'], [0.15, 0.74, 'nautical'], [0.12, 0.62, 'biscuit', -0.16]]);
+  addBooks(43.85, 4.74, [[0.13, 0.68, 'biscuit'], [0.14, 0.72, 'nautical'], [0.11, 0.60, 'burgundy']]);
 
-  // 2. HEADBOARD BOOKCASE along the east wall (x: 46.16 to 47.56, z: 0.52 to 6.94)
-  B([46.12, 47.56], [2.80, 2.86], [0.52, 6.96], 'oak');
-  B([46.16, 47.56], [0, 0.25], [0.52, 6.94], 'millwork');
-  for (const dz of [0.52, 2.66, 4.80, 6.90]) {
-    B([46.16, 47.56], [0.25, 2.80], [dz, dz + 0.04], 'millwork');
-  }
-  for (const [za, zb] of [[0.56, 2.66], [2.70, 4.80], [4.84, 6.90]]) {
-    B([46.18, 47.54], [1.10, 1.15], [za, zb], 'oak');
-    B([46.18, 47.54], [1.95, 2.00], [za, zb], 'oak');
-  }
-  B([46.22, 47.45], [1.15, 1.75], [5.00, 5.80], 'fabric');
-  B([46.22, 47.45], [1.15, 1.82], [5.85, 6.75], 'burgundy');
-  B([46.22, 47.45], [2.00, 2.65], [5.10, 6.10], 'nautical');
-  B([46.45, 46.85], [2.86, 2.91], [6.2, 6.6], 'steel');
-  B([46.62, 46.68], [2.91, 3.80], [6.37, 6.43], 'steel');
-  B([46.45, 46.85], [3.60, 3.90], [6.2, 6.6], 'fabric');
+  // 2. WRAP-AROUND OAK HEADBOARD LEDGE (north wall behind bed + east wall with open shelving south of the bed)
+  B([39.35, 46.16], [0, 2.85], [0.52, 0.86], 'oak');                                                // north headboard ledge
+  B([46.16, 47.56], [0, 2.85], [0.52, 5.45], 'oak');                                                // east headboard behind bed
+  // Open shelving cubbies on the south end of the east headboard (z: 5.45..6.94, facing -X)
+  B([46.12, 47.56], [2.78, 2.85], [5.45, 6.96], 'oak');                                             // top ledge
+  B([46.16, 47.56], [0, 0.25], [5.45, 6.94], 'oak');                                                // base plinth
+  B([46.16, 47.56], [0.25, 2.78], [5.45, 5.51], 'oak');                                             // north divider
+  B([46.16, 47.56], [0.25, 2.78], [6.88, 6.94], 'oak');                                             // south end panel
+  B([47.46, 47.56], [0.25, 2.78], [5.51, 6.88], 'millwork');                                        // back panel
+  B([46.18, 47.46], [1.06, 1.12], [5.51, 6.88], 'oak');                                             // lower shelf
+  B([46.18, 47.46], [1.92, 1.98], [5.51, 6.88], 'oak');                                             // upper shelf
+  B([46.24, 47.35], [1.12, 1.72], [5.65, 6.45], 'nautical');                                        // books in lower cubby
+  B([46.24, 47.35], [1.98, 2.62], [5.95, 6.72], 'burgundy');                                        // books in upper cubby
+  // Framed landscape painting hung flat on the north wall above the headboard
+  const fGroup = new THREE.Group();
+  fGroup.position.set(41.25, 3.65, 0.56); fGroup.userData = { room };
+  const fBack = new THREE.Mesh(new THREE.BoxGeometry(1.78, 1.22, 0.06), M('frame')); fBack.castShadow = true; fBack.userData = { room };
+  const fArt = new THREE.Mesh(new THREE.PlaneGeometry(1.62, 1.06), artMat); fArt.position.z = 0.035; fArt.userData = { room };
+  fGroup.add(fBack, fArt); g.add(fGroup);
 
-  // 3. QUEEN BED (60" × 80") directly against the north wall
+  // Red articulated reading lamp seated solidly on the east headboard ledge in the NE corner
+  const rlBase = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.08, 14), redLampM);
+  rlBase.position.set(46.52, 2.89, 0.88); rlBase.userData = { room }; g.add(rlBase);
+  const rlArm1 = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.85, 8), redLampM);
+  rlArm1.position.set(46.42, 3.30, 0.96); rlArm1.rotation.z = 0.22; rlArm1.userData = { room }; g.add(rlArm1);
+  const rlShade = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.28, 14), redLampM);
+  rlShade.position.set(46.22, 3.62, 1.04); rlShade.rotation.z = 0.85; rlShade.userData = { room }; g.add(rlShade);
+
+  // 3. BUILT-IN OAK PLATFORM BED WITH DRAWERS (x: 39.4..46.16, z: 0.86..5.45)
   const xh = 46.16, xm = xh - 80 / 12;
-  const z0 = 0.58, z1 = z0 + 5.0;
-  B([39.35, xh], [0, 1.05], [0.52, 5.62], 'millwork');
-  B([xm, xh], [1.05, 1.85], [z0, z1], 'porcelain');
-  B([xm + 0.05, xm + 3.8], [1.85, 1.95], [z0 + 0.05, z1 - 0.05], 'fabric');
-  B([xh - 1.8, xh - 0.15], [1.85, 2.15], [0.80, 2.90], 'porcelain');
-  B([xh - 1.8, xh - 0.15], [1.85, 2.15], [3.20, 5.30], 'porcelain');
+  const z0 = 0.90, z1 = z0 + 4.55;
+  B([39.38, xh], [0.16, 1.12], [0.86, 5.55], 'oak');                                                // drawer box
+  B([39.46, xh - 0.06], [0, 0.16], [0.92, 5.42], 'millwork');                                       // recessed toe-kick
+  for (const dx of [41.62, 43.88]) B([dx, dx + 0.04], [0.18, 1.08], [5.54, 5.57], 'frame');         // drawer dividers
+  // Mattress, crisp white bedding, 2 pillows, and rust/navy geometric throw
+  B([xm, xh], [1.12, 1.86], [z0, z1], 'porcelain');
+  const throwM = new THREE.Mesh(new THREE.BoxGeometry(2.85, 0.80, 4.62), throwMat);
+  throwM.position.set(xm + 1.45, 1.50, (z0 + z1) / 2); throwM.castShadow = true; throwM.userData = { room }; g.add(throwM);
+  B([xh - 1.5, xh - 0.15], [1.86, 2.20], [1.05, 2.95], 'porcelain');
+  B([xh - 1.5, xh - 0.15], [1.86, 2.20], [3.15, 5.05], 'porcelain');
 
-  // 4. FLOATING DESK under W04
-  B([45.9, 47.56], [2.4, 2.55], [11.62, 16.46], 'millwork');
-  B([46.3, 47.1], [2.55, 2.58], [13.6, 14.4], 'steel');
-  B([47.05, 47.15], [2.58, 3.25], [13.6, 14.4], 'steel');
-  B([47.03, 47.05], [2.62, 3.21], [13.65, 14.35], 'ovenGlass');
+  // 4. TEXTURED OATMEAL WOOL AREA RUG
+  const rug = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.03, 7.2), rugMat);
+  rug.position.set(42.5, 0.015, 9.8); rug.receiveShadow = true; rug.userData = { room }; g.add(rug);
 
-  // 5. DESK CHAIR
-  B([44.0, 45.2], [1.45, 1.55], [13.4, 14.6], 'fabric');
-  B([43.95, 44.1], [1.55, 2.65], [13.4, 14.6], 'fabric');
-  B([44.0, 45.15], [1.38, 1.45], [13.45, 14.55], 'steel');
-  B([44.55, 44.65], [0.35, 1.38], [13.95, 14.05], 'steel');
-  B([44.0, 45.2], [0.28, 0.35], [13.95, 14.05], 'steel');
-  B([44.55, 44.65], [0.28, 0.35], [13.4, 14.6], 'steel');
+  // 5. FLOATING OAK DESK under east window (z: 11.62..16.46) + CONICAL PAPER LAMP
+  B([45.55, 47.56], [2.42, 2.55], [11.62, 16.46], 'oak');
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.025, 8, 24), M('chrome'));
+  ring.rotation.x = Math.PI / 2; ring.position.set(46.25, 2.58, 12.65); ring.userData = { room }; g.add(ring);
+  const lStem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.72, 8), M('chrome'));
+  lStem.position.set(46.25, 2.94, 12.65); lStem.userData = { room }; g.add(lStem);
+  const cone = new THREE.Mesh(new THREE.ConeGeometry(0.72, 0.44, 24), creamMat);
+  cone.position.set(46.25, 3.32, 12.65); cone.castShadow = true; cone.userData = { room }; g.add(cone);
+
+  // 6. GREEN PLYWOOD & CHROME CHAIR
+  const ch = new THREE.Group();
+  ch.position.set(44.85, 0, 14.0); ch.rotation.y = -0.18; ch.userData = { room };
+  const addC = (geo, mat, px, py, pz, rx = 0) => {
+    const m = new THREE.Mesh(geo, mat); m.position.set(px, py, pz); m.rotation.x = rx; m.castShadow = true; m.userData = { room }; ch.add(m);
+  };
+  for (const lx of [-0.58, 0.58]) for (const lz of [-0.55, 0.55])
+    addC(new THREE.CylinderGeometry(0.035, 0.03, 1.42, 8), M('chrome'), lx, 0.71, lz);
+  addC(new THREE.BoxGeometry(1.32, 0.10, 1.24), greenChairM, 0, 1.45, 0);                            // seat
+  addC(new THREE.BoxGeometry(1.32, 0.85, 0.10), greenChairM, -0.58, 2.28, 0, 0);                    // backrest (facing +X desk)
+  ch.children[ch.children.length - 1].rotation.y = Math.PI / 2;
+  ch.children[ch.children.length - 1].position.set(-0.62, 2.28, 0);
+  g.add(ch);
 }
 function bed(g, xs, zs, y, room) {
   box(g, xs, [y, y + 1.1], zs, 'millwork', { room });
@@ -2975,6 +3042,7 @@ const NIGHT_LIGHTS = [
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
   ['ground', 35.8, 4.5, 6.5, 1.4, 4.2],                                                             // guest bath bounce
   ['ground', 43.5, 4.5, 8.5, 1.5, 4.5],                                                             // east office bounce
+  ['ground', 46.25, 3.2, 12.65, 1.3, 3.8],                                                          // east office conical desk lamp
   ['loft', 33.0, LV.LOFT + 4.2, 11.2, 1.8, 5.2],                                                    // loft bounce
   ['loft', 44.5, LV.LOFT + 5.2, 9.2, 2.2, 5.5],                                                     // upstairs bath bounce
   ['loft', 46.8, LV.LOFT + 5.78, 7.19, 3.0, 4.2],                                                   // upstairs bath vanity sconces
