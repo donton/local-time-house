@@ -825,6 +825,7 @@ const MAT_DEFS = {
   porcelain:  { color: C.porcelain, rough: 0.2 },
   millwork:   { color: C.millwork, rough: 0.6 },
   door:       { color: C.door, rough: 0.7 },
+  windowTrim: { color: 0xB88B5A, rough: 0.62 },
   membrane:   { color: C.membrane, rough: 0.9 },
   steel:      { color: C.steel, rough: 0.6, metal: 0.5 },
   panel:      { color: C.panel, rough: 0.5, metal: 0.4 },
@@ -1052,7 +1053,7 @@ function doorLeaf(parent, o) {
 }
 /* Glazing (windows, glazed doors, sidelights): black frame + glass, set 0.3' behind the siding face.
    clip=[y0,y1] lets a tall unit be split between the ground and loft groups without a visible seam. */
-function glazingRaw(parent, axis, wallT, out, [u0, u1], [y0, y1], { v = [], h = [], clip = [-99, 99], door = false } = {}) {
+function glazingRaw(parent, axis, wallT, out, [u0, u1], [y0, y1], { v = [], h = [], clip = [-99, 99], door = false, trim = true } = {}) {
   const fw = 0.16, depth = 0.28;
   const wOuter = out < 0 ? wallT[0] : wallT[1];
   const wc = wOuter - out * (0.3 + depth / 2);
@@ -1068,6 +1069,30 @@ function glazingRaw(parent, axis, wallT, out, [u0, u1], [y0, y1], { v = [], h = 
   v.forEach(u => B(u - fw / 2, u + fw / 2, y0, y1, 'frame'));
   h.forEach(y => B(u0, u1, y - fw / 2, y + fw / 2, 'frame'));
   B(u0, u1, y0, y1, 'glass', 0.04);
+
+  // Interior wood trim: full-depth jamb/head/sill linings + flat face casing with butt-jointed header
+  if (trim) glazingTrim(parent, axis, wallT, out, [u0, u1], [y0, y1], { clip, trim });
+}
+
+function glazingTrim(parent, axis, wallT, out, [u0, u1], [y0, y1], { clip = [-99, 99], trim = true } = {}) {
+  const tL = trim === true || trim.left !== false, tR = trim === true || trim.right !== false;
+  const tT = trim === true || trim.top !== false,  tB = trim === true || trim.bottom !== false;
+  const depth = 0.28, lin = 0.042; // 1/2" border, flush with the interior wall face
+  const wOuter = out < 0 ? wallT[0] : wallT[1];
+  const wFrameIn = wOuter - out * (0.3 + depth);
+  const wIn = out < 0 ? wallT[1] : wallT[0];
+  const t0 = Math.min(wFrameIn, wIn), t1 = Math.max(wFrameIn, wIn);
+  const T = (ua, ub, ya, yb) => {
+    ya = Math.max(ya, clip[0]); yb = Math.min(yb, clip[1]);
+    if (yb - ya < 1e-3 || ub - ua < 1e-3) return;
+    return axis === 'x' ? box(parent, [ua, ub], [ya, yb], [t0, t1], 'windowTrim')
+                        : box(parent, [t0, t1], [ya, yb], [ua, ub], 'windowTrim');
+  };
+  const yIn0 = y0 + (tB ? lin : 0), yIn1 = y1 - (tT ? lin : 0);
+  if (tL) T(u0, u0 + lin, yIn0, yIn1);
+  if (tR) T(u1 - lin, u1, yIn0, yIn1);
+  if (tT) T(u0, u1, y1 - lin, y1);
+  if (tB) T(u0, u1, y0, y0 + lin);
 }
 
 /* Interior door leaf. hinge 'a' = low-u jamb, 'b' = high-u jamb. swing = ±1 along the wall's thickness axis.
@@ -1379,23 +1404,25 @@ function buildGround(g) {
   glazing(g, 'x', EXT.N, -1, [11.41, 14.42], [0, 11], { h: [3, 8], ...clipG });  // W06: fixed lower, casement middle, fixed upper
   glazing(g, 'x', EXT.N, -1, [17.24, 20.24], [5, 11], clipG);                   // W12
   glazing(g, 'x', EXT.N, -1, [24.62, 27.62], [0, 8], { h: [3] });               // W05 casement upper
-  glazing(g, 'x', EXT.N, -1, [35.72, 38.73], [4, 8]);                           // W14
+  glazing(g, 'x', EXT.N, -1, [35.72, 38.73], [4, 8], { trim: false });          // W14 (tiled shower surround)
   glazing(g, 'z', EXT.W, -1, [2.61, 5.61], [3, 11], { h: [8], ...clipG });     // W07 casement lower / fixed upper, split at the 8' ledge
-  glazing(g, 'z', EXT.W, -1, [11.95, 13.2], [0, 8]);                            // W13 sidelight
+  glazing(g, 'z', EXT.W, -1, [11.95, 13.2], [0, 8], { trim: { right: false, top: false } }); // W13 sidelight
   { const n0 = g.children.length;                                                   // Door 102 (full lite, in-swing), hinged at 16.2
-    glazing(g, 'z', EXT.W, -1, [13.2, 16.2], [0, 8], { door: true });
+    glazing(g, 'z', EXT.W, -1, [13.2, 16.2], [0, 8], { door: true, trim: false });
     extLevers(g, 'z', 13.28, -0.04, 0.24, 3.0, -1);          // latch stile at z 13.2–13.36; frame faces at x −0.04 (out) and 0.24 (in)
     const pv = pivotFrom(g, n0, 0.1, 0, 16.12);
     act(pv, { kind: 'door', label: d => d.on ? 'Close side door' : 'Open side door', run: d => tweenTo(pv.rotation, 'y', d.on ? -1.45 : 0, 0.9) }); }
-  glazing(g, 'z', EXT.W, -1, [11.95, 16.2], [8, 11], clipG);                      // W15 transom: one undivided 4'-3" × 3'-0" pane (A201 west elev.)
+  glazingTrim(g, 'z', EXT.W, -1, [13.2, 16.2], [0, 8], { trim: { left: false, top: false, bottom: false } });
+  glazing(g, 'z', EXT.W, -1, [11.95, 16.2], [8, 11], { ...clipG, trim: { bottom: false } }); // W15 transom: one undivided 4'-3" × 3'-0" pane (A201 west elev.)
   glazing(g, 'z', EXT.E, +1, [4.11, 7.11], [3, 8]);                             // W03
   glazing(g, 'z', EXT.E, +1, [11.54, 16.54], [3, 8]);                           // W04
   { const n0 = g.children.length;                                                   // Door 101 (full lite, in-swing), hinged at 18.11
-    glazing(g, 'x', EXT.S, +1, [18.11, 21.3], [0, 8], { door: true });
+    glazing(g, 'x', EXT.S, +1, [18.11, 21.3], [0, 8], { door: true, trim: false });
     extLevers(g, 'x', 21.22, 17.09, 16.81, 3.0, +1);         // latch stile at x 21.14–21.3; frame faces at z 17.09 (out) and 16.81 (in)
     const pv = pivotFrom(g, n0, 18.19, 0, 16.95);
     act(pv, { kind: 'door', label: d => d.on ? 'Close front door' : 'Open front door', run: d => tweenTo(pv.rotation, 'y', d.on ? 1.45 : 0, 0.9) }); }
-  glazing(g, 'x', EXT.S, +1, [21.3, 23.41], [0, 8]);                             // W01 sidelight
+  glazingTrim(g, 'x', EXT.S, +1, [18.11, 21.3], [0, 8], { trim: { right: false, bottom: false } });
+  glazing(g, 'x', EXT.S, +1, [21.3, 23.41], [0, 8], { trim: { left: false } });  // W01 sidelight
   glazing(g, 'x', EXT.S, +1, [24.98, 27.98], [3, 8]);                           // W02
   glazing(g, 'x', EXT.S, +1, [33.49, 36.49], [3, 8]);                           // W02
   glazing(g, 'x', EXT.S, +1, [42.33, 45.33], [3, 8]);                           // W03
@@ -2522,7 +2549,7 @@ function buildLoft(g) {
   glazing(g, 'x', EXT.N, -1, [17.24, 20.24], [5, 11], clipL);                       // W12
   glazing(g, 'x', EXT.N, -1, [11.41, 14.42], [0, 11], { h: [3, 8], ...clipL });   // W06 upper pane
   glazing(g, 'z', EXT.W, -1, [2.61, 5.61], [3, 11], { h: [8], ...clipL });         // W07
-  glazing(g, 'z', EXT.W, -1, [11.95, 16.2], [8, 11], clipL);                          // W15 (part above the loft floor)
+  glazing(g, 'z', EXT.W, -1, [11.95, 16.2], [8, 11], { ...clipL, trim: { bottom: false } }); // W15 (part above the loft floor)
 
   // Guards and screens around the open-to-below and the stair
   // Strip between the open-to-below and the stair, above the fridge + tall cabinets (x 14.52–17.1, z 0.52–10.45):
