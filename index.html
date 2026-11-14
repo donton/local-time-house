@@ -1299,10 +1299,10 @@ const ROOMS = [
     rects: [[14.82, 24.16, 10.45, 16.54]], dimRect: [14.52, 24.16, 10.45, 16.54], ceiling: 'Under the roof slope',   // floor stops behind the 3'-0" guard
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Overlooks the kitchen/dining. Desk along the guard (keynote 8), wood-stud slat screen at the stair (keynote 31), built-in millwork (keynote 30).' },
   { id: 'mech', name: 'MECH', floor: 'loft', y: LV.LOFT, mat: 'wood',
-    rects: [[24.7, 30.23, 0.52, 5.42]], ceiling: 'Under the north roof slope',
+    rects: [[24.7, 30.23, 0.52, 5.42]], ceiling: "North roof slope, capped at 8'-0\"",
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Revised: MECH moved to the west room. Hot water heater (keynote 28). Reached from the laundry through Door 203 (2\'-8" × 5\'-0").' },
   { id: 'laundry', name: 'Laundry', floor: 'loft', y: LV.LOFT, mat: 'wood',
-    rects: [[30.77, 40.86, 0.52, 5.42]], ceiling: 'Under the north roof slope',
+    rects: [[30.77, 40.86, 0.52, 5.42]], ceiling: "North roof slope, capped at 8'-0\"",
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Revised: laundry moved to the east room. Pocket door 202 (3\'-0" × 7\'-0") now opens from the bedroom east of the bed, beside the bath door. Exact door position assumed.' },
   { id: 'bedroom', name: 'Primary Bedroom', floor: 'loft', y: LV.LOFT, mat: 'wood',
     rects: [[24.7, 40.86, 5.97, 16.54]], ceiling: "8'-0\" flat in the shed dormer",
@@ -2954,7 +2954,8 @@ function buildMainRoof(g) {
   slopedSlab(g, [41.4, 47.56], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [rz, uz(rz)], [LV.DORMER_JOIN_Z, uz(LV.DORMER_JOIN_Z)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.6], [16.54, LV.DORMER_WALL_TOP + 0.01], CT, 'ceiling', { cast: false });
-  box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [5.97, 16.54], 'ceiling', { cast: false });
+  box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [3.16, 5.42], 'ceiling', { cast: false });   // MECH + laundry 8'-0" cap
+  box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [5.97, 16.54], 'ceiling', { cast: false });  // bedroom 8'-0" flat ceiling
   box(g, [0.51, 47.56], [uz(rz) - 0.06, uz(rz) + 0.02], [rz - 0.06, rz + 0.06], 'ceiling', { cast: false }); // seal ridge V-notch
   // ridge cap
   box(g, [-0.5, 48.56], [ry - 0.05, ry + 0.12], [rz - 0.35, rz + 0.35], 'roof');
@@ -3106,7 +3107,7 @@ const RCP = {
 };
 // ceiling height (top of fixture) at a plan point, per floor
 const ceilAt = (floor, x, z) => {
-  if (floor === 'loft') return (x > 24.7 && x < 40.86 && z > 5.97) ? LV.LOFT_CEIL : roofUnder(z) - 0.07;
+  if (floor === 'loft') return (x > 24.7 && x < 40.86 && z > 3.205) ? LV.LOFT_CEIL : roofUnder(z) - 0.07;
   if (x < 14.52) return z < 16.54 ? roofUnder(z) - 0.07 : 8.83;                   // vaulted kitchen / living ceiling above joists
   return LV.CEIL1;
 };
