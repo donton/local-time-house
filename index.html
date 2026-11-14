@@ -3885,8 +3885,8 @@ const nearDrive = (x, z, pad = 14) => DRIVE.some(([ax, az], i) => { if (i === DR
 // grade: flat pad ±60', rising into the woods (north steepest), falling away to the south view
 function terrainY(x, z) {
   const dx = x - CX, dz = z - CZ, d = Math.hypot(dx, dz);
-  if (d < 58) return LV.GRADE;
-  const t = d - 58;
+  if (d < 68) return LV.GRADE;
+  const t = d - 68;
   const north = Math.max(0, -dz) / d, south = Math.max(0, dz) / d;
   return LV.GRADE + t * (0.05 + 0.16 * north - 0.10 * south) + Math.sin(x * 0.031) * Math.cos(z * 0.027) * Math.min(t, 40) * 0.08;
 }
@@ -3894,13 +3894,13 @@ const groundMat = new THREE.MeshStandardMaterial({ color: SEASONS.fall.ground, r
 const clearMat = new THREE.MeshStandardMaterial({ color: SEASONS.fall.clearing, roughness: 1 });
 exteriorLightsOnly(groundMat); exteriorLightsOnly(clearMat);
 {
-  const g = new THREE.PlaneGeometry(1400, 1400, 72, 72); g.rotateX(-Math.PI / 2); g.translate(CX, 0, CZ);
+  const g = new THREE.PlaneGeometry(1400, 1400, 96, 96); g.rotateX(-Math.PI / 2); g.translate(CX, 0, CZ);
   const pos = g.attributes.position;
-  for (let i = 0; i < pos.count; i++) pos.setY(i, terrainY(pos.getX(i), pos.getZ(i)) - 0.06);
+  for (let i = 0; i < pos.count; i++) pos.setY(i, terrainY(pos.getX(i), pos.getZ(i)) - 0.14);
   g.computeVertexNormals();
   const m = new THREE.Mesh(g, groundMat); m.receiveShadow = true; m.name = 'terrain'; LAND.add(m);
   // dirt pad + the drive/parking to the south-east, meeting the stone path (owner)
-  const pad = new THREE.Mesh(new THREE.CircleGeometry(58, 48).rotateX(-Math.PI / 2).translate(CX, LV.GRADE - 0.03, CZ), clearMat);
+  const pad = new THREE.Mesh(new THREE.CircleGeometry(58, 64).rotateX(-Math.PI / 2).translate(CX, LV.GRADE - 0.03, CZ), clearMat);
   pad.receiveShadow = true; LAND.add(pad);
   // rounded turnaround / parking court at the end of the path, then a 12' gravel drive winding off south-east through the woods;
   // built as a dense ribbon so it follows the terrain
@@ -4768,7 +4768,7 @@ function castFirst(list, origin, dir, far) {
 }
 const DOWN = new THREE.Vector3(0, -1, 0);
 const _wOrig = new THREE.Vector3(), _wDir = new THREE.Vector3(), _wFwd = new THREE.Vector3(), _wRight = new THREE.Vector3();
-function terrainGroundY(x, z) { return (terrainY(x / FT + 24, z / FT + 13.5) - 0.06) * FT; }
+function terrainGroundY(x, z) { return (terrainY(x / FT + 24, z / FT + 13.5) - 0.14) * FT; }
 function floorHitAt(x, z, fromY) { return castFirst(grounds, _wOrig.set(x, fromY, z), DOWN, 40); }
 function floorAt(x, z, fromY) {
   const h = floorHitAt(x, z, fromY);
