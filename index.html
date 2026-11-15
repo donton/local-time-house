@@ -1114,12 +1114,12 @@ function doorLeaf(parent, o) {
   CUTAXIS = o.axis === 'x' ? 'z' : 'x';
   try { return doorLeafRaw(parent, o); } finally { CUTAXIS = null; }
 }
-/* Glazing (windows, glazed doors, sidelights): black frame + glass, set 0.3' behind the siding face.
+/* Glazing (windows, glazed doors, sidelights): black frame + glass, set 0.24' behind the siding face (tucks inside the 0.25' siding so no chalk core shows).
    clip=[y0,y1] lets a tall unit be split between the ground and loft groups without a visible seam. */
 function glazingRaw(parent, axis, wallT, out, [u0, u1], [y0, y1], { v = [], h = [], clip = [-99, 99], door = false, trim = true } = {}) {
-  const fw = 0.16, depth = 0.28;
+  const fw = 0.16, depth = 0.28, recess = SIDING_T - 0.01;
   const wOuter = out < 0 ? wallT[0] : wallT[1];
-  const wc = wOuter - out * (0.3 + depth / 2);
+  const wc = wOuter - out * (recess + depth / 2);
   const B = (ua, ub, ya, yb, m, d = depth) => {
     ya = Math.max(ya, clip[0]); yb = Math.min(yb, clip[1]); if (yb - ya < 1e-3) return;
     const mesh = axis === 'x' ? box(parent, [ua, ub], [ya, yb], [wc - d / 2, wc + d / 2], m, m === 'glass' ? { cast: false } : undefined)
@@ -1140,9 +1140,9 @@ function glazingRaw(parent, axis, wallT, out, [u0, u1], [y0, y1], { v = [], h = 
 function glazingTrim(parent, axis, wallT, out, [u0, u1], [y0, y1], { clip = [-99, 99], trim = true } = {}) {
   const tL = trim === true || trim.left !== false, tR = trim === true || trim.right !== false;
   const tT = trim === true || trim.top !== false,  tB = trim === true || trim.bottom !== false;
-  const depth = 0.28, lin = 0.042; // 1/2" border, flush with the interior wall face
+  const depth = 0.28, lin = 0.042, recess = SIDING_T - 0.01; // 1/2" border, flush with the interior wall face
   const wOuter = out < 0 ? wallT[0] : wallT[1];
-  const wFrameIn = wOuter - out * (0.3 + depth);
+  const wFrameIn = wOuter - out * (recess + depth);
   const wIn = out < 0 ? wallT[1] : wallT[0];
   const t0 = Math.min(wFrameIn, wIn), t1 = Math.max(wFrameIn, wIn);
   const T = (ua, ub, ya, yb) => {
@@ -2945,10 +2945,10 @@ function buildMainRoof(g) {
     slopedSlab(g, [x0, x1], [zCB, uz(zCB)], [rz, uz(rz)], CT, 'ceiling', { cast: false });
     // white light-well sides + perpendicular sill/head from the ceiling up to the skylight curb
     const yCA = uz(zCA) - 0.04, yCB = uz(zCB) - 0.04;
-    for (const [a, b] of [[x0, x0 + 0.05], [x1 - 0.05, x1]])
-      prism(g, 'z', [[zCA, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.40], [zA + 0.15, atZ(zA + 0.15) + 0.40]], [a, b], 'ceiling', { cast: false });
-    prism(g, 'z', [[zA, atZ(zA) + 0.40], [zCA, yCA], [zCA + 0.06, yCA], [zA + 0.16, atZ(zA + 0.16) + 0.40]], [x0, x1], 'ceiling', { cast: false });   // low end (perpendicular)
-    prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.40], [zCB - 0.06, yCB], [zCB, yCB], [zB, atZ(zB) + 0.40]], [x0, x1], 'ceiling', { cast: false });   // high end (perpendicular)
+    for (const [a, b] of [[x0 + 0.02, x0 + 0.07], [x1 - 0.07, x1 - 0.02]])
+      prism(g, 'z', [[zCA, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.36], [zA + 0.20, atZ(zA + 0.20) + 0.36]], [a, b], 'ceiling', { cast: false });
+    prism(g, 'z', [[zA + 0.20, atZ(zA + 0.20) + 0.36], [zCA, yCA], [zCA + 0.06, yCA], [zA + 0.28, atZ(zA + 0.28) + 0.36]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // low end (perpendicular)
+    prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.36], [zCB - 0.06, yCB], [zCB, yCB], [zB - 0.02, atZ(zB - 0.02) + 0.36]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // high end (perpendicular)
   }
   slopedSlab(g, [0.51, 24.16], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [41.4, 47.56], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
