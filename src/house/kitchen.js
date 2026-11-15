@@ -310,13 +310,29 @@ function buildKitchen(g) {
     if (on) { doorMove(); cornerTimer = setTimeout(() => cornerMove(true), 380); }               // door first, then the unit swings out
     else { cornerMove(false); cornerTimer = setTimeout(doorMove, 1050); }                         // unit fully back in, then the door closes
   };
-  box(g, [kx(77), kx(107)], [0, KIT.TOP - 0.02], [KIT.Z0, zN + FT_], 'steelTop', R);   // 30" slide-in range, stainless, flush with the fronts
-  // 30" induction range: brushed stainless body; black glass oven door under a bar handle; control panel with four knobs
-  // and a center display; stainless kick panel; black glass cooktop with a raised stainless back guard.
+  // 30" induction range: hollowed oven cavity w/ two chrome racks + warm oven light, hinged drop-down door, control panel & cooktop
   { const x0 = kx(77), x1 = kx(107), fz = zN + FT_, I = v => v / 12;
     const ov = (xa, xb, ya, yb, mat, d = 0.01) => box(g, [x0 + I(xa), x0 + I(xb)], [I(ya), I(yb)], [fz, fz + d], mat, R);
+    box(g, [x0, x1], [0, I(4.0)], [KIT.Z0, fz], 'steelTop', R);                                               // kick base
+    box(g, [x0, x1], [I(26.0), KIT.TOP - 0.02], [KIT.Z0, fz], 'steelTop', R);                                  // upper control housing
+    box(g, [x0, x1], [I(4.0), I(26.0)], [KIT.Z0, KIT.Z0 + 0.14], 'steelTop', R);                               // range back
+    box(g, [x0, x0 + 0.14], [I(4.0), I(26.0)], [KIT.Z0 + 0.14, fz - 0.06], 'steelTop', R);                     // left wall
+    box(g, [x1 - 0.14, x1], [I(4.0), I(26.0)], [KIT.Z0 + 0.14, fz - 0.06], 'steelTop', R);                     // right wall
+    // dark enamel oven cavity liner + two chrome wire racks + warm interior oven light
+    box(g, [x0 + 0.14, x1 - 0.14], [I(4.0), I(4.5)], [KIT.Z0 + 0.14, fz - 0.06], 'frame', R);
+    box(g, [x0 + 0.14, x1 - 0.14], [I(25.5), I(26.0)], [KIT.Z0 + 0.14, fz - 0.06], 'frame', R);
+    box(g, [x0 + 0.14, x1 - 0.14], [I(4.5), I(25.5)], [KIT.Z0 + 0.14, KIT.Z0 + 0.18], 'frame', R);
+    for (const ry of [I(10.5), I(16.5)]) {
+      box(g, [x0 + 0.16, x1 - 0.16], [ry, ry + 0.025], [fz - 0.22, fz - 0.19], 'chrome', R);
+      box(g, [x0 + 0.16, x1 - 0.16], [ry, ry + 0.025], [KIT.Z0 + 0.22, KIT.Z0 + 0.25], 'chrome', R);
+      for (let i = 0; i < 6; i++) {
+        const rx = x0 + 0.24 + i * ((x1 - x0 - 0.48) / 5);
+        box(g, [rx - 0.012, rx + 0.012], [ry, ry + 0.022], [KIT.Z0 + 0.22, fz - 0.19], 'chrome', R);
+      }
+    }
+    const ovenLight = new THREE.PointLight(0xffcf88, 0, 3.0, 2);
+    ovenLight.position.set((x0 + x1) / 2, I(22), (KIT.Z0 + fz) / 2); ovenLight.visible = false; g.add(ovenLight);
     ov(0, 30, 0, 0.9, 'frame');                                       // dark recess under the range (the cabinet plinth stops either side)
-    ov(0.3, 29.7, 8.5, 21.5, 'ovenGlass', 0.012);                     // oven door glass
     ov(0, 30, 3.8, 4.05, 'frame', 0.012);                             // shadow gap above the kick panel
     ov(0, 30, 25.8, 26.05, 'frame', 0.012);                           // gap between door and control panel
     ov(11.5, 18.5, 27.2, 31.4, 'ovenGlass', 0.014);                   // display
@@ -329,9 +345,19 @@ function buildKitchen(g) {
       mk(0.098, 0.035, fz + 0.018, 'chrome'); mk(0.082, 0.055, fz + 0.05, 'steelTop'); mk(0.07, 0.01, fz + 0.082, 'chrome');
       box(g, [cx - 0.006, cx + 0.006], [cy + 0.02, cy + 0.075], [fz + 0.078, fz + 0.09], 'frame', R);
     }
+    // hinged oven door (stainless panel + outer/inner black glass + bar handle)
+    const n0 = g.children.length;
+    box(g, [x0, x1], [I(4.2), I(25.8)], [fz - 0.06, fz], 'steelTop', R);
+    ov(0.3, 29.7, 8.5, 21.5, 'ovenGlass', 0.012);                     // outer oven door glass
+    box(g, [x0 + I(2.5), x1 - I(2.5)], [I(8.5), I(21.5)], [fz - 0.072, fz - 0.06], 'ovenGlass', R); // inner glass
     // bar handle across the top of the door, on two end posts
     box(g, [x0 + I(1.0), x0 + I(29)], [I(22.3), I(24.3)], [fz + 0.12, fz + 0.17], 'chrome', R);
     for (const xs of [[1.0, 1.9], [28.1, 29.0]]) box(g, [x0 + I(xs[0]), x0 + I(xs[1])], [I(22.3), I(24.3)], [fz, fz + 0.12], 'chrome', R);
+    const pv = pivotFrom(g, n0, 0, I(4.2), fz); pv.traverse(o => { o.userData.keep = true; });
+    act(pv, { kind: 'oven', label: d => d.on ? 'Close oven' : 'Open oven', run: d => {
+      tweenTo(pv.rotation, 'x', d.on ? 1.48 : 0, 0.75);
+      ovenLight.visible = d.on; ovenLight.intensity = d.on ? 0.8 : 0;
+    } });
     // cooktop: black glass, a stainless trim band at the front, and a raised back guard
     box(g, [x0 + 0.04, x1 - 0.04], [KIT.TOP - 0.02, KIT.TOP + 0.012], [KIT.Z0 + 0.36, fz - 0.28], 'ovenGlass', R);
     box(g, [x0, x1], [KIT.TOP - 0.02, KIT.TOP + 0.012], [fz - 0.28, fz], 'steelTop', R);

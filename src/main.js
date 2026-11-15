@@ -134,12 +134,13 @@ window.__house = {
   FAN, FX_FIRE: RT.FX_FIRE, FX_TV: RT.FX_TV, FX_SHOWERS, FX_MIRRORS,
 };
 
-// Idle-prefetch optional Timeline & Build modules + pre-warm mirror shaders after first render
+// Idle-prefetch optional Timeline & Build modules + pre-warm scene & mirror shaders/FBOs after first render
 const idlePrefetch = window.requestIdleCallback || (cb => setTimeout(cb, 120));
 idlePrefetch(() => {
+  renderer.compile(scene, camera);
   for (const m of FX_MIRRORS) {
     m.ref.visible = true;
-    renderer.compile(m.ref, camera);
+    try { m.ref.onBeforeRender(renderer, scene, camera); } catch (_) { renderer.compile(m.ref, camera); }
     m.ref.visible = false;
   }
   loadTimelineModule();

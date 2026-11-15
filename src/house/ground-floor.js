@@ -115,7 +115,7 @@ function buildGround(g) {
   doorLeaf(g, { axis: 'x', u: [25.2, 27.9], face: 13.14, swing: -1, hinge: 'a', y0: 0, h: 8, wt: 0.4 });          // 104
   doorLeaf(g, { axis: 'x', u: [33.65, 36.32], face: 13.14, swing: -1, hinge: 'a', y0: 0, h: 8, wt: 0.4 });        // 106
   doorLeaf(g, { axis: 'z', u: [8.0, 10.7], face: 45.16, swing: -1, hinge: 'a', y0: 0, h: 8, open: 0, wt: 0.35 });           // 108
-  pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 24.355, t: 0.39, y0: 0, h: 8, slide: -1, open: true });                    // 103 pocket (entry | corridor)
+  pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 24.355, t: 0.39, y0: 0, h: 8, slide: -1, open: true, glazed: true });      // 103 pocket (entry | corridor)
   pocketDoor(g, { axis: 'z', u: [13.54, 16.54], c: 39.04, t: 0.54, y0: 0, h: 8, slide: -1, open: true });                      // 107 pocket (corridor | office)
   { // 105 bifold: two pairs of panels, hinged at the jambs, each pair folding in a zigzag into the room
     const xa = 28.45, xb = 32.86, zc = 10.84, w = (xb - xa) / 4 - 0.01, th = 0.12, hh = 8, grp = new THREE.Group(); g.add(grp);

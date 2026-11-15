@@ -243,12 +243,15 @@ function doorLeafRaw(parent, { axis, u, face, swing, hinge = 'a', y0, h, open = 
   placeLever(pivot, axis, dirU, wl, ly, swing * th, swing);        // on the swing-side face
   placeLever(pivot, axis, dirU, wl, ly, 0, -swing);                // on the wall-side face
   parent.add(pivot);
-  // casing: 2½" trim boards around the opening on both wall faces, with a head piece
+  // casing & jamb linings: warm wood trim like the windows (2½" casing on both wall faces + jamb/head linings)
   if (wt) {
-    const cw = 0.2, ct = 0.04, other = face - swing * wt, [ua, ub] = u[0] < u[1] ? [u[0], u[1]] : [u[1], u[0]];
+    const cw = 0.2, ct = 0.04, lin = 0.025, other = face - swing * wt, [ua, ub] = u[0] < u[1] ? [u[0], u[1]] : [u[1], u[0]];
+    const [wa, wb] = face < other ? [face, other] : [other, face];
+    const putJamb = (us, ys) => { const m = axis === 'x' ? box(parent, us, ys, [wa, wb], 'windowTrim') : box(parent, [wa, wb], ys, us, 'windowTrim'); m.userData.cutAxis = ca; };
+    putJamb([ua, ua + lin], [y0, y0 + h]); putJamb([ub - lin, ub], [y0, y0 + h]); putJamb([ua, ub], [y0 + h - lin, y0 + h]);
     for (const [f, sg] of [[face, swing], [other, -swing]]) {
       const f1 = f + sg * ct, [fa, fb] = f < f1 ? [f, f1] : [f1, f];
-      const put = (us, ys) => { const m = axis === 'x' ? box(parent, us, ys, [fa, fb], 'door') : box(parent, [fa, fb], ys, us, 'door'); m.userData.cutAxis = ca; };
+      const put = (us, ys) => { const m = axis === 'x' ? box(parent, us, ys, [fa, fb], 'windowTrim') : box(parent, [fa, fb], ys, us, 'windowTrim'); m.userData.cutAxis = ca; };
       put([ua - cw, ua], [y0, y0 + h + cw]); put([ub, ub + cw], [y0, y0 + h + cw]); put([ua, ub], [y0 + h, y0 + h + cw]);
     }
   }
@@ -258,23 +261,46 @@ function doorLeafRaw(parent, { axis, u, face, swing, hinge = 'a', y0, h, open = 
   return pivot;
 }
 
-/* Pocket door (CD set: solid core, 1¾", 1" casing, 2" extra width, black-painted head pocket). The leaf stands in the opening
-   when closed and slides into the wall, leaving about 2" of its edge showing. axis = the way the wall runs ('z' = a north-south wall);
-   u = the opening along the wall; c / t = the wall's centre plane and thickness; slide = ±1, which way the pocket lies along u. */
-function pocketDoor(parent, { axis, u, c, t, y0, h, slide, open = false, mat = 'door' }) {
+/* Pocket door (CD set: solid core, 1¾", warm wood casing + split pocket jambs with visible track/pocket gaps, chrome edge & flush pulls).
+   axis = the way the wall runs ('z' = a north-south wall); u = the opening along the wall; c / t = wall centre plane & thickness; slide = ±1. */
+function pocketDoor(parent, { axis, u, c, t, y0, h, slide, open = false, mat = 'door', glazed = false }) {
   const ca = axis === 'x' ? 'z' : 'x', [ua, ub] = u, th = 0.146, width = ub - ua - 0.04, cw = 0.2, ct = 0.04, lin = 0.035;
   const B = (us, ys, ts, m) => { const mesh = axis === 'x' ? box(parent, us, ys, ts, m) : box(parent, ts, ys, us, m); mesh.userData.cutAxis = ca; return mesh; };
-  // casing on both wall faces, jamb and head linings through the wall thickness
+  // warm wood casing on both wall faces
   for (const sg of [-1, 1]) {
     const f0 = c + sg * t / 2, f1 = f0 + sg * ct, ts = f0 < f1 ? [f0, f1] : [f1, f0];
-    B([ua - cw, ua], [y0, y0 + h + cw], ts, mat); B([ub, ub + cw], [y0, y0 + h + cw], ts, mat); B([ua - cw, ub + cw], [y0 + h, y0 + h + cw], ts, mat);
+    B([ua - cw, ua], [y0, y0 + h + cw], ts, 'windowTrim'); B([ub, ub + cw], [y0, y0 + h + cw], ts, 'windowTrim'); B([ua - cw, ub + cw], [y0 + h, y0 + h + cw], ts, 'windowTrim');
   }
-  B([ua, ub], [y0 + h - lin, y0 + h], [c - t / 2, c + t / 2], mat); B([ua, ua + lin], [y0, y0 + h], [c - t / 2, c + t / 2], mat); B([ub - lin, ub], [y0, y0 + h], [c - t / 2, c + t / 2], mat);
-  const n0 = parent.children.length;
-  B([ua + 0.02, ua + 0.02 + width], [y0, y0 + h - lin], [c - th / 2, c + th / 2], mat);                                  // the leaf
-  const lead = slide < 0 ? ua + 0.02 + width : ua + 0.02, pu = lead + slide * 0.14;                                         // flush pulls near the leading edge, both faces
-  for (const sg of [-1, 1]) B([pu - 0.06, pu + 0.06], [y0 + 2.75, y0 + 3.4], sg > 0 ? [c + th / 2, c + th / 2 + 0.012] : [c - th / 2 - 0.012, c - th / 2], 'lever');
-  const pv = pivotFrom(parent, n0, 0, 0, 0), key = axis === 'x' ? 'x' : 'z', dist = slide * (width - 0.16);
+  // split head stops + dark recessed track slot in the center
+  const slotA = c - th / 2 - 0.018, slotB = c + th / 2 + 0.018;
+  B([ua, ub], [y0 + h - lin, y0 + h], [c - t / 2, slotA], 'windowTrim');
+  B([ua, ub], [y0 + h - lin, y0 + h], [slotB, c + t / 2], 'windowTrim');
+  B([ua, ub], [y0 + h - lin * 0.5, y0 + h], [slotA, slotB], 'frame');
+  // strike jamb (solid wood) vs. pocket jamb (split wood strips leaving the open pocket gap in the middle)
+  const [pj0, pj1] = slide < 0 ? [ua, ua + lin] : [ub - lin, ub];
+  const [sj0, sj1] = slide < 0 ? [ub - lin, ub] : [ua, ua + lin];
+  B([sj0, sj1], [y0, y0 + h], [c - t / 2, c + t / 2], 'windowTrim');
+  B([pj0, pj1], [y0, y0 + h], [c - t / 2, slotA], 'windowTrim');
+  B([pj0, pj1], [y0, y0 + h], [slotB, c + t / 2], 'windowTrim');
+  const n0 = parent.children.length, x0 = ua + 0.02, x1 = x0 + width, yTop = y0 + h - lin - 0.015;
+  if (glazed) {
+    // slender oak stiles & rails framing a waffle-grid translucent glass panel
+    const sw = 0.28, rh = 0.28;
+    B([x0, x0 + sw], [y0, yTop], [c - th / 2, c + th / 2], 'windowTrim');
+    B([x1 - sw, x1], [y0, yTop], [c - th / 2, c + th / 2], 'windowTrim');
+    B([x0 + sw, x1 - sw], [y0, y0 + rh], [c - th / 2, c + th / 2], 'windowTrim');
+    B([x0 + sw, x1 - sw], [yTop - rh, yTop], [c - th / 2, c + th / 2], 'windowTrim');
+    B([x0 + sw, x1 - sw], [y0 + rh, yTop - rh], [c - 0.02, c + 0.02], 'waffleGlass');
+  } else {
+    B([x0, x1], [y0, yTop], [c - th / 2, c + th / 2], mat);                                                           // solid leaf (with 3/16" head clearance)
+  }
+  const lead = slide < 0 ? x1 : x0, pu = lead + slide * 0.14;                                                         // flush side pulls near leading edge
+  const pullY = glazed ? [y0 + 2.65, y0 + 3.55] : [y0 + 2.75, y0 + 3.4];
+  const pullW = glazed ? 0.035 : 0.06, pullMat = glazed ? 'diningWood' : 'lever';
+  for (const sg of [-1, 1]) B([pu - pullW, pu + pullW], pullY, sg > 0 ? [c + th / 2, c + th / 2 + 0.012] : [c - th / 2 - 0.012, c - th / 2], pullMat);
+  const edgeOut = slide < 0 ? [lead, lead + 0.016] : [lead - 0.016, lead];                                          // realistic chrome edge pull on the leading stile
+  B(edgeOut, [y0 + 2.85, y0 + 3.30], [c - 0.036, c + 0.036], 'lever');
+  const pv = pivotFrom(parent, n0, 0, 0, 0), key = axis === 'x' ? 'x' : 'z', dist = slide * (width - 0.10);        // leaves ~1.2" + edge pull accessible in pocket slot
   pv.traverse(o => { o.userData.cutAxis = ca; });
   if (open) pv.position[key] = dist;
   act(pv, { kind: 'door', on: open, label: d => d.on ? 'Slide the door shut' : 'Slide the door open', run: d => tweenTo(pv.position, key, d.on ? dist : 0, 0.8) });

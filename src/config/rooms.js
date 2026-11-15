@@ -96,7 +96,7 @@ const dimText = r => { const [w, d] = dimsOf(r); return `${fmt(w)} × ${fmt(d)}`
 const WALK_SPOTS = [
   { sec: 'Ground', name: 'Entry deck', pos: [19.7, 0, 24], yaw: 0 },
   { sec: 'Ground', name: 'Entry + stair', pos: [20.0, 0, 12.0], yaw: 0 },
-  { sec: 'Ground', name: 'Kitchen / dining', pos: [10.5, 0, 8.5], yaw: 1.57 },
+  { sec: 'Ground', name: 'Kitchen / dining', pos: [13.2, 0, 9.5], yaw: 1.57 },
   { sec: 'Ground', name: 'Sunken living', pos: [12.5, LV.SUNKEN, 21.5], yaw: 1.57 },
   { sec: 'Ground', name: 'Guest bedroom', pos: [28.0, 0, 8.5], yaw: 0 },
   { sec: 'Ground', name: 'Guest bath', pos: [36.0, 0, 9.5], yaw: 0 },
@@ -142,7 +142,7 @@ const TOUR_STOPS = [
 
 const KIND_INFO = {
   door: ['Doors', 'Open any door'], lights: ['Light switch', 'The switch by the front door'], cabinet: ['Cabinets & drawers', 'Try the corner one: it swivels out'],
-  dishwasher: ['Dishwasher', 'Panel-ready, next to the sink'], freezer: ['Freezer drawer', 'Bottom of the fridge'], fridge: ['Fridge', 'French doors'],
+  dishwasher: ['Dishwasher', 'Panel-ready, next to the sink'], oven: ['Oven', '30" induction range'], freezer: ['Freezer drawer', 'Bottom of the fridge'], fridge: ['Fridge', 'French doors'],
   fan: ['Ceiling fan', 'Give it a spin'], fireplace: ['Fireplace', 'Light a fire'], tv: ['TV', 'Flip through the channels'],
   shower: ['Shower', 'Fogs up the mirror'], laundry: ['Washer & dryer', 'Open the front doors'], car: ['The car', 'Flash the headlights'],
 };

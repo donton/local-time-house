@@ -132,6 +132,22 @@ const TEX = {
     const n = 9, w = s / n;
     for (let i = 0; i < n; i++) { g.fillStyle = `rgba(0,0,0,${0.02 + (i * 5 % 4) / 50})`; g.fillRect(i * w, 0, w, s); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(i * w, 0, 4, s); }
   }),
+  // cross-reeded / waffle-grid architectural glass (tile = 0.5 ft → 8 × 8 cells ≈ 3/4" squares)
+  waffleGlass: canvasTex((g, s) => {
+    const n = 8, w = s / n;
+    g.fillStyle = '#aeb8b5'; g.fillRect(0, 0, s, s);
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const x = i * w, y = j * w;
+      const gr = g.createRadialGradient(x + w * 0.45, y + w * 0.45, w * 0.05, x + w * 0.5, y + w * 0.5, w * 0.65);
+      gr.addColorStop(0, '#f4f7f6');
+      gr.addColorStop(0.55, '#cfd8d5');
+      gr.addColorStop(1, '#8d9895');
+      g.fillStyle = gr;
+      g.fillRect(x + 1, y + 1, w - 2, w - 2);
+    }
+    g.fillStyle = 'rgba(55,64,62,0.72)';
+    for (let i = 0; i < n; i++) { g.fillRect(i * w, 0, 2, s); g.fillRect(0, i * w, s, 2); }
+  }),
 };
 
 const MAT_DEFS = {
@@ -145,8 +161,9 @@ const MAT_DEFS = {
   frame:      { color: C.frame, rough: 0.5, metal: 0.3 },
   mwLed:      { color: 0x7DFFB4, rough: 0.3, emissive: 0x4DFF9A, emissiveI: 0.9 },
   hoodLed:    { color: 0xFFF4DC, rough: 0.3, emissive: 0xFFF0CC, emissiveI: 0.8 },
-  lever:      { color: 0x1B1C1E, rough: 0.42, metal: 0.65 },                    // door levers, hinges: matte black
+  lever:      { color: C.chrome, rough: 0.12, metal: 1, env: 1.0 },                    // door levers, hinges, pulls: chrome
   glass:      { color: C.glass, rough: 0.05, opacity: 0.20 },
+  waffleGlass:{ color: 0xB8C4C0, map: TEX.waffleGlass, bump: TEX.waffleGlass, bumpScale: 0.03, tile: 0.5, rough: 0.18, metal: 0.12, opacity: 0.46, env: 1.1 },
   concrete:   { color: C.concrete, rough: 0.95 },
   deck:       { color: C.deck, map: TEX.deck, tile: 4, rough: 0.85 },
   skirt:      { color: 0x232323, map: TEX.boards, tile: 2, rough: 0.8 },     // black-painted vertical wood skirting under the decks
@@ -235,10 +252,13 @@ const MATS = {};
 function M(name) {
   if (MATS[name]) return MATS[name];
   const d = MAT_DEFS[name];
-  const m = new THREE.MeshStandardMaterial({
-    color: d.color, map: d.map || null, roughness: d.rough ?? 0.8, metalness: d.metal ?? 0,
+  const opts = {
+    color: d.color, map: d.map || null, bumpMap: d.bump || null, bumpScale: d.bumpScale ?? 0.015,
+    roughness: d.rough ?? 0.8, metalness: d.metal ?? 0,
     transparent: d.opacity != null, opacity: d.opacity ?? 1, depthWrite: d.opacity == null,
-  });
+  };
+  if (d.transmission != null) { opts.transmission = d.transmission; opts.ior = d.ior ?? 1.5; opts.thickness = d.thickness ?? 0.08; }
+  const m = d.transmission != null ? new THREE.MeshPhysicalMaterial(opts) : new THREE.MeshStandardMaterial(opts);
   m.name = name; m.userData.tile = d.tile || 4;
   if (d.ao) { m.aoMap = AO_TEX[d.ao]; m.aoMapIntensity = 1; }
   if (d.emissive) { m.emissive = new THREE.Color(d.emissive); m.emissiveIntensity = d.emissiveI ?? 1; }

@@ -112,7 +112,7 @@ function walkStep(dt) {
     _wDir.set(axis === 'x' ? Math.sign(d) : 0, 0, axis === 'z' ? Math.sign(d) : 0);
     const checkBase = Math.max(WALK.feet, fy);
     let blocked = false;
-    for (const hgt of [0.45, 1.2, 1.65]) {
+    for (const hgt of [0.45, 0.75, 1.2, 1.65]) {
       if (castFirst(RT.solids, _wOrig.set(WALK.pos.x, checkBase + hgt, WALK.pos.z), _wDir, RAD + Math.abs(d))) { blocked = true; break; }
     }
     if (blocked) continue;
@@ -165,7 +165,7 @@ function toggleWalkPop(btnId, popId) {
 }
 function walkTeleport(spot) {
   const w = toW(spot.pos[0], spot.pos[1], spot.pos[2]);
-  const fy = floorAt(w.x, w.z, w.y + 3 * FT);
+  const fy = floorAt(w.x, w.z, w.y + 0.5 * FT);
   WALK.pos.set(w.x, 0, w.z);
   WALK.feet = fy !== -Infinity ? fy : w.y;
   WALK.yaw = spot.yaw;

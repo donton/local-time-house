@@ -38,7 +38,7 @@ import { PATIO, WEST_DECK, GRILL } from '../landscape/outdoor-living.js';
     if (mn === 'woodPanel' || mn === 'burgundy' || mn === 'burgundyB' || mn === 'burgundyF' || mn === 'oakB' || mn === 'oakF' || mn === 'carcassIn' || mn === 'bore' || mn === 'steelTop' || mn === 'steelBowl' || mn === 'steelBowlF' || mn === 'mosaic') return 'millwork';
     if (mn === 'millwork') return (r === 'guestBed' || r === 'office' || r === 'bedroom') ? 'furniture' : 'millwork';
     if (mn === 'oak') return (r === 'guestBed' || r === 'office') ? 'furniture' : 'millwork';
-    if (mn === 'door' || mn === 'lever') return (m.userData.passable ? 'windows' : 'doors');
+    if (mn === 'door' || mn === 'lever' || mn === 'waffleGlass') return (m.userData.passable ? 'windows' : 'doors');
     if (mn === 'sofa' || mn === 'sofaBase' || mn === 'rug' || mn === 'sage' || mn === 'fabric' || mn === 'fabricBase') return 'furniture';
     if (mn === 'porcelain' || mn === 'chrome' || mn === 'stone' || mn === 'mirror' || mn === 'appliance' || mn === 'fridgeIn' || mn === 'fridgeLow' || mn === 'fridgeDoor' || mn === 'ovenGlass' || mn === 'lamp' || mn === 'creamGlass' || mn === 'paper' || mn === 'hoodLed' || mn === 'mwLed' || mn === 'beverageLemon') {
       if (r === 'guestBed' || r === 'office' || r === 'bedroom') return 'furniture';
