@@ -290,7 +290,7 @@ body.m #msheet .more-row .actions { display: contents; }
 body.m #msheet .more-tips { margin: 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
 body.m #info { bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
 body.m #mintro { display: block; position: fixed; z-index: 7; left: 12px; right: 12px; bottom: calc(124px + env(safe-area-inset-bottom, 0px)); padding: 12px 14px; border-radius: 10px; background: rgba(20,18,16,0.82); color: #fff; font: 500 14px/1.35 var(--font-body); text-align: center; transition: opacity 0.4s; }
-body.m #mintro.gone { opacity: 0; pointer-events: none; }
+body.m #mintro.gone, body.m.walking #mintro, body.m.touring #mintro, body.m.timeline #mintro, body.m.building #mintro { opacity: 0; pointer-events: none; display: none; }
 body.m #mintro b { display: block; font: 400 18px/1.15 var(--font-display); margin-bottom: 3px; }
 /* walking on a phone: stick on the left, big Use button on the right, slim HUD on top */
 body.m.walking #walkpad, body.m.walking .hud-text { display: none; }

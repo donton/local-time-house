@@ -492,8 +492,11 @@ function tlCullCamTrees(restore = false) {
     if (pDirty) cones.instanceMatrix.needsUpdate = true;
     return;
   }
-  const cx = camera.position.x, cz = camera.position.z;
-  const lx = controls.target.x, lz = controls.target.z;
+  LAND.updateMatrixWorld();
+  const cLoc = _tlCamTarget.copy(camera.position); LAND.worldToLocal(cLoc);
+  const tLoc = _tlCamGoal.copy(controls.target); LAND.worldToLocal(tLoc);
+  const cx = cLoc.x, cz = cLoc.z;
+  const lx = tLoc.x, lz = tLoc.z;
   const dx = lx - cx, dz = lz - cz, len2 = dx * dx + dz * dz;
   if (len2 < 1) return;
   const len = Math.sqrt(len2);
@@ -503,12 +506,12 @@ function tlCullCamTrees(restore = false) {
     const vx = m.x - cx, vz = m.z - cz;
     const u = (vx * dx + vz * dz) / len2;
     let hide = false;
-    if (u >= -0.08 && u <= 0.82) {
+    if (u >= -0.08 && u <= 0.78) {
       const px = cx + u * dx - m.x, pz = cz + u * dz - m.z;
       const dAlong = Math.max(0, u * len);
-      const maxPerp = 12 + dAlong * 0.58;
+      const maxPerp = 18 + dAlong * 0.50;
       if (px * px + pz * pz < maxPerp * maxPerp) hide = true;
-    } else if (vx * vx + vz * vz < 196) {
+    } else if (vx * vx + vz * vz < 324) {
       hide = true;
     }
     const was = culled.has(i);
