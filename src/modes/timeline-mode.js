@@ -466,9 +466,78 @@ function tlStepCar(dt) {
   }
 }
 const _tlCamTarget = new THREE.Vector3(), _tlCamGoal = new THREE.Vector3(), _tlCamOff = new THREE.Vector3();
+const _tlTreeOrig = new Map();
+const _tlTreeZero = new THREE.Matrix4().makeScale(0, 0, 0);
+let _tlTreeMeta = null;
+function tlCullCamTrees(restore = false) {
+  if (!_tlTreeMeta) {
+    const dMap = new Map(decid.map((t, i) => [t, i]));
+    const pMap = new Map(pines.map((t, i) => [t, i]));
+    _tlTreeMeta = TREES.map((t, ti) => ({ x: t.x, z: t.z, ti, di: dMap.get(t) ?? -1, pi: pMap.get(t) ?? -1 }));
+  }
+  const culled = TL._culledTrees || (TL._culledTrees = new Set());
+  if (restore) {
+    if (!culled.size) return;
+    let dDirty = false, pDirty = false;
+    for (const ti of culled) {
+      const m = _tlTreeMeta[ti], orig = _tlTreeOrig.get(ti);
+      if (!orig) continue;
+      trunks.setMatrixAt(ti, orig.t);
+      if (m.di >= 0) { canopies.setMatrixAt(m.di, orig.c); twigs.setMatrixAt(m.di, orig.c); dDirty = true; }
+      if (m.pi >= 0) { cones.setMatrixAt(m.pi, orig.c); pDirty = true; }
+    }
+    culled.clear();
+    trunks.instanceMatrix.needsUpdate = true;
+    if (dDirty) { canopies.instanceMatrix.needsUpdate = true; twigs.instanceMatrix.needsUpdate = true; }
+    if (pDirty) cones.instanceMatrix.needsUpdate = true;
+    return;
+  }
+  const cx = camera.position.x, cz = camera.position.z;
+  const lx = controls.target.x, lz = controls.target.z;
+  const dx = lx - cx, dz = lz - cz, len2 = dx * dx + dz * dz;
+  if (len2 < 1) return;
+  let tDirty = false, dDirty = false, pDirty = false;
+  for (let i = 0; i < _tlTreeMeta.length; i++) {
+    const m = _tlTreeMeta[i];
+    const vx = m.x - cx, vz = m.z - cz;
+    const u = (vx * dx + vz * dz) / len2;
+    let hide = false;
+    if (u >= -0.06 && u <= 0.85) {
+      const px = cx + u * dx - m.x, pz = cz + u * dz - m.z;
+      if (px * px + pz * pz < 132) hide = true;
+    } else if (vx * vx + vz * vz < 144) {
+      hide = true;
+    }
+    const was = culled.has(i);
+    if (hide && !was) {
+      if (!_tlTreeOrig.has(i)) {
+        const tm = new THREE.Matrix4(), cm = new THREE.Matrix4();
+        trunks.getMatrixAt(i, tm);
+        if (m.di >= 0) canopies.getMatrixAt(m.di, cm);
+        else if (m.pi >= 0) cones.getMatrixAt(m.pi, cm);
+        _tlTreeOrig.set(i, { t: tm, c: cm });
+      }
+      trunks.setMatrixAt(i, _tlTreeZero); tDirty = true;
+      if (m.di >= 0) { canopies.setMatrixAt(m.di, _tlTreeZero); twigs.setMatrixAt(m.di, _tlTreeZero); dDirty = true; }
+      if (m.pi >= 0) { cones.setMatrixAt(m.pi, _tlTreeZero); pDirty = true; }
+      culled.add(i);
+    } else if (!hide && was) {
+      const orig = _tlTreeOrig.get(i);
+      if (orig) {
+        trunks.setMatrixAt(i, orig.t); tDirty = true;
+        if (m.di >= 0) { canopies.setMatrixAt(m.di, orig.c); twigs.setMatrixAt(m.di, orig.c); dDirty = true; }
+        if (m.pi >= 0) { cones.setMatrixAt(m.pi, orig.c); pDirty = true; }
+      }
+      culled.delete(i);
+    }
+  }
+  if (tDirty) trunks.instanceMatrix.needsUpdate = true;
+  if (dDirty) { canopies.instanceMatrix.needsUpdate = true; twigs.instanceMatrix.needsUpdate = true; }
+  if (pDirty) cones.instanceMatrix.needsUpdate = true;
+}
 function tlStepCamera(dt, immediate) {
   const idle = TL.lastInteract ? (performance.now() - TL.lastInteract) / 1000 : 99;
-  if (idle < 3.5) return;
+  if (idle < 3.5) { tlCullCamTrees(); return; }
   const r = Math.min(1, (idle - 3.5) / 3.5), ramp = r * r * (3 - 2 * r);
   const a = Number.isFinite(camera.aspect) && camera.aspect > 0 ? camera.aspect : 1.5;
   const f = Math.min(2.15, Math.max(1, 1.35 / a));
@@ -485,6 +554,7 @@ function tlStepCamera(dt, immediate) {
   camera.position.lerp(_tlCamGoal, k);
   controls.target.lerp(_tlCamTarget, k);
   camera.lookAt(controls.target);
+  tlCullCamTrees();
 }
 const _tlPinV = new THREE.Vector3();
 function tlStepPins() {
