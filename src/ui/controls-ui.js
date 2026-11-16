@@ -2,10 +2,10 @@
 import * as THREE from 'three';
 import { HOME } from '../config/constants.js';
 import { roomById } from '../config/rooms.js';
-import { state, RT, MODES, WALK, wake, markShadows } from '../core/state.js';
+import { state, RT, MODES, WALK, wake, markShadows, localTimeAndes, ease } from '../core/state.js';
 import { G } from '../house/site-and-floors.js';
 import { renderer, camera, controls, homePos } from '../core/renderer.js';
-import { applyNight, sunTimeLabel, applySun } from '../house/lighting.js';
+import { applyNight, sunTimeLabel, applySun, applySceneTheme } from '../house/lighting.js';
 import { applySeason } from '../landscape/outdoor-living.js';
 import { updateWalls } from '../systems/cutaway.js';
 import { labels, hiGroup, select } from '../systems/labels-selection.js';
@@ -64,6 +64,19 @@ const CHIP_SHELL_UI = {
   roof:    '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 7.5L8 3l6 4.5M3.5 6.5V13h9V6.5"/></svg>Roof',
   up:      '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V5M3 5h10"/></svg>Walls',
   cutaway: '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 5v8h10V9L7 5z"/></svg>Cutaway',
+};
+
+const _svg = d => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const WX_SVG = {
+  clear:      _svg('<circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/>'),
+  clearNight: _svg('<path d="M12.5 10.2A5 5 0 0 1 5.8 3.5a5 5 0 1 0 6.7 6.7z"/>'),
+  partly:     _svg('<path d="M5.2 7.8a2.3 2.3 0 1 1 3.6-2.4M6.5 2v1M2.5 5.5h1M3.7 3.2l.7.7"/><path d="M5.5 13h6a2.3 2.3 0 0 0 .3-4.6A3.2 3.2 0 0 0 5.6 9 2 2 0 0 0 5.5 13z"/>'),
+  overcast:   _svg('<path d="M4.5 12.5h7.2a2.5 2.5 0 0 0 .3-5 3.6 3.6 0 0 0-7 .6A2.2 2.2 0 0 0 4.5 12.5z"/>'),
+  fog:        _svg('<path d="M4.5 9.5h7.2a2.2 2.2 0 0 0 .2-4.4 3.2 3.2 0 0 0-6.2.5A2 2 0 0 0 4.5 9.5zM3 11.8h10M4.5 14h7"/>'),
+  rain:       _svg('<path d="M4.5 10h7.2a2.3 2.3 0 0 0 .3-4.6 3.4 3.4 0 0 0-6.6.6A2 2 0 0 0 4.5 10zM5.5 12.2l-.8 1.8M8.5 12.2l-.8 1.8M11.5 12.2l-.8 1.8"/>'),
+  snow:       _svg('<path d="M4.5 10h7.2a2.3 2.3 0 0 0 .3-4.6 3.4 3.4 0 0 0-6.6.6A2 2 0 0 0 4.5 10zM5.5 12.8h.01M8.5 13.6h.01M11.5 12.8h.01"/>'),
+  storm:      _svg('<path d="M4.5 10h7.2a2.3 2.3 0 0 0 .3-4.6 3.4 3.4 0 0 0-6.6.6A2 2 0 0 0 4.5 10z"/><path d="M8.5 10l-1.5 2.5h2l-1.3 2.3"/>'),
+  sync:       _svg('<path d="M13 8a5 5 0 1 1-1.4-3.5M13 2.5v2.6h-2.6"/>'),
 };
 
 let _lastShadowSig = '';
@@ -133,12 +146,13 @@ export function applyState() {
   }
 
   applySun();
+  applySceneTheme();
   if (_prevUI.sun !== state.sun || _prevUI.night !== state.night) {
     const sunLbl = sunTimeLabel(state.sun);
     for (const id of ['suntime', 'walk-sun']) { const el = document.getElementById(id); if (el) el.value = String(state.sun); }
     for (const id of ['suntime-out', 'walk-sun-out']) { const el = document.getElementById(id); if (el) el.textContent = sunLbl; }
     const wlb = document.getElementById('walk-light-btn');
-    if (wlb) wlb.textContent = state.night ? '🌙 Night' : '☀ ' + sunLbl;
+    if (wlb) wlb.innerHTML = state.night ? `${WX_SVG.clearNight} Night` : `${WX_SVG.clear} ${sunLbl}`;
   }
 
   // P7: Only run updateWalls() when shell, floor, explode, or night state changed (skip during pure sun slider drag)
@@ -157,6 +171,15 @@ export function applyState() {
     sun: state.sun,
   };
 
+  const lp = document.getElementById('live-pill');
+  if (lp) {
+    lp.classList.toggle('live', !!RT.liveTime);
+    const w = RT.andesWx;
+    const wxHtml = w && typeof w === 'object' ? `<span class="lp-sep">·</span>${WX_SVG[w.key] || ''}<span>${w.temp}°</span>` : '';
+    const wxTip = w && typeof w === 'object' ? ` · ${w.temp}°F ${w.label}` : '';
+    lp.innerHTML = RT.liveTime ? `<span>Live</span><span class="lp-sep">·</span><span>${localTimeAndes().label}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
+    lp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Click to reset Season, Day & Sun to real-time Andes, NY';
+  }
   const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}|${state.night}`;
   if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }
 }
@@ -167,11 +190,84 @@ MODES.applyState = applyState;
 document.getElementById('wl-roof').addEventListener('click', () => { state.walls = 'up'; state.roof = true; applyState(); });
 ['up', 'cutaway'].forEach(k => document.getElementById('wl-' + k).addEventListener('click', () => { state.walls = k; state.roof = false; applyState(); }));
 document.getElementById('tg-labels').addEventListener('change', e => { state.labels = e.target.checked; applyState(); });
-document.getElementById('btn-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
-document.getElementById('btn-season').addEventListener('click', () => { const order = ['fall', 'winter', 'spring', 'summer']; state.season = order[(order.indexOf(state.season) + 1) % order.length]; applyState(); });
+document.getElementById('btn-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; applyState(); });
+document.getElementById('btn-season').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; const order = ['fall', 'winter', 'spring', 'summer']; state.season = order[(order.indexOf(state.season) + 1) % order.length]; applyState(); });
 document.getElementById('explode').addEventListener('input', e => { state.explode = +e.target.value; applyState(); });
-for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { state.sun = +e.target.value; applyState(); });
-document.getElementById('walk-night').addEventListener('click', () => { state.night = !state.night; applyState(); });
+for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { RT.liveTime = false; RT.liveSync = null; state.sun = +e.target.value; applyState(); });
+document.getElementById('walk-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; applyState(); });
+
+function startLiveSync() {
+  if (RT.liveTime && !RT.liveSync) return;
+  RT.liveTime = true;
+  const now = localTimeAndes();
+  state.season = now.season;
+  const dawn = Math.max(5.5, now.sunrise - 0.15);
+  const dusk = Math.min(20.0, now.sunset + 0.15);
+  const segs = [];
+  if (state.night && now.night) {
+    state.sun = now.sun; state.night = true; RT.liveSync = null; applyState(); return;
+  }
+  if (!state.night && !now.night) {
+    if (Math.abs(state.sun - now.sun) < 0.05) {
+      state.sun = now.sun; RT.liveSync = null; applyState(); return;
+    }
+    if (state.sun < now.sun) {
+      const span = now.sun - state.sun;
+      segs.push({ night: false, from: state.sun, to: now.sun, dur: Math.max(0.55, Math.min(1.4, 0.35 + span * 0.12)) });
+    } else {
+      if (state.sun < dusk) {
+        segs.push({ night: false, from: state.sun, to: dusk, dur: Math.max(0.3, (dusk - state.sun) * 0.11) });
+      }
+      segs.push({ night: true, from: dusk, to: dusk, dur: 0.35 });
+      segs.push({ night: false, from: dawn, to: now.sun, dur: Math.max(0.45, Math.max(0.1, now.sun - dawn) * 0.11) });
+    }
+  } else if (!state.night && now.night) {
+    if (state.sun < dusk) {
+      segs.push({ night: false, from: state.sun, to: dusk, dur: Math.max(0.45, (dusk - state.sun) * 0.12) });
+    }
+    segs.push({ night: true, from: now.sun, to: now.sun, dur: 0.05 });
+  } else {
+    segs.push({ night: true, from: dawn, to: dawn, dur: 0.2 });
+    segs.push({ night: false, from: dawn, to: now.sun, dur: Math.max(0.55, Math.max(0.1, now.sun - dawn) * 0.12) });
+  }
+  RT.liveSync = { segs, idx: 0, t: 0 };
+  applyState();
+  wake(10);
+}
+
+export function liveSyncStep(dt) {
+  const sync = RT.liveSync;
+  if (!sync) return;
+  const seg = sync.segs[sync.idx];
+  if (!seg) { RT.liveSync = null; return; }
+  sync.t += dt;
+  const k = Math.min(1, sync.t / seg.dur);
+  state.night = seg.night;
+  state.sun = seg.from + (seg.to - seg.from) * ease(k);
+  applyState();
+  wake(4);
+  if (k >= 1) {
+    sync.idx++;
+    sync.t = 0;
+    if (sync.idx >= sync.segs.length) {
+      const now = localTimeAndes();
+      state.sun = now.sun; state.night = now.night; state.season = now.season;
+      RT.liveSync = null;
+      applyState();
+    }
+  }
+}
+
+document.getElementById('live-pill')?.addEventListener('click', e => {
+  e.stopPropagation();
+  startLiveSync();
+});
+setInterval(() => {
+  if (!RT.liveTime || RT.liveSync || document.body.classList.contains('timeline') || document.body.classList.contains('build') || document.body.classList.contains('touring')) return;
+  const now = localTimeAndes();
+  state.sun = now.sun; state.night = now.night; state.season = now.season;
+  applyState();
+}, 60000);
 document.getElementById('btn-reset').addEventListener('click', () => { camera.position.copy(homePos()); controls.target.copy(HOME.target); controls.update(); });
 
 // Wire Timeline & Build mode buttons through MODES (supporting dynamic import() lazy loading)

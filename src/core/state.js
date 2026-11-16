@@ -2,19 +2,53 @@
 import * as THREE from 'three';
 import { FT } from '../config/constants.js';
 
+export function localTimeAndes(now = new Date()) {
+  let year = now.getFullYear(), month = now.getMonth() + 1, day = now.getDate();
+  let hour = now.getHours() + now.getMinutes() / 60, isDST = false;
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric',
+      hour: 'numeric', minute: 'numeric', hour12: false, timeZoneName: 'short',
+    }).formatToParts(now);
+    const get = t => parts.find(p => p.type === t)?.value;
+    year = +get('year') || year; month = +get('month') || month; day = +get('day') || day;
+    const hh = (+get('hour')) % 24, mm = +get('minute') || 0;
+    hour = hh + mm / 60;
+    isDST = /EDT/i.test(get('timeZoneName') || '');
+  } catch {}
+  const doy = Math.floor((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 1)) / 86400000) + 1;
+  const B = 2 * Math.PI * (doy - 81) / 365;
+  const dec = 23.44 * Math.PI / 180 * Math.sin(B);
+  const eotMin = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  const cosHa = Math.max(-0.99, Math.min(0.99, -Math.tan(42.19 * Math.PI / 180) * Math.tan(dec)));
+  const halfDay = Math.acos(cosHa) * 12 / Math.PI;
+  const solarNoon = (isDST ? 13.0 : 12.0) - 0.88 / 60 - eotMin / 60;
+  const sunrise = solarNoon - halfDay, sunset = solarNoon + halfDay;
+  const season = month === 12 || month <= 2 ? 'winter' : month <= 5 ? 'spring' : month <= 8 ? 'summer' : 'fall';
+  const night = hour < sunrise - 0.15 || hour > sunset + 0.15;
+  const total = Math.round(hour * 60), hh = Math.floor(total / 60) % 24, mm = total % 60;
+  const label = `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${hh >= 12 ? 'PM' : 'AM'}`;
+  return { sun: Math.max(6, Math.min(19.5, hour)), hour, sunrise, sunset, night, season, label, doy, isDST, solarNoon };
+}
+
+const _initAndes = localTimeAndes();
+
 export const state = {
   floors: 'both',
   walls: 'up',
-  sun: 14,
+  sun: _initAndes.sun,
   roof: true,
   labels: false,
   explode: 0,
-  night: false,
-  season: 'fall',
+  night: _initAndes.night,
+  season: _initAndes.season,
 };
 
 // Shared mutable runtime state across modules (avoids ES module live-binding reassignment issues)
 export const RT = {
+  liveTime: true,
+  liveSync: null,
+  andesWx: '',
   NOCUT: false,
   CUTAXIS: null,
   FX_FIRE: null,

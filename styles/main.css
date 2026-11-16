@@ -70,7 +70,16 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 }
 :root[data-theme="dark"] .wordmark { filter: invert(0.92) brightness(1.2); }
 :root[data-theme="dark"] .brandmark { filter: brightness(1.35) contrast(1.1); }
-.titleblock .meta { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--muted); border-left: 1px solid var(--rule); padding-left: 10px; }
+.titleblock .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.04em; color: var(--muted); border-left: 1px solid var(--rule); padding-left: 10px; }
+#live-pill { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--muted); font: inherit; font-size: 10px; font-variant-numeric: tabular-nums; letter-spacing: 0.02em; cursor: pointer; transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease; white-space: nowrap; }
+#live-pill:hover { border-color: var(--blue); color: var(--ink); }
+#live-pill.live { border-color: rgba(52, 199, 89, 0.28); background: rgba(52, 199, 89, 0.08); color: var(--ink); cursor: default; }
+#live-pill.live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34c759; box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.55); animation: livePulse 2.4s ease-out infinite; flex-shrink: 0; }
+#live-pill svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.85; }
+#live-pill .lp-sep { opacity: 0.45; }
+#walk-light-btn { display: inline-flex; align-items: center; gap: 5px; }
+#walk-light-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
+@keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.55); } 70% { box-shadow: 0 0 0 5px rgba(52, 199, 89, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); } }
 
 /* Hero experience modes */
 .hero-modes { padding: 10px 14px 8px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; border-bottom: 1px solid var(--rule); }

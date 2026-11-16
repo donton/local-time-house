@@ -18,7 +18,7 @@ import { select } from './systems/labels-selection.js';
 import { fireLight, pickAct, useAct, interactStep } from './systems/interactions.js';
 import { toW, floorAt, walkStep, enterWalk, exitWalk } from './modes/walk-mode.js';
 import { tourGo, enterTour, exitTour, tourStep } from './modes/tour-mode.js';
-import { applyState } from './ui/controls-ui.js';
+import { applyState, liveSyncStep } from './ui/controls-ui.js';
 import { phoneStep } from './ui/phone-ui.js';
 import { batchSceneGeometries } from './core/batching.js';
 
@@ -60,6 +60,7 @@ addEventListener('resize', () => {
 });
 
 export function frame(dt) {
+  if (RT.liveSync) liveSyncStep(dt);
   if (WALK.on) walkStep(dt);
   if (TOUR.on) tourStep(dt);
   if (!WALK.on && controls.enabled) controls.update();
@@ -88,7 +89,7 @@ let lastDraw = 0;
 const _lPos = new THREE.Vector3(), _lQuat = new THREE.Quaternion();
 renderer.setAnimationLoop(() => {
   const dt = Math.min(0.05, clock.getDelta());
-  const busy = RT.DIRTY > 0 || WALK.on || TOUR.on || FLY.cur || TWEENS.length || RT.shadowFrames > 0 || animating();
+  const busy = RT.DIRTY > 0 || WALK.on || TOUR.on || FLY.cur || RT.liveSync || TWEENS.length || RT.shadowFrames > 0 || animating();
   if (!busy) return; // 0 FPS idle sleep when nothing changed
   frame(dt);
   if (LITE) {
@@ -145,4 +146,28 @@ idlePrefetch(() => {
   }
   loadTimelineModule();
   loadBuildModule();
+  const wxInfo = (c, night) => c === 0 ? [night ? 'clearNight' : 'clear', 'Clear']
+    : c <= 2 ? [night ? 'clearNight' : 'partly', 'Partly cloudy']
+    : c === 3 ? ['overcast', 'Overcast']
+    : (c === 45 || c === 48) ? ['fog', 'Fog']
+    : (c >= 71 && c <= 77 || c === 85 || c === 86) ? ['snow', 'Snow']
+    : (c >= 95) ? ['storm', 'Storm']
+    : (c >= 51) ? ['rain', 'Rain'] : [night ? 'clearNight' : 'clear', 'Clear'];
+  const fetchAndesWx = async () => {
+    try {
+      const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=42.19&longitude=-74.78&current=weather_code,temperature_2m,is_day&temperature_unit=fahrenheit',
+        { signal: AbortSignal.timeout ? AbortSignal.timeout(4000) : undefined });
+      if (!r.ok) return;
+      const cur = (await r.json()).current;
+      if (!cur) return;
+      const [key, label] = wxInfo(cur.weather_code, cur.is_day === 0);
+      RT.andesWx = { temp: Math.round(cur.temperature_2m), key, label };
+      if (RT.liveTime && label === 'Snow') {
+        for (const f of skyFx) if (f.kind === 'snow') f.on = true;
+      }
+      applyState();
+    } catch {}
+  };
+  fetchAndesWx();
+  setInterval(fetchAndesWx, 600000);
 });
