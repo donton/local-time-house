@@ -1,7 +1,7 @@
 // Sun, hemisphere & fill lights, RCP architectural fixtures, night lighting rig, and bedtime switch.
 import * as THREE from 'three';
 import { FT, LV, roofUnder, DINING_CENTER, LITE, DAY, NIGHTSET, DAY_SKY } from '../config/constants.js';
-import { state, RT, MODES, FAN, nightRig, LIGHTS_OUT, act, markShadows } from '../core/state.js';
+import { state, RT, MODES, FAN, nightRig, LIGHTS_OUT, act, markShadows, localTimeAndes } from '../core/state.js';
 import { MATS, M, lampMat, creamMat, paperMat, trimMat, ribMat, exteriorLightsOnly, setEnvNight } from '../core/materials.js';
 import { root, G } from './site-and-floors.js';
 import { KIT } from './kitchen.js';
@@ -280,24 +280,58 @@ function applyNight(on) {
   if (_outdoorNightHook) _outdoorNightHook(on);
   applySceneTheme();
 }
-// Sun by time of day (Andes, NY, roughly an autumn day): rises in the east, peaks ~1 PM in the south, sets west.
+// True astronomical sun path for Andes, NY (42.19°N, 74.78°W): rises E/NE/SE, peaks S, sets W/NW/SW.
+const _SEASON_DOY = { winter: 15, spring: 105, summer: 196, fall: 288 };
 function sunTimeLabel(h) { const total = Math.round(h * 60), hh = Math.floor(total / 60) % 24, mm = total % 60; const ap = hh >= 12 ? 'PM' : 'AM'; return `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} ${ap}`; }
+const WX_ATMO = {
+  clear:      { sunMul: 1.00, hemiMul: 1.00, skyLerp: 0.00, skyTarget: 0xbac3ca, fogNear: 180, fogFar: 900 },
+  clearNight: { sunMul: 1.00, hemiMul: 1.00, skyLerp: 0.00, skyTarget: 0x161c24, fogNear: 180, fogFar: 900 },
+  partly:     { sunMul: 0.68, hemiMul: 1.15, skyLerp: 0.25, skyTarget: 0xc2cbd2, fogNear: 170, fogFar: 820 },
+  overcast:   { sunMul: 0.06, hemiMul: 1.42, skyLerp: 0.62, skyTarget: 0xb4bcc2, fogNear: 120, fogFar: 580 },
+  fog:        { sunMul: 0.04, hemiMul: 1.45, skyLerp: 0.75, skyTarget: 0xc8cecf, fogNear: 45,  fogFar: 260 },
+  rain:       { sunMul: 0.05, hemiMul: 1.35, skyLerp: 0.72, skyTarget: 0x9aa4ae, fogNear: 80,  fogFar: 420 },
+  snow:       { sunMul: 0.08, hemiMul: 1.48, skyLerp: 0.55, skyTarget: 0xcfd6dc, fogNear: 95,  fogFar: 480 },
+  storm:      { sunMul: 0.03, hemiMul: 1.12, skyLerp: 0.85, skyTarget: 0x737d87, fogNear: 60,  fogFar: 340 },
+};
+const _liveAtmo = () => (RT.liveTime && RT.andesWx && WX_ATMO[RT.andesWx.key]) || WX_ATMO.clear;
+
+const SITE_NORTH_DEG = 23.7; // Crescent Hill runs ~66.3° ENE; house front (+Z) faces ~156.3° SSE (23.7° E of True South)
 function applySun() {
-  if (RT.nightOn) return;
-  const h = state.sun, az = (h - 12.5) / 6.5 * (Math.PI / 2);
-  const el = Math.max(0.04, (55 * Math.PI / 180) * Math.sin(Math.PI * (h - 5.75) / 13.5));
-  const D = 27, c = Math.cos(el);
-  sun.position.set(-Math.sin(az) * c * D, Math.sin(el) * D, Math.cos(az) * c * D);
-  const k = Math.min(1, Math.sin(el) * 1.6);
-  sun.intensity = DAY.sun * (0.25 + 0.75 * k);
-  sun.color.setRGB(1, 0.8 + 0.15 * k, 0.62 + 0.27 * k);                               // warm at the ends of the day
-  hemi.intensity = DAY.hemi * (0.7 + 0.3 * k);
+  if (RT.nightOn) { sun.castShadow = true; return; }
+  const lt = RT.liveTime ? localTimeAndes() : null;
+  const doy = lt ? lt.doy : (_SEASON_DOY[state.season] ?? 288);
+  const isDST = lt ? lt.isDST : state.season !== 'winter';
+  const lat = 42.19 * Math.PI / 180, B = 2 * Math.PI * (doy - 81) / 365;
+  const dec = 23.44 * Math.PI / 180 * Math.sin(B);
+  const eotMin = 9.87 * Math.sin(2 * B) - 7.53 * Math.cos(B) - 1.5 * Math.sin(B);
+  const solarNoon = lt ? lt.solarNoon : ((isDST ? 13.0 : 12.0) - 0.88 / 60 - eotMin / 60);
+  const H = (state.sun - solarNoon) * (Math.PI / 12);
+  let sx = -Math.cos(dec) * Math.sin(H);
+  const syRaw = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(H);
+  let sz = Math.sin(lat) * Math.cos(dec) * Math.cos(H) - Math.cos(lat) * Math.sin(dec);
+  if (SITE_NORTH_DEG) {
+    const r = SITE_NORTH_DEG * Math.PI / 180, cr = Math.cos(r), sr = Math.sin(r);
+    [sx, sz] = [sx * cr - sz * sr, sx * sr + sz * cr];
+  }
+  const elRaw = Math.asin(Math.max(-1, Math.min(1, syRaw))), el = Math.max(0.01, elRaw);
+  const hLen = Math.hypot(sx, sz) || 1, c = Math.cos(el), D = 27;
+  sun.position.set((sx / hLen) * c * D, Math.sin(el) * D, (sz / hLen) * c * D);
+  const twi = Math.max(0, Math.min(1, (elRaw + 0.04) / 0.14));
+  const k = Math.min(1, Math.sin(el) * 1.6), atmo = _liveAtmo();
+  sun.intensity = DAY.sun * (0.20 + 0.80 * k) * twi * atmo.sunMul;
+  sun.castShadow = atmo.sunMul > 0.25 && twi > 0.1;
+  sun.color.setRGB(1, 0.72 + 0.23 * k, 0.48 + 0.41 * k);                               // richer golden-hour warmth near horizon
+  hemi.intensity = DAY.hemi * (0.55 + 0.45 * k) * (0.4 + 0.6 * twi) * atmo.hemiMul;
 }
 
 function applySceneTheme() {
+  const atmo = _liveAtmo();
+  if (scene.fog) { scene.fog.near = atmo.fogNear; scene.fog.far = atmo.fogFar; }
   if (RT.nightOn) { scene.background = new THREE.Color(NIGHTSET.bg); if (scene.fog) scene.fog.color.copy(scene.background); return; }
   let s = 'fall'; try { s = state.season; } catch {}
-  scene.background = new THREE.Color(DAY_SKY[s] || 0xcedbe6);
+  const bg = new THREE.Color(DAY_SKY[s] || 0xcedbe6);
+  if (atmo.skyLerp > 0) bg.lerp(new THREE.Color(atmo.skyTarget), atmo.skyLerp);
+  scene.background = bg;
   if (scene.fog) scene.fog.color.copy(scene.background);
 }
 
