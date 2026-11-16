@@ -248,6 +248,7 @@ body.m #mlive-pill svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.8
 body.m #mlive-pill .lp-sep { opacity: 0.45; }
 body.m #snap-btn { top: calc(10px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: 36px; height: 36px; }
 body.m #snap-btn svg { width: 16px; height: 16px; }
+body.m #mode-exit { top: calc(10px + env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); width: 36px; height: 36px; font-size: 14px; }
 body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle, body.m.building #mtitle,
 body.m.walking #mlive-pill, body.m.touring #mlive-pill, body.m.timeline #mlive-pill, body.m.building #mlive-pill { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
@@ -293,7 +294,7 @@ body.m #mintro.gone { opacity: 0; pointer-events: none; }
 body.m #mintro b { display: block; font: 400 18px/1.15 var(--font-display); margin-bottom: 3px; }
 /* walking on a phone: stick on the left, big Use button on the right, slim HUD on top */
 body.m.walking #walkpad, body.m.walking .hud-text { display: none; }
-body.m.walking #walkhud { top: calc(16px + env(safe-area-inset-top, 0px)); bottom: auto; left: max(66px, calc(16px + env(safe-area-inset-left, 0px) + 50px)); right: max(66px, calc(16px + env(safe-area-inset-right, 0px) + 50px)); transform: none; max-width: none; height: 40px; padding: 0 6px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; border-radius: 999px; }
+body.m.walking #walkhud { top: calc(10px + env(safe-area-inset-top, 0px)); bottom: auto; left: max(56px, calc(12px + env(safe-area-inset-left, 0px) + 44px)); right: max(56px, calc(12px + env(safe-area-inset-right, 0px) + 44px)); transform: none; max-width: none; height: 36px; padding: 0 6px; gap: 6px; flex-wrap: nowrap; justify-content: space-between; border-radius: 999px; }
 body.m.walking #walk-room-pop, body.m.walking #walk-light-pop { top: calc(64px + env(safe-area-inset-top, 0px)); bottom: auto; left: auto; right: max(16px, env(safe-area-inset-right, 0px)); transform: none; }
 body.m.walking #walk-room-pop { left: max(16px, env(safe-area-inset-left, 0px)); right: auto; }
 body.m.walking #walk-found { white-space: nowrap; font-size: 10.5px; }
@@ -313,7 +314,7 @@ body.m.walking #mintro, body.m.touring #mintro, body.m.building #mintro { displa
 #tourcap .cap-eyebrow { display: block; font: 500 10.5px/1.2 var(--font-mono); letter-spacing: 0.04em; color: var(--muted); margin-bottom: 2px; }
 #tourcap .cap-title { display: block; font: 400 20px/1.15 var(--font-brand); color: var(--ink); letter-spacing: 0.01em; }
 #tourcap .cap-sub { display: block; font: 400 12.5px/1.35 var(--font-body); color: var(--muted); margin-top: 3px; }
-body.m.touring #tourcap { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); max-width: calc(100% - 132px); }
+body.m.touring #tourcap { bottom: calc(114px + env(safe-area-inset-bottom, 0px)); top: auto; max-width: calc(100% - 16px); }
 #tlbar, #bdbar, #tourbar { box-sizing: border-box; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: min(720px, calc(100% - 32px)); padding: 12px 16px 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 #tlbar[hidden], #bdbar[hidden], #tourbar[hidden] { display: none !important; }
 #tlbar .tl-controls, #bdbar .tl-controls, #tourbar .tl-controls { display: flex; align-items: center; gap: 8px; width: 100%; }
