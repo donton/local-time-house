@@ -500,19 +500,19 @@ function tlCullCamTrees(restore = false) {
   const dx = lx - cx, dz = lz - cz, len2 = dx * dx + dz * dz;
   if (len2 < 1) return;
   const len = Math.sqrt(len2);
+  const tanHalfH = Math.max(0.45, Math.min(1.0, Math.tan((camera.fov * Math.PI / 180) * 0.5) * (camera.aspect || 1.5)));
+  const maxAlong = Math.max(10, len - 35);
   let tDirty = false, dDirty = false, pDirty = false;
   for (let i = 0; i < _tlTreeMeta.length; i++) {
     const m = _tlTreeMeta[i];
     const vx = m.x - cx, vz = m.z - cz;
     const u = (vx * dx + vz * dz) / len2;
+    const dAlong = u * len;
     let hide = false;
-    if (u >= -0.08 && u <= 0.78) {
+    if (dAlong >= -18 && dAlong <= maxAlong) {
       const px = cx + u * dx - m.x, pz = cz + u * dz - m.z;
-      const dAlong = Math.max(0, u * len);
-      const maxPerp = 18 + dAlong * 0.50;
+      const maxPerp = 20 + Math.max(0, dAlong) * (tanHalfH + 0.15);
       if (px * px + pz * pz < maxPerp * maxPerp) hide = true;
-    } else if (vx * vx + vz * vz < 324) {
-      hide = true;
     }
     const was = culled.has(i);
     if (hide && !was) {
