@@ -242,7 +242,7 @@ body.m #mtitle .wordmark { height: 14px; max-width: 116px; }
 body.m #mlive-pill { display: inline-flex; align-items: center; gap: 4px; position: fixed; z-index: 7; right: calc(54px + env(safe-area-inset-right, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
   height: 36px; box-sizing: border-box; padding: 0 9px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--muted); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
   font: 500 10.5px/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-body.m #mlive-pill.live { border-color: rgba(52, 199, 89, 0.45); color: var(--ink); cursor: default; }
+body.m #mlive-pill.live { border-color: rgba(52, 199, 89, 0.35); background: color-mix(in srgb, #34c759 10%, var(--card)); color: var(--ink); cursor: default; }
 body.m #mlive-pill.live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34c759; box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.55); animation: livePulse 2.4s ease-out infinite; flex-shrink: 0; }
 body.m #mlive-pill svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.85; }
 body.m #mlive-pill .lp-sep { opacity: 0.45; }
