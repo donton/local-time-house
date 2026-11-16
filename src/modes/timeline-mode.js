@@ -6,7 +6,7 @@ import { MATS, lampMat, creamMat, paperMat, setEnvNight } from '../core/material
 import { root, G } from '../house/site-and-floors.js';
 import { renderer, scene, camera, controls, phoneFov, setFov } from '../core/renderer.js';
 import { hemi, sun, fill, sunTimeLabel } from '../house/lighting.js';
-import { LAND, DRIVE, PATIO_AT, terrainY, twigs, snowParts, CAR } from '../landscape/terrain-and-trees.js';
+import { LAND, DRIVE, PATIO_AT, terrainY, twigs, snowParts, CAR, TREES, decid, pines, trunks, canopies, cones } from '../landscape/terrain-and-trees.js';
 import { PATIO, WEST_DECK, GRILL } from '../landscape/outdoor-living.js';
 import { labels } from '../systems/labels-selection.js';
 import { fireLight, tvLight } from '../systems/interactions.js';
@@ -616,6 +616,7 @@ function enterTimeline() {
 function exitTimeline() {
   if (!TL.on) return;
   document.body.classList.remove('timeline');
+  tlCullCamTrees(true);
   TL.on = false; TL.playing = false; TL.speedMult = 1; TL.cur = -1; TL._treeCache = null; TL._snowCache = undefined; TL._sunLbl = null;
   twigs.visible = true;
   for (const B of TL.built || []) B.group.visible = false;
