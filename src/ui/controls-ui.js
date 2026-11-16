@@ -185,8 +185,8 @@ export function applyState() {
     }
     if (mlp) {
       mlp.classList.toggle('live', !!RT.liveTime);
-      mlp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Live</span>`;
-      mlp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Tap to reset to real-time Andes, NY';
+      mlp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
+      mlp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Tap to reset Season, Day & Sun to real-time Andes, NY';
     }
   }
   const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}|${state.night}`;
