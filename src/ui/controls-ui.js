@@ -172,13 +172,22 @@ export function applyState() {
   };
 
   const lp = document.getElementById('live-pill');
-  if (lp) {
-    lp.classList.toggle('live', !!RT.liveTime);
+  const mlp = document.getElementById('mlive-pill');
+  if (lp || mlp) {
     const w = RT.andesWx;
     const wxHtml = w && typeof w === 'object' ? `<span class="lp-sep">·</span>${WX_SVG[w.key] || ''}<span>${w.temp}°</span>` : '';
     const wxTip = w && typeof w === 'object' ? ` · ${w.temp}°F ${w.label}` : '';
-    lp.innerHTML = RT.liveTime ? `<span>Live</span><span class="lp-sep">·</span><span>${localTimeAndes().label}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
-    lp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Click to reset Season, Day & Sun to real-time Andes, NY';
+    const tLbl = localTimeAndes().label;
+    if (lp) {
+      lp.classList.toggle('live', !!RT.liveTime);
+      lp.innerHTML = RT.liveTime ? `<span>Live</span><span class="lp-sep">·</span><span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
+      lp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Click to reset Season, Day & Sun to real-time Andes, NY';
+    }
+    if (mlp) {
+      mlp.classList.toggle('live', !!RT.liveTime);
+      mlp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Live</span>`;
+      mlp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Tap to reset to real-time Andes, NY';
+    }
   }
   const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}|${state.night}`;
   if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }
@@ -258,10 +267,12 @@ export function liveSyncStep(dt) {
   }
 }
 
-document.getElementById('live-pill')?.addEventListener('click', e => {
-  e.stopPropagation();
-  startLiveSync();
-});
+for (const id of ['live-pill', 'mlive-pill']) {
+  document.getElementById(id)?.addEventListener('click', e => {
+    e.stopPropagation();
+    startLiveSync();
+  });
+}
 setInterval(() => {
   if (!RT.liveTime || RT.liveSync || document.body.classList.contains('timeline') || document.body.classList.contains('build') || document.body.classList.contains('touring')) return;
   const now = localTimeAndes();
