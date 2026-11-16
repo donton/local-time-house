@@ -959,7 +959,7 @@ function enterBuild() {
   BD.grp.visible = true;
   document.body.classList.add('building');
   document.getElementById('bdbar').hidden = false;
-  document.getElementById('bd-play').innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>';
+  document.getElementById('bd-play').innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>';
   document.getElementById('bd-speed').textContent = '1×';
   document.querySelector('#btn-build b').textContent = 'Exit build';
   bdApplyPhases(0, 0);
@@ -1033,14 +1033,14 @@ function exitBuild() {
   showCap('');
 }
 
-document.getElementById('bd-play').addEventListener('click', e => { BD.playing = !BD.playing; e.currentTarget.innerHTML = BD.playing ? '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>' : '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8a.6.6 0 0 1 .9-.5l8 5.2a.6.6 0 0 1 0 1l-8 5.2a.6.6 0 0 1-.9-.5z"/></svg>'; });
+document.getElementById('bd-play').addEventListener('click', e => { BD.playing = !BD.playing; e.currentTarget.innerHTML = BD.playing ? '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>' : '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>'; });
 document.getElementById('bd-speed').addEventListener('click', e => {
   const speeds = [1, 1.5, 2, 0.5];
   BD.speed = speeds[(speeds.indexOf(BD.speed) + 1) % speeds.length];
   e.target.textContent = BD.speed + '×';
 });
 document.getElementById('bd-scrub').addEventListener('input', e => {
-  BD.scrubbing = true; BD.playing = false; document.getElementById('bd-play').textContent = '▶';
+  BD.scrubbing = true; BD.playing = false; document.getElementById('bd-play').innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>';
   BD.t = +e.target.value / 1000;
   bdApplyPhases(BD.t, 0);
   bdApplyEnv(0, true);

@@ -11,7 +11,7 @@ const cap$ = () => document.getElementById('tourcap');
 function takeOver() {                                         // any touch of the controls hands the walk to you
   if (!WALK.auto) return;
   WALK.auto = null; TOUR.play = false;
-  const p = document.getElementById('tour-play'); if (p) p.textContent = '▶';
+  const p = document.getElementById('tour-play'); if (p) p.innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>';
 }
 function tourWalkOn() {
   if (WALK.on) return;
@@ -120,7 +120,7 @@ function enterTour() {
   if (BD.on) MODES.exitBuild();
   TOUR.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
   TOUR.on = true; TOUR.play = true; TOUR.speed = 1;
-  document.getElementById('tour-play').innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>';
+  document.getElementById('tour-play').innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>';
   document.getElementById('tour-speed').textContent = '1×';
   document.body.classList.add('touring'); controls.minDistance = 0.3; document.getElementById('tourbar').hidden = false;
   tourGo(0);
@@ -174,7 +174,7 @@ function tourStep(dt) {
 document.getElementById('btn-tour').addEventListener('click', enterTour);
 document.getElementById('tour-scrub')?.addEventListener('input', e => tourGo(Number(e.target.value)));
 document.getElementById('tour-prev')?.addEventListener('click', () => tourGo(TOUR.i - 1));
-document.getElementById('tour-play')?.addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.currentTarget.innerHTML = TOUR.play ? '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>' : '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8a.6.6 0 0 1 .9-.5l8 5.2a.6.6 0 0 1 0 1l-8 5.2a.6.6 0 0 1-.9-.5z"/></svg>'; });
+document.getElementById('tour-play')?.addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.currentTarget.innerHTML = TOUR.play ? '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>' : '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M232.4,114.49,88.32,26.35a16,16,0,0,0-16.2-.3A15.86,15.86,0,0,0,64,39.87V216.13A15.94,15.94,0,0,0,80,232a16.07,16.07,0,0,0,8.36-2.35L232.4,141.51a15.81,15.81,0,0,0,0-27ZM80,215.94V40l143.83,88Z"/></svg>'; });
 document.getElementById('tour-next')?.addEventListener('click', () => tourGo(TOUR.i + 1));
 document.getElementById('tour-speed')?.addEventListener('click', e => { TOUR.speed = TOUR.speed === 1 ? 2 : 1; e.currentTarget.textContent = TOUR.speed + '×'; });
 

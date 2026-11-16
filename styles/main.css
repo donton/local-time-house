@@ -86,7 +86,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .mode-btn { display: flex; align-items: center; gap: 10px; padding: 8px 11px; border-radius: 8px; border: 1px solid var(--rule); background: var(--chip); color: var(--ink); cursor: pointer; text-align: left; transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease; }
 .mode-btn:hover { border-color: var(--blue); }
 .mode-btn:active { transform: translateY(0.5px); }
-.mode-btn svg { flex: none; width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.mode-btn svg { flex: none; width: 20px; height: 20px; }
 .mode-btn .m-tx { display: grid; gap: 1px; min-width: 0; }
 .mode-btn .m-tx b { font: 600 13px/1.15 var(--font-body); white-space: nowrap; }
 .mode-btn .m-tx span { font: 400 11px/1.2 var(--font-body); color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -99,7 +99,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .lbl { font-size: 10.5px; font-weight: 600; color: var(--muted); }
 .seg { display: flex; gap: 2px; padding: 2px; background: var(--chip); border: 1px solid var(--rule); border-radius: 7px; }
 .seg button { flex: 1 0 auto; display: inline-flex; align-items: center; justify-content: center; gap: 4px; font: 500 12px var(--font-body); padding: 5px 8px; border: 0; border-radius: 5px; background: transparent; color: var(--muted); cursor: pointer; text-align: center; white-space: nowrap; transition: background 0.15s ease, color 0.15s ease; }
-.seg button svg { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.seg button svg { width: 14px; height: 14px; flex: none; }
 .seg button:hover { color: var(--ink); }
 .seg button[aria-pressed="true"] { background: var(--active-bg); color: var(--active-ink); font-weight: 600; }
 .toggles { display: flex; gap: 6px; align-items: center; }
@@ -108,7 +108,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--font-body); 
 .tog input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
 .tog::before { content: ""; width: 6px; height: 6px; border-radius: 50%; border: 1.5px solid var(--muted); transition: background 0.15s ease, border-color 0.15s ease; flex: none; }
 .tog.icon-tog::before { display: none; }
-.tog svg { width: 14px; height: 14px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.tog svg { width: 14px; height: 14px; flex: none; }
 .tog:has(input:checked) { background: var(--active-bg); border-color: var(--active-bg); color: var(--active-ink); font-weight: 600; }
 .tog:has(input:checked)::before { background: var(--blue); border-color: var(--blue); }
 .slider { display: flex; align-items: center; gap: 8px; min-width: 138px; }
@@ -199,7 +199,7 @@ body.walking #reticle { display: block; }
 .walk-light input { flex: 1; min-width: 110px; accent-color: var(--accent); }
 .walk-light output { font-family: var(--font-mono); font-size: 11.5px; color: var(--muted); min-width: 56px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 #walk-night { display: inline-flex; align-items: center; gap: 5px; }
-#walk-night svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+#walk-night svg { width: 13px; height: 13px; flex: none; }
 #walk-night[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
 .walk-pill { border: 1px solid var(--rule); background: var(--chip); color: var(--ink); border-radius: 999px; padding: 6px 11px; font: 600 12px/1.1 var(--font-body); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; max-width: 100%; }
 .walk-pill:hover, .walk-pill[aria-expanded="true"] { border-color: var(--muted); background: var(--card); }
@@ -255,7 +255,7 @@ body.m #mbar { display: grid; grid-template-columns: repeat(6, 1fr); position: f
   background: var(--card); border-top: 1px solid var(--rule); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
 body.m.walking #mbar, body.m.touring #mbar, body.m.timeline #mbar, body.m.building #mbar { display: none; }
 #mbar button { display: grid; justify-items: center; gap: 3px; padding: 6px 0 4px; min-height: 52px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font: 600 10.5px var(--font-body); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#mbar button svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+#mbar button svg { width: 21px; height: 21px; }
 #mbar button[aria-pressed="true"] { color: var(--accent); background: var(--chip); }
 #mbar .starbtn { color: var(--accent); }
 #mbar .starbtn b { font: 600 11px var(--font-mono); font-variant-numeric: tabular-nums; }
@@ -263,7 +263,7 @@ body.m #mchips { display: flex; gap: 7px; position: fixed; z-index: 7; left: max
 body.m #mchips::-webkit-scrollbar { display: none; }
 body.m.walking #mchips, body.m.touring #mchips, body.m.timeline #mchips, body.m.building #mchips { display: none; }
 #mchips button { display: inline-flex; align-items: center; gap: 5px; flex: none; padding: 8px 12px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--ink); font: 600 12.5px/1 var(--font-body); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.06); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
-#mchips button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+#mchips button svg { width: 14px; height: 14px; flex: none; }
 #mscrim { display: none; }
 body.m #mscrim { display: block; position: fixed; inset: 0; z-index: 9; background: rgba(20,18,16,0.22); opacity: 0; pointer-events: none; transition: opacity 0.22s ease; }
 body.m #mscrim.open { opacity: 1; pointer-events: auto; }
@@ -352,7 +352,7 @@ body.touring #walk-keys, body.touring #walk-keys-r, body.touring #walkhud { disp
 #mode-exit:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 body.walking #mode-exit, body.touring #mode-exit, body.timeline #mode-exit, body.building #mode-exit { display: inline-flex; align-items: center; justify-content: center; }
 #snap-btn { position: fixed; z-index: 9; top: calc(16px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); width: 40px; height: 40px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: var(--ink); cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: right 0.2s ease, background 0.15s, border-color 0.15s, color 0.15s, transform 0.12s; }
-#snap-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+#snap-btn svg { width: 18px; height: 18px; }
 #snap-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
 #snap-btn:active { transform: scale(0.94); }
 #mode-loading { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 24; display: inline-flex; align-items: center; gap: 9px; padding: 10px 18px; border-radius: 999px; font: 500 13px/1 var(--font-body); color: var(--ink); pointer-events: none; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
