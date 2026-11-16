@@ -496,16 +496,19 @@ function tlCullCamTrees(restore = false) {
   const lx = controls.target.x, lz = controls.target.z;
   const dx = lx - cx, dz = lz - cz, len2 = dx * dx + dz * dz;
   if (len2 < 1) return;
+  const len = Math.sqrt(len2);
   let tDirty = false, dDirty = false, pDirty = false;
   for (let i = 0; i < _tlTreeMeta.length; i++) {
     const m = _tlTreeMeta[i];
     const vx = m.x - cx, vz = m.z - cz;
     const u = (vx * dx + vz * dz) / len2;
     let hide = false;
-    if (u >= -0.06 && u <= 0.85) {
+    if (u >= -0.08 && u <= 0.82) {
       const px = cx + u * dx - m.x, pz = cz + u * dz - m.z;
-      if (px * px + pz * pz < 132) hide = true;
-    } else if (vx * vx + vz * vz < 144) {
+      const dAlong = Math.max(0, u * len);
+      const maxPerp = 12 + dAlong * 0.58;
+      if (px * px + pz * pz < maxPerp * maxPerp) hide = true;
+    } else if (vx * vx + vz * vz < 196) {
       hide = true;
     }
     const was = culled.has(i);
