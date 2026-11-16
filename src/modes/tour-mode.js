@@ -120,7 +120,7 @@ function enterTour() {
   if (BD.on) MODES.exitBuild();
   TOUR.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
   TOUR.on = true; TOUR.play = true; TOUR.speed = 1;
-  document.getElementById('tour-play').textContent = '❚❚';
+  document.getElementById('tour-play').innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>';
   document.getElementById('tour-speed').textContent = '1×';
   document.body.classList.add('touring'); controls.minDistance = 0.3; document.getElementById('tourbar').hidden = false;
   tourGo(0);
@@ -174,7 +174,7 @@ function tourStep(dt) {
 document.getElementById('btn-tour').addEventListener('click', enterTour);
 document.getElementById('tour-scrub')?.addEventListener('input', e => tourGo(Number(e.target.value)));
 document.getElementById('tour-prev')?.addEventListener('click', () => tourGo(TOUR.i - 1));
-document.getElementById('tour-play')?.addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.currentTarget.textContent = TOUR.play ? '❚❚' : '▶'; });
+document.getElementById('tour-play')?.addEventListener('click', e => { TOUR.play = !TOUR.play; TOUR.wait = 0; e.currentTarget.innerHTML = TOUR.play ? '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>' : '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8a.6.6 0 0 1 .9-.5l8 5.2a.6.6 0 0 1 0 1l-8 5.2a.6.6 0 0 1-.9-.5z"/></svg>'; });
 document.getElementById('tour-next')?.addEventListener('click', () => tourGo(TOUR.i + 1));
 document.getElementById('tour-speed')?.addEventListener('click', e => { TOUR.speed = TOUR.speed === 1 ? 2 : 1; e.currentTarget.textContent = TOUR.speed + '×'; });
 

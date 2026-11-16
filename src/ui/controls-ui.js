@@ -69,7 +69,7 @@ const CHIP_SHELL_UI = {
 const _svg = d => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const WX_SVG = {
   clear:      _svg('<circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/>'),
-  clearNight: _svg('<path d="M12.5 10.2A5 5 0 0 1 5.8 3.5a5 5 0 1 0 6.7 6.7z"/>'),
+  clearNight: _svg('<path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/>'),
   partly:     _svg('<path d="M5.2 7.8a2.3 2.3 0 1 1 3.6-2.4M6.5 2v1M2.5 5.5h1M3.7 3.2l.7.7"/><path d="M5.5 13h6a2.3 2.3 0 0 0 .3-4.6A3.2 3.2 0 0 0 5.6 9 2 2 0 0 0 5.5 13z"/>'),
   overcast:   _svg('<path d="M4.5 12.5h7.2a2.5 2.5 0 0 0 .3-5 3.6 3.6 0 0 0-7 .6A2.2 2.2 0 0 0 4.5 12.5z"/>'),
   fog:        _svg('<path d="M4.5 9.5h7.2a2.2 2.2 0 0 0 .2-4.4 3.2 3.2 0 0 0-6.2.5A2 2 0 0 0 4.5 9.5zM3 11.8h10M4.5 14h7"/>'),

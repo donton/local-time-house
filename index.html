@@ -35,7 +35,7 @@
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/utils/BufferGeometryUtils.js">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif&display=swap">
 <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/objects/Reflector.js">
-<link rel="stylesheet" href="styles/main.css?v=8">
+<link rel="stylesheet" href="styles/main.css?v=9">
 
 <div id="stage" aria-label="3D model of Local Time House"></div>
 <script>if (matchMedia('(max-width: 700px), (pointer: coarse) and (max-width: 1024px)').matches) document.body.classList.add('m');</script>
@@ -156,28 +156,28 @@
   <button id="chip-night" type="button" aria-pressed="false"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M12.8 10.2A5.2 5.2 0 0 1 5.8 3.2a5.4 5.4 0 1 0 7 7z"/></svg>Night</button>
 </div>
 <nav id="mbar" aria-label="Modes">
-  <button id="mb-explore" type="button" aria-pressed="true"><svg viewBox="0 0 22 22"><circle cx="11" cy="11" r="8"/><path d="M14 8l-2 4.5L7.5 14l2-4.5z"/></svg>Explore</button>
+  <button id="mb-explore" type="button" aria-pressed="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.3 8.7l-2.2 4.9-4.9 2.2 2.2-4.9z"/></svg>Explore</button>
   <button id="mb-walk" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 16v-2.38C4 11.5 2.97 10.5 3 8c.03-2.72 1.49-6 4.5-6C9.37 2 10 3.8 10 5.5c0 3.11-2 5.66-2 8.68V16a2 2 0 1 1-4 0Z"/><path d="M20 20v-2.38c0-2.12 1.03-3.12 1-5.62-.03-2.72-1.49-6-4.5-6C14.63 6 14 7.8 14 9.5c0 3.11 2 5.66 2 8.68V20a2 2 0 1 0 4 0Z"/><path d="M16 17h4"/><path d="M4 13h4"/></svg>Walk</button>
-  <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>Tour</button>
+  <button id="mb-tour" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>Tour</button>
   <button id="mb-year" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M12 5a3 3 0 1 1 3 3m-3-3a3 3 0 1 0-3 3m3-3v1M9 8a3 3 0 1 0 3 3M9 8h1m5 0a3 3 0 1 1-3 3m3-3h-1m-2 3v-1"/><circle cx="12" cy="8" r="1.5"/><path d="M12 11v11"/><path d="M12 22c4.2 0 7-1.667 7-5-4.2 0-7 1.667-7 5Z"/><path d="M12 22c-4.2 0-7-1.667-7-5 4.2 0 7 1.667 7 5Z"/></svg>Year</button>
   <button id="mb-build" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="m15 12-8.5 8.5c-.83.83-2.17.83-3 0 0 0 0 0 0 0a2.12 2.12 0 0 1 0-3L12 9"/><path d="M17.64 15 22 10.64"/><path d="m20.91 11.7-1.25-1.25c-.6-.6-.93-1.4-.93-2.25v-.86L16.01 4.6a5.56 5.56 0 0 0-3.94-1.64H9l.92.82A6.18 6.18 0 0 1 12 8.4v1.56l2 2h2.47l2.26 1.91"/></svg>Build</button>
-  <button id="mb-more" type="button" aria-pressed="false"><svg viewBox="0 0 22 22"><path d="M3 7h16M3 15h16"/><circle cx="8" cy="7" r="2.3" fill="var(--card)"/><circle cx="14" cy="15" r="2.3" fill="var(--card)"/></svg>More</button>
+  <button id="mb-more" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 8h16M4 16h16"/><circle cx="9" cy="8" r="2.4" fill="var(--card)"/><circle cx="15" cy="16" r="2.4" fill="var(--card)"/></svg>More</button>
 </nav>
 <div id="mscrim" aria-hidden="true"></div>
 <section id="msheet" aria-live="polite">
-  <div class="mgrip"><h2 id="msheet-title">Display and view</h2><button id="msheet-close" type="button" aria-label="Close">✕</button></div>
+  <div class="mgrip"><h2 id="msheet-title">Display and view</h2><button id="msheet-close" type="button" aria-label="Close"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button></div>
   <div id="pane-more"></div>
 </section>
 <div id="joy" aria-label="Walk stick"><i></i></div>
 <div id="look" aria-label="Look stick"><i></i></div>
 <button id="usebtn" type="button"><span>Nothing to use</span></button>
-<button id="mode-exit" class="card" type="button" aria-label="Exit current mode">✕</button>
+<button id="mode-exit" class="card" type="button" aria-label="Exit current mode"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
 <button id="snap-btn" class="card" type="button" aria-label="Take snapshot" title="Take snapshot (P)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5h2l1.3-2h4.4l1.3 2h2A2.5 2.5 0 0 1 20 7.5v10A2.5 2.5 0 0 1 17.5 20h-11A2.5 2.5 0 0 1 4 17.5z"/><circle cx="12" cy="12.5" r="3.5"/></svg></button>
 <div id="snap-flash" aria-hidden="true"></div>
 <div id="mode-loading" class="card" role="status" aria-live="polite" hidden><i class="ml-spin" aria-hidden="true"></i><span>Loading…</span></div>
 <div id="walkhud" class="card hud" hidden>
   <button id="walk-room-btn" class="walk-pill" type="button" aria-expanded="false" aria-controls="walk-room-pop"><span>Entry deck</span> ▾</button>
-  <button id="walk-light-btn" class="walk-pill" type="button" aria-expanded="false" aria-controls="walk-light-pop">☀ 2:00 PM</button>
+  <button id="walk-light-btn" class="walk-pill" type="button" aria-expanded="false" aria-controls="walk-light-pop"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="8" r="2.6"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.8 3.8l1.1 1.1M11.1 11.1l1.1 1.1M12.2 3.8l-1.1 1.1M4.9 11.1l-1.1 1.1"/></svg> 2:00 PM</button>
   <div id="walkpad" aria-label="Walk controls">
     <button type="button" data-k="KeyA" aria-label="Step left">◀</button>
     <button type="button" data-k="KeyW" aria-label="Walk forward">▲</button>
@@ -230,7 +230,7 @@
     <div class="tl-months" aria-hidden="true"><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
   </div>
   <div class="tl-controls">
-    <button id="tl-play" type="button" aria-label="Play or pause the year">❚❚</button>
+    <button id="tl-play" type="button" aria-label="Play or pause the year"><svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg></button>
     <button id="tl-speed" type="button" aria-label="Playback speed">1×</button>
     <div class="tl-readout"><span id="tl-month">January</span><span id="tl-time">4:48 PM</span></div>
   </div>
@@ -244,7 +244,7 @@
     <div class="tl-months" aria-hidden="true"><span>S</span><span>O</span><span>N</span><span>D</span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span></div>
   </div>
   <div class="tl-controls">
-    <button id="bd-play" type="button" aria-label="Play or pause construction">❚❚</button>
+    <button id="bd-play" type="button" aria-label="Play or pause construction"><svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg></button>
     <button id="bd-speed" type="button" aria-label="Playback speed">1×</button>
     <div class="tl-readout"><span id="bd-month">Sep</span><span id="bd-stage">1 / 16</span></div>
   </div>
@@ -257,9 +257,9 @@
     <div id="tour-marks"></div>
   </div>
   <div class="tl-controls">
-    <button id="tour-prev" type="button" aria-label="Previous stop" title="Previous stop">‹</button>
-    <button id="tour-play" type="button" aria-label="Play or pause tour">❚❚</button>
-    <button id="tour-next" type="button" aria-label="Next stop" title="Next stop">›</button>
+    <button id="tour-prev" type="button" aria-label="Previous stop" title="Previous stop"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5L5.5 8 10 12.5"/></svg></button>
+    <button id="tour-play" type="button" aria-label="Play or pause tour"><svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg></button>
+    <button id="tour-next" type="button" aria-label="Next stop" title="Next stop"><svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3.5L10.5 8 6 12.5"/></svg></button>
     <button id="tour-speed" type="button" aria-label="Playback speed">1×</button>
     <div class="tl-readout"><span id="tour-name">Arrive</span><span id="tour-count">1 / 15</span></div>
   </div>

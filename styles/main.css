@@ -318,6 +318,8 @@ body.m.touring #tourcap { bottom: calc(114px + env(safe-area-inset-bottom, 0px))
 #tlbar, #bdbar, #tourbar { box-sizing: border-box; position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 8; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: min(720px, calc(100% - 32px)); padding: 12px 16px 10px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 #tlbar[hidden], #bdbar[hidden], #tourbar[hidden] { display: none !important; }
 #tlbar .tl-controls, #bdbar .tl-controls, #tourbar .tl-controls { display: flex; align-items: center; gap: 8px; width: 100%; }
+#tl-play, #bd-play, #tour-play, #tour-prev, #tour-next, #msheet-close { display: inline-flex; align-items: center; justify-content: center; }
+#walk-found, #found-badge { display: inline-flex; align-items: center; gap: 4px; }
 #tlbar .tl-track, #bdbar .tl-track, #tourbar .tl-track { position: relative; flex: none; width: 100%; height: 36px; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 #tl-scrub, #bd-scrub, #tour-scrub { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; z-index: 2; }
 .tl-rail { position: relative; width: 100%; height: 6px; border-radius: 999px; overflow: hidden; background: var(--rule); display: flex; }

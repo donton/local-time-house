@@ -678,7 +678,7 @@ function enterTimeline() {
   document.body.classList.add('timeline');
   document.getElementById('tlbar').hidden = false;
   document.getElementById('tl-pins').hidden = false;
-  document.getElementById('tl-play').textContent = '❚❚';
+  document.getElementById('tl-play').innerHTML = '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>';
   document.getElementById('tl-speed').textContent = '1×';
   document.querySelector('#btn-timeline b').textContent = 'Exit timeline';
   tlApplyEnv(0, true);
@@ -733,7 +733,7 @@ function exitTimeline() {
   document.querySelector('#btn-timeline b').textContent = 'A year here';
   showCap('');
 }
-document.getElementById('tl-play').addEventListener('click', e => { TL.playing = !TL.playing; e.target.textContent = TL.playing ? '❚❚' : '▶'; });
+document.getElementById('tl-play').addEventListener('click', e => { TL.playing = !TL.playing; e.currentTarget.innerHTML = TL.playing ? '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><rect x="3.5" y="2.5" width="3" height="11" rx="0.8"/><rect x="9.5" y="2.5" width="3" height="11" rx="0.8"/></svg>' : '<svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M4.5 2.8a.6.6 0 0 1 .9-.5l8 5.2a.6.6 0 0 1 0 1l-8 5.2a.6.6 0 0 1-.9-.5z"/></svg>'; });
 document.getElementById('tl-speed').addEventListener('click', e => {
   TL.speedMult = TL.speedMult === 1 ? 2 : TL.speedMult === 2 ? 0.5 : 1;
   e.target.textContent = TL.speedMult + '×';

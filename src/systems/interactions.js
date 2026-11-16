@@ -161,10 +161,11 @@ export function pickAct(nx, ny, maxDist) {
   return null;
 }
 
+const _STAR_SVG = '<svg viewBox="0 0 16 16" width="12" height="12" fill="currentColor" aria-hidden="true"><path d="M8 1.5l1.9 3.9 4.3.6-3.1 3 .7 4.3L8 11.2l-3.8 2.1.7-4.3-3.1-3 4.3-.6z"/></svg>';
 setTimeout(() => {
   for (const id of ['walk-found', 'found-badge']) {
     const el = document.getElementById(id);
-    if (el) el.textContent = `★ ${FOUND.size} / ${KINDS()} found`;
+    if (el) el.innerHTML = `${_STAR_SVG}<span>${FOUND.size} / ${KINDS()} found</span>`;
   }
 }, 0);
 
@@ -183,10 +184,10 @@ export function useAct(a) {
     for (let i = pBefore; i < TWEENS.length; i++) TWEENS[i].owner = a.pair.obj;
     markObjBoundsDirty(a.pair.obj);
   }
-  const f = `★ ${FOUND.size} / ${KINDS()} found`;
+  const f = `${_STAR_SVG}<span>${FOUND.size} / ${KINDS()} found</span>`;
   for (const id of ['walk-found', 'found-badge']) {
     const el = document.getElementById(id);
-    if (el) el.textContent = f;
+    if (el) el.innerHTML = f;
   }
   // P2: Removed setTimeout(buildColliders, 1000) — dynamic collider Box3 bounds update via markObjBoundsDirty
 }
