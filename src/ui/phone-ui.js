@@ -82,7 +82,7 @@ $$('chip-season').addEventListener('click', () => {
   state.season = order[(order.indexOf(state.season) + 1) % order.length];
   applyState();
 });
-$$('chip-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; applyState(); });
+$$('chip-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; if (!state.night && (state.sun < 9 || state.sun > 16.5)) state.sun = 14; applyState(); });
 // move the More popover's controls into the sheet on phones (and back on desktop)
 const MORE_POP = $$('more-pop'), MORE_ROW = MORE_POP.querySelector('.more-row'), MORE_TIPS = MORE_POP.querySelector('.more-tips');
 const rowOf = id => $$(id).closest('.row');

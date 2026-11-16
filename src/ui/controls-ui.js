@@ -199,11 +199,11 @@ MODES.applyState = applyState;
 document.getElementById('wl-roof').addEventListener('click', () => { state.walls = 'up'; state.roof = true; applyState(); });
 ['up', 'cutaway'].forEach(k => document.getElementById('wl-' + k).addEventListener('click', () => { state.walls = k; state.roof = false; applyState(); }));
 document.getElementById('tg-labels').addEventListener('change', e => { state.labels = e.target.checked; applyState(); });
-document.getElementById('btn-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; applyState(); });
+document.getElementById('btn-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; if (!state.night && (state.sun < 9 || state.sun > 16.5)) state.sun = 14; applyState(); });
 document.getElementById('btn-season').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; const order = ['fall', 'winter', 'spring', 'summer']; state.season = order[(order.indexOf(state.season) + 1) % order.length]; applyState(); });
 document.getElementById('explode').addEventListener('input', e => { state.explode = +e.target.value; applyState(); });
 for (const id of ['suntime', 'walk-sun']) document.getElementById(id).addEventListener('input', e => { RT.liveTime = false; RT.liveSync = null; state.sun = +e.target.value; applyState(); });
-document.getElementById('walk-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; applyState(); });
+document.getElementById('walk-night').addEventListener('click', () => { RT.liveTime = false; RT.liveSync = null; state.night = !state.night; if (!state.night && (state.sun < 9 || state.sun > 16.5)) state.sun = 14; applyState(); });
 
 function startLiveSync() {
   if (RT.liveTime && !RT.liveSync) return;
