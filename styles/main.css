@@ -235,17 +235,19 @@ body.walking #panel, body.timeline #panel, body.building #panel, body.touring #p
 .spot::before { content: ""; position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent); animation: spotpulse 1.8s ease-out infinite; }
 @keyframes spotpulse { 0% { transform: scale(1); opacity: 0.9; } 100% { transform: scale(3); opacity: 0; } }
 body.m #panel, body.m .hint, body.m #act-tip, body.m #act-hint { display: none !important; }
-body.m #mtitle { display: flex; align-items: center; gap: 8px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
-  font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 7px 12px 8px 10px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
-body.m #mtitle .logo, body.m #mtitle .brandmark { width: 22px; }
-body.m #mtitle .wordmark { height: 16px; max-width: 140px; }
-body.m #mlive-pill { display: inline-flex; align-items: center; gap: 5px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(50px + env(safe-area-inset-top, 0px));
-  min-height: 28px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--muted); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
-  font: 500 11px/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; white-space: nowrap; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+body.m #mtitle { display: flex; align-items: center; gap: 6px; position: fixed; z-index: 7; left: max(12px, env(safe-area-inset-left, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
+  height: 36px; box-sizing: border-box; font: 400 22px/1 var(--font-brand); letter-spacing: -0.01em; padding: 0 10px 0 8px; border-radius: 6px; background: var(--card); border: 1px solid var(--rule); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
+body.m #mtitle .logo, body.m #mtitle .brandmark { width: 20px; height: auto; }
+body.m #mtitle .wordmark { height: 14px; max-width: 116px; }
+body.m #mlive-pill { display: inline-flex; align-items: center; gap: 4px; position: fixed; z-index: 7; right: calc(54px + env(safe-area-inset-right, 0px)); top: calc(10px + env(safe-area-inset-top, 0px));
+  height: 36px; box-sizing: border-box; padding: 0 9px; border-radius: 999px; border: 1px solid var(--rule); background: var(--card); color: var(--muted); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  font: 500 10.5px/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: 0.01em; white-space: nowrap; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 body.m #mlive-pill.live { border-color: rgba(52, 199, 89, 0.45); color: var(--ink); cursor: default; }
 body.m #mlive-pill.live::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34c759; box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.55); animation: livePulse 2.4s ease-out infinite; flex-shrink: 0; }
-body.m #mlive-pill svg { width: 13px; height: 13px; flex-shrink: 0; opacity: 0.85; }
+body.m #mlive-pill svg { width: 12px; height: 12px; flex-shrink: 0; opacity: 0.85; }
 body.m #mlive-pill .lp-sep { opacity: 0.45; }
+body.m #snap-btn { top: calc(10px + env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: 36px; height: 36px; }
+body.m #snap-btn svg { width: 16px; height: 16px; }
 body.m.walking #mtitle, body.m.touring #mtitle, body.m.timeline #mtitle, body.m.building #mtitle,
 body.m.walking #mlive-pill, body.m.touring #mlive-pill, body.m.timeline #mlive-pill, body.m.building #mlive-pill { display: none; }
 body.m #mbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; z-index: 8; left: 0; right: 0; bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px));
