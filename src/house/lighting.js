@@ -102,40 +102,43 @@ function fixtures() {
       const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), metal); body.position.set(x, top - h / 2, z); G.wingRoof.add(body);
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.90, r * 0.90, 0.015, 24), lampMat); lens.position.set(x, top - h - 0.003, z); G.wingRoof.add(lens);
     });
-    if (F.T1) {                                                                    // U-shaped suspended track rail + aimed track heads
+    if (F.T1) {                                                                    // U-shaped suspended track rail + aimed track heads (white)
       const { y, xW, xE, zN, zS, drops, heads } = F.T1, rw = 0.11, rh = 0.13;
+      const trackMat = new THREE.MeshStandardMaterial({ color: 0xf4f3ef, roughness: 0.38, metalness: 0.15 });
+      trackMat.name = 'porcelain';
+      const cableMat = M('chrome');
       const addPart = (geo, mat, parent = g) => { const m = new THREE.Mesh(geo, mat); m.userData.nocut = true; parent.add(m); return m; };
-      const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trimMat);
+      const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trackMat);
       northBar.position.set((xW + xE) / 2, y, zN);
       const legLen = zS - (zN + rw / 2), legZ = (zN + rw / 2 + zS) / 2;
       for (const lx of [xW, xE]) {
-        const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trimMat);
+        const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trackMat);
         leg.position.set(lx, y, legZ);
-        const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trimMat);
+        const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trackMat);
         cap.position.set(lx, y, zS + 0.015);
       }
       drops.forEach(([dx, dz], idx) => {
         const top = ceilAt(floor, dx, dz), isFeed = idx === 3;                     // center north drop carries the power feed
-        const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trimMat);
+        const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trackMat);
         collar.position.set(dx, y + rh / 2 + 0.02, dz);
         const cableTop = top - 0.02, cableBot = y + rh / 2 + 0.04, h = Math.max(0.05, cableTop - cableBot);
-        const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), trimMat, R);
+        const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), isFeed ? trackMat : cableMat, R);
         cable.position.set(dx, (cableTop + cableBot) / 2, dz);
-        const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trimMat, R);
+        const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trackMat, R);
         canopy.position.set(dx, top - 0.015, dz);
       });
       const yPivot = y - rh / 2 - 0.21;
       heads.forEach(({ pos: [hx, hz], target: [tx, ty, tz] }) => {
-        const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trimMat);
+        const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trackMat);
         adapter.position.set(hx, y - rh / 2 - 0.035, hz);
-        const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trimMat);
+        const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trackMat);
         stem.position.set(hx, y - rh / 2 - 0.14, hz);
         const headGrp = new THREE.Group();
         headGrp.position.set(hx, yPivot, hz);
         headGrp.lookAt(tx, ty, tz);
         g.add(headGrp);
-        addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trimMat, headGrp);
-        addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), M('steel'), headGrp);
+        addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trackMat, headGrp);
+        addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), trackMat, headGrp);
         addPart(new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255), lampMat, headGrp);
       });
     }
