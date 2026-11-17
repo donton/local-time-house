@@ -1,7 +1,7 @@
 // Sun, hemisphere & fill lights, RCP architectural fixtures, night lighting rig, and bedtime switch.
 import * as THREE from 'three';
 import { FT, LV, roofUnder, DINING_CENTER, LITE, DAY, NIGHTSET, DAY_SKY } from '../config/constants.js';
-import { state, RT, MODES, FAN, nightRig, LIGHTS_OUT, act, markShadows, localTimeAndes } from '../core/state.js';
+import { state, RT, MODES, FAN, nightRig, LIGHTS_OUT, act, markShadows, wake, localTimeAndes } from '../core/state.js';
 import { MATS, M, lampMat, creamMat, paperMat, trimMat, ribMat, exteriorLightsOnly, setEnvNight } from '../core/materials.js';
 import { root, G } from './site-and-floors.js';
 import { KIT } from './kitchen.js';
@@ -11,6 +11,7 @@ let _outdoorNightHook = null;
 export function registerOutdoorNightHook(fn) {
   _outdoorNightHook = fn;
 }
+const KITCHEN_LIGHT = { mode: 'track', trackGrp: null, trackCableGrp: null, gimbalGrp: null, acts: [] };
 
 const hemi = new THREE.HemisphereLight(0xf4f1ea, 0xd9d1c4, 1.35);   // sky + ground bounce (no direction, so nothing shines through walls)
 scene.add(hemi);
@@ -55,6 +56,15 @@ const RCP = {
         { pos: [13.00, 7.85], target: [14.45, 4.0, 7.85] }, // east south pantry & microwave
       ],
     },
+    // 2" recessed ceiling gimbals (3000K, 45° beam) — alternate exploration to T1
+    D6: [
+      { pos: [3.75, 3.86], target: [2.20, 2.9, 3.50] },
+      { pos: [6.76, 3.86], target: [6.76, 2.9, 2.20] },
+      { pos: [9.80, 3.86], target: [9.50, 2.9, 2.20] },
+      { pos: [12.81, 3.86], target: [13.80, 3.5, 3.86] },
+      { pos: [3.75, 6.61], target: [2.00, 2.9, 6.61] },
+      { pos: [12.81, 6.61], target: [14.00, 3.5, 6.61] },
+    ],
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
     D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
          ['x', 38.2, 7.2, 5.8, -1], ['x', 38.2, 10.0, 5.8, -1],                     // guest bath, either side of the mirror
@@ -102,45 +112,81 @@ function fixtures() {
       const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), metal); body.position.set(x, top - h / 2, z); G.wingRoof.add(body);
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.90, r * 0.90, 0.015, 24), lampMat); lens.position.set(x, top - h - 0.003, z); G.wingRoof.add(lens);
     });
-    if (F.T1) {                                                                    // U-shaped suspended track rail + aimed track heads (white)
-      const { y, xW, xE, zN, zS, drops, heads } = F.T1, rw = 0.11, rh = 0.13;
+    if (F.T1 || F.D6) {
       const trackMat = new THREE.MeshStandardMaterial({ color: 0xf4f3ef, roughness: 0.38, metalness: 0.15 });
       trackMat.name = 'porcelain';
       const cableMat = M('chrome');
-      const addPart = (geo, mat, parent = g) => { const m = new THREE.Mesh(geo, mat); m.userData.nocut = true; parent.add(m); return m; };
-      const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trackMat);
-      northBar.position.set((xW + xE) / 2, y, zN);
-      const legLen = zS - (zN + rw / 2), legZ = (zN + rw / 2 + zS) / 2;
-      for (const lx of [xW, xE]) {
-        const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trackMat);
-        leg.position.set(lx, y, legZ);
-        const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trackMat);
-        cap.position.set(lx, y, zS + 0.015);
+      const toggleKitchen = () => setKitchenLightMode(KITCHEN_LIGHT.mode === 'track' ? 'gimbal' : 'track');
+      const kActDef = () => ({
+        kind: 'kitchenLights',
+        label: () => KITCHEN_LIGHT.mode === 'track' ? 'Switch to 2" ceiling gimbals' : 'Switch to U-shaped track',
+        run: toggleKitchen,
+      });
+
+      if (F.T1) {                                                                  // U-shaped suspended track rail + aimed track heads (white)
+        const { y, xW, xE, zN, zS, drops, heads } = F.T1, rw = 0.11, rh = 0.13;
+        const trackGrp = new THREE.Group(), trackCableGrp = new THREE.Group();
+        g.add(trackGrp); R.add(trackCableGrp);
+        KITCHEN_LIGHT.trackGrp = trackGrp; KITCHEN_LIGHT.trackCableGrp = trackCableGrp;
+        const addPart = (geo, mat, parent = trackGrp) => { const m = new THREE.Mesh(geo, mat); m.userData.nocut = true; parent.add(m); return m; };
+        const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trackMat);
+        northBar.position.set((xW + xE) / 2, y, zN);
+        const legLen = zS - (zN + rw / 2), legZ = (zN + rw / 2 + zS) / 2;
+        for (const lx of [xW, xE]) {
+          const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trackMat);
+          leg.position.set(lx, y, legZ);
+          const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trackMat);
+          cap.position.set(lx, y, zS + 0.015);
+        }
+        drops.forEach(([dx, dz], idx) => {
+          const top = ceilAt(floor, dx, dz), isFeed = idx === 3;                   // center north drop carries the power feed
+          const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trackMat);
+          collar.position.set(dx, y + rh / 2 + 0.02, dz);
+          const cableTop = top - 0.02, cableBot = y + rh / 2 + 0.04, h = Math.max(0.05, cableTop - cableBot);
+          const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), isFeed ? trackMat : cableMat, trackCableGrp);
+          cable.position.set(dx, (cableTop + cableBot) / 2, dz);
+          const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trackMat, trackCableGrp);
+          canopy.position.set(dx, top - 0.015, dz);
+        });
+        const yPivot = y - rh / 2 - 0.21;
+        heads.forEach(({ pos: [hx, hz], target: [tx, ty, tz] }) => {
+          const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trackMat);
+          adapter.position.set(hx, y - rh / 2 - 0.035, hz);
+          const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trackMat);
+          stem.position.set(hx, y - rh / 2 - 0.14, hz);
+          const headGrp = new THREE.Group();
+          headGrp.position.set(hx, yPivot, hz);
+          headGrp.lookAt(tx, ty, tz);
+          trackGrp.add(headGrp);
+          addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trackMat, headGrp);
+          addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), trackMat, headGrp);
+          addPart(new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255), lampMat, headGrp);
+        });
+        KITCHEN_LIGHT.acts.push(act(trackGrp, kActDef()), act(trackCableGrp, kActDef()));
       }
-      drops.forEach(([dx, dz], idx) => {
-        const top = ceilAt(floor, dx, dz), isFeed = idx === 3;                     // center north drop carries the power feed
-        const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trackMat);
-        collar.position.set(dx, y + rh / 2 + 0.02, dz);
-        const cableTop = top - 0.02, cableBot = y + rh / 2 + 0.04, h = Math.max(0.05, cableTop - cableBot);
-        const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), isFeed ? trackMat : cableMat, R);
-        cable.position.set(dx, (cableTop + cableBot) / 2, dz);
-        const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trackMat, R);
-        canopy.position.set(dx, top - 0.015, dz);
-      });
-      const yPivot = y - rh / 2 - 0.21;
-      heads.forEach(({ pos: [hx, hz], target: [tx, ty, tz] }) => {
-        const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trackMat);
-        adapter.position.set(hx, y - rh / 2 - 0.035, hz);
-        const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trackMat);
-        stem.position.set(hx, y - rh / 2 - 0.14, hz);
-        const headGrp = new THREE.Group();
-        headGrp.position.set(hx, yPivot, hz);
-        headGrp.lookAt(tx, ty, tz);
-        g.add(headGrp);
-        addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trackMat, headGrp);
-        addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), trackMat, headGrp);
-        addPart(new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255), lampMat, headGrp);
-      });
+
+      if (F.D6) {                                                                  // 2" recessed ceiling gimbals (3000K, 45° beam)
+        const gimbalGrp = new THREE.Group();
+        gimbalGrp.visible = false;
+        R.add(gimbalGrp);
+        KITCHEN_LIGHT.gimbalGrp = gimbalGrp;
+        F.D6.forEach(({ pos: [x, z], target: [tx, ty, tz] }) => {
+          const top = ceilAt(floor, x, z);
+          const trim = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.125, 0.02, 20), trackMat);
+          trim.rotation.x = -Math.PI / 4;                                          // flush with 45° north roof slope
+          trim.position.set(x, top - 0.005, z);
+          gimbalGrp.add(trim);
+          const eye = new THREE.Group();
+          eye.position.set(x, top - 0.015, z);
+          eye.lookAt(tx, ty, tz);
+          gimbalGrp.add(eye);
+          const baffle = new THREE.Mesh(new THREE.CylinderGeometry(0.083, 0.083, 0.035, 18).rotateX(Math.PI / 2), trimMat);
+          eye.add(baffle);
+          const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.015, 18).rotateX(Math.PI / 2).translate(0, 0, 0.015), lampMat);
+          eye.add(lens);
+        });
+        KITCHEN_LIGHT.acts.push(act(gimbalGrp, kActDef()));
+      }
     }
     (F.D1 || []).forEach(([x, z]) => {                                            // pendant: round paper lantern, 24" Ø
       const top = ceilAt(floor, x, z), r = 1.0, cy = 2.5 + 2.75 + r;               // bottom ≈33" above the table top
@@ -286,6 +332,14 @@ const TRACK_SPOTS = RCP.ground.T1.heads.map(({ pos: [hx, hz], target: [tx, ty, t
   angle: 0.54,
   dist: 12.5,
 }));
+// 2" recessed ceiling gimbals (3000 K, 45° full beam = 22.5° half-angle = Math.PI / 8)
+const GIMBAL_SPOTS = RCP.ground.D6.map(({ pos: [x, z], target: [tx, ty, tz] }) => ({
+  pos: [x, ceilAt('ground', x, z) - 0.05, z],
+  target: [tx, ty, tz],
+  cd: 52,
+  angle: Math.PI / 8,
+  dist: 26,
+}));
 // Soft indirect bounce + dining paper lantern (kept subtle so mid-room points don't create fake wall/door hotspots)
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela, dist]
@@ -313,7 +367,13 @@ for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of TRACK_SP
   const L = new THREE.SpotLight(0xffd2a1, 0, dist, angle, 0.80, 1.5);
   L.visible = true; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
   G.ground.add(L, L.target);
-  nightRig.push({ L, cd });
+  nightRig.push({ L, cd, mode: 'track' });
+}
+for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of GIMBAL_SPOTS) {
+  const L = new THREE.SpotLight(0xffd9b3, 0, dist, angle, 0.72, 1.5);             // 3000 K, 45° beam
+  L.visible = false; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  G.ground.add(L, L.target);
+  nightRig.push({ L, cd, mode: 'gimbal' });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding (first in G.ground so indices 0..5 on mobile)
   const L = new THREE.PointLight(0xffc98a, 0, 6, 2); L.visible = true; L.userData.ext = true;
@@ -332,6 +392,24 @@ for (const [grp, x, y, z, cd, dist] of NIGHT_LIGHTS) {
 
 for (const n of ['siding', 'sidingWood', 'skirt', 'foundation', 'roof', 'membrane', 'soffit', 'snow', 'concrete', 'deck', 'gravel', 'frame', 'steel', 'ground']) exteriorLightsOnly(MATS[n]);
 
+function setKitchenLightMode(mode) {
+  KITCHEN_LIGHT.mode = mode === 'gimbal' ? 'gimbal' : 'track';
+  const isTrack = KITCHEN_LIGHT.mode === 'track';
+  if (KITCHEN_LIGHT.trackGrp) KITCHEN_LIGHT.trackGrp.visible = isTrack;
+  if (KITCHEN_LIGHT.trackCableGrp) KITCHEN_LIGHT.trackCableGrp.visible = isTrack;
+  if (KITCHEN_LIGHT.gimbalGrp) KITCHEN_LIGHT.gimbalGrp.visible = !isTrack;
+  for (const a of KITCHEN_LIGHT.acts) a.on = !isTrack;
+  const lit = RT.nightOn && !(typeof LIGHTS_OUT !== 'undefined' && LIGHTS_OUT.off);
+  for (const item of nightRig) {
+    if (!item.mode) continue;
+    const active = item.mode === KITCHEN_LIGHT.mode;
+    item.L.visible = active;
+    item.L.intensity = (lit && active) ? item.cd * NIGHTSET.dim : 0;
+  }
+  markShadows();
+  wake();
+}
+
 function applyNight(on) {
   RT.nightOn = on;
   hemi.intensity = on ? NIGHTSET.hemi : DAY.hemi;
@@ -341,7 +419,12 @@ function applyNight(on) {
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
   setEnvNight(on ? 1 : 0);
-  for (const { L, cd } of nightRig) { L.intensity = on ? cd * NIGHTSET.dim : 0; L.visible = true; if (on && L.castShadow) L.shadow.needsUpdate = true; }
+  for (const item of nightRig) {
+    const active = !item.mode || item.mode === KITCHEN_LIGHT.mode;
+    item.L.intensity = (on && active) ? item.cd * NIGHTSET.dim : 0;
+    item.L.visible = active;
+    if (on && active && item.L.castShadow) item.L.shadow.needsUpdate = true;
+  }
   if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
   lampMat.emissiveIntensity = on ? 2.6 : 0;
   paperMat.emissiveIntensity = on ? 1.1 : 0;
@@ -414,7 +497,8 @@ export function lightsOut() {
   if (!state.night) { state.night = true; MODES.applyState(); return; }
   if (LIGHTS_OUT.busy) return;
   LIGHTS_OUT.busy = true; const goingOff = !LIGHTS_OUT.off;
-  const order = goingOff ? nightRig.slice() : nightRig.slice().reverse();
+  const activeRig = nightRig.filter(item => !item.mode || item.mode === KITCHEN_LIGHT.mode);
+  const order = goingOff ? activeRig : activeRig.slice().reverse();
   order.forEach(({ L }, i) => setTimeout(() => { L.visible = !goingOff; markShadows(); }, 260 * i));
   setTimeout(() => {
     lampMat.emissiveIntensity = goingOff ? 0 : 2.6; paperMat.emissiveIntensity = goingOff ? 0 : 1.1; creamMat.emissiveIntensity = goingOff ? 0 : 1.4;
@@ -424,4 +508,4 @@ export function lightsOut() {
 }
 MODES.lightsOut = lightsOut;
 
-export { hemi, sun, fill, RCP, ceilAt, fixtures, RECESS_SPOTS, TRACK_SPOTS, NIGHT_LIGHTS, applyNight, sunTimeLabel, applySun, applySceneTheme };
+export { hemi, sun, fill, RCP, ceilAt, fixtures, RECESS_SPOTS, TRACK_SPOTS, GIMBAL_SPOTS, NIGHT_LIGHTS, setKitchenLightMode, applyNight, sunTimeLabel, applySun, applySceneTheme };
