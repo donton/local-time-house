@@ -24,7 +24,7 @@ const fill = new THREE.DirectionalLight(0xe8eef5, 0); fill.position.set(14, 10, 
 
 /* Lighting — fixtures placed from the reflected ceiling plans A103.1 (ground) and A103.2 (loft).
    Legend: L1 4" LED deep recessed · L2 4" LED canless recessed, vaulted ceiling · L3 LED tape · L4 5" LED semi-flush ·
-   D1 pendant · D4 interior wall sconce · D5 exterior wall sconce · D6 surface-mount directional · F1 ceiling fan/light.
+   D1 pendant · D4 interior wall sconce · D5 exterior wall sconce · T1 suspended U-shaped track rail · F1 ceiling fan/light.
    Positions in plan feet; mounting heights from the ceilings in the model (and the elevations for D5). Each fixture
    is a mesh that glows at night; a smaller set of room lights (below) does the actual illumination. */
 const RCP = {
@@ -35,7 +35,26 @@ const RCP = {
          [26.4, 15.0], [30.8, 15.0], [35.0, 15.0],                                  // corridor
          [41.4, 4.5], [45.6, 4.5], [41.4, 12.5], [45.6, 12.5], [46.6, 9.3]],        // office + closet
     L4: [[5.75, 19.81], [13.2, 19.81], [5.75, 24.06], [13.2, 24.06]],                // sunken living, centered in joist bays on the 8'-10" ceiling
-    D6: [[3.75, 3.86], [6.76, 3.86], [9.8, 3.86], [12.81, 3.86], [3.75, 6.61], [12.81, 6.61]],   // kitchen, vaulted
+    // Suspended U-shaped track rail following the west counter, north counter/range, and east tall oak wall
+    T1: {
+      y: 9.5,
+      xW: 3.55, xE: 13.00, zN: 3.55, zS: 8.75,
+      drops: [
+        [3.55, 8.65], [3.55, 6.15], [3.55, 3.55],
+        [8.275, 3.55],
+        [13.00, 3.55], [13.00, 6.15], [13.00, 8.65],
+      ],
+      heads: [
+        { pos: [3.55, 4.15], target: [1.55, 2.9, 4.02] },   // west sink
+        { pos: [3.55, 6.20], target: [1.60, 2.9, 6.20] },   // west dishwasher / prep
+        { pos: [3.55, 8.20], target: [1.60, 2.9, 8.20] },   // west south drawers
+        { pos: [4.85, 3.55], target: [4.85, 3.1, 1.65] },   // north-west counter & oak cubby
+        { pos: [8.18, 3.55], target: [8.18, 2.9, 1.65] },   // induction range
+        { pos: [10.60, 3.55], target: [10.60, 2.9, 1.65] }, // north-east counter
+        { pos: [13.00, 5.05], target: [14.30, 4.0, 5.05] }, // east fridge & north pantry
+        { pos: [13.00, 7.85], target: [14.45, 4.0, 7.85] }, // east south pantry & microwave
+      ],
+    },
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
     D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
          ['x', 38.2, 7.2, 5.8, -1], ['x', 38.2, 10.0, 5.8, -1],                     // guest bath, either side of the mirror
@@ -83,11 +102,43 @@ function fixtures() {
       const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), metal); body.position.set(x, top - h / 2, z); G.wingRoof.add(body);
       const lens = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.90, r * 0.90, 0.015, 24), lampMat); lens.position.set(x, top - h - 0.003, z); G.wingRoof.add(lens);
     });
-    (F.D6 || []).forEach(([x, z]) => {                                            // directional spot, aimed down
-      const top = ceilAt(floor, x, z);
-      const can = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.45, 16), trimMat); can.position.set(x, top - 0.35, z); R.add(can);
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.02, 16), lampMat); lens.position.set(x, top - 0.585, z); R.add(lens);
-    });
+    if (F.T1) {                                                                    // U-shaped suspended track rail + aimed track heads
+      const { y, xW, xE, zN, zS, drops, heads } = F.T1, rw = 0.11, rh = 0.13;
+      const addPart = (geo, mat, parent = g) => { const m = new THREE.Mesh(geo, mat); m.userData.nocut = true; parent.add(m); return m; };
+      const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trimMat);
+      northBar.position.set((xW + xE) / 2, y, zN);
+      const legLen = zS - (zN + rw / 2), legZ = (zN + rw / 2 + zS) / 2;
+      for (const lx of [xW, xE]) {
+        const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trimMat);
+        leg.position.set(lx, y, legZ);
+        const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trimMat);
+        cap.position.set(lx, y, zS + 0.015);
+      }
+      drops.forEach(([dx, dz], idx) => {
+        const top = ceilAt(floor, dx, dz), isFeed = idx === 3;                     // center north drop carries the power feed
+        const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trimMat);
+        collar.position.set(dx, y + rh / 2 + 0.02, dz);
+        const cableTop = top - 0.02, cableBot = y + rh / 2 + 0.04, h = Math.max(0.05, cableTop - cableBot);
+        const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), trimMat, R);
+        cable.position.set(dx, (cableTop + cableBot) / 2, dz);
+        const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trimMat, R);
+        canopy.position.set(dx, top - 0.015, dz);
+      });
+      const yPivot = y - rh / 2 - 0.21;
+      heads.forEach(({ pos: [hx, hz], target: [tx, ty, tz] }) => {
+        const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trimMat);
+        adapter.position.set(hx, y - rh / 2 - 0.035, hz);
+        const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trimMat);
+        stem.position.set(hx, y - rh / 2 - 0.14, hz);
+        const headGrp = new THREE.Group();
+        headGrp.position.set(hx, yPivot, hz);
+        headGrp.lookAt(tx, ty, tz);
+        g.add(headGrp);
+        addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trimMat, headGrp);
+        addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), M('steel'), headGrp);
+        addPart(new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255), lampMat, headGrp);
+      });
+    }
     (F.D1 || []).forEach(([x, z]) => {                                            // pendant: round paper lantern, 24" Ø
       const top = ceilAt(floor, x, z), r = 1.0, cy = 2.5 + 2.75 + r;               // bottom ≈33" above the table top
       const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, top - (cy + r), 6), trimMat); cord.position.set(x, (top + cy + r) / 2, z); R.add(cord);
@@ -205,8 +256,6 @@ function fixtures() {
 // Recessed downlight zones (SpotLights aimed straight down from the actual ceilings — zero upward spill onto ceilings)
 const RECESS_SPOTS = [
   // [group, x, y, z, targetY, candela, angle, dist]
-  ['ground', 5.2, 17.5, 5.2, 0, 44, 0.65, 7.5],                                                     // kitchen vaulted recessed cans + island
-  ['ground', 12.2, 17.5, 5.2, 0, 36, 0.65, 7.5],                                                    // dining vaulted recessed cans
   ['ground', 19.2, 7.95, 14.0, 0, 16, 0.72, 5.0],                                                   // entry + stair hall
   ['ground', 9.5, 8.78, 19.81, 0, 14, 0.72, 5.2],                                                   // sunken living north pair
   ['ground', 9.5, 8.78, 24.06, 0, 14, 0.72, 5.2],                                                   // sunken living south pair
@@ -225,10 +274,22 @@ const RECESS_SPOTS = [
   ['loft', 44.47, 21.25, 9.86, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath mid can
   ['loft', 44.47, 18.52, 12.58, LV.LOFT, 20, 0.78, 5.8],                                             // upstairs bath south can (shower)
 ];
+// Aimed track spotlights from the U-shaped suspended rail (each head illuminates its counter/cabinet zone)
+const TRACK_Y = RCP.ground.T1.y - 0.065 - 0.21;
+const TRACK_SPOTS = RCP.ground.T1.heads.map(({ pos: [hx, hz], target: [tx, ty, tz] }) => ({
+  pos: [hx, TRACK_Y, hz],
+  target: [tx, ty, tz],
+  cd: 16,
+  angle: 0.54,
+  dist: 12.5,
+}));
 // Soft indirect bounce + dining paper lantern (kept subtle so mid-room points don't create fake wall/door hotspots)
 const NIGHT_LIGHTS = [
   // [group, x, y, z, candela, dist]
   ['ground', DINING_CENTER[0], 6.25, DINING_CENTER[1], 5.5, 5.5],                                   // dining paper lantern (24" globe) + kitchen bounce
+  ['ground', 4.5, 5.15, 1.45, 1.1, 3.2],                                                            // L3 under-cabinet LED tape (west)
+  ['ground', 8.2, 5.15, 1.45, 1.1, 3.2],                                                            // L3 under-cabinet LED tape (range/east)
+  ['ground', 8.2, 11.2, 5.5, 2.2, 9.0],                                                             // kitchen vaulted ceiling indirect bounce
   ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
@@ -243,6 +304,12 @@ for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
   const L = new THREE.SpotLight(0xffcf96, 0, dist, ang, 0.85, 1.6);
   L.visible = true; L.position.set(x, y, z); L.target.position.set(x, ty, z);
   G[grp].add(L, L.target);
+  nightRig.push({ L, cd });
+}
+for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of TRACK_SPOTS) {
+  const L = new THREE.SpotLight(0xffd2a1, 0, dist, angle, 0.80, 1.5);
+  L.visible = true; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  G.ground.add(L, L.target);
   nightRig.push({ L, cd });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding (first in G.ground so indices 0..5 on mobile)
@@ -354,4 +421,4 @@ export function lightsOut() {
 }
 MODES.lightsOut = lightsOut;
 
-export { hemi, sun, fill, RCP, ceilAt, fixtures, RECESS_SPOTS, NIGHT_LIGHTS, applyNight, sunTimeLabel, applySun, applySceneTheme };
+export { hemi, sun, fill, RCP, ceilAt, fixtures, RECESS_SPOTS, TRACK_SPOTS, NIGHT_LIGHTS, applyNight, sunTimeLabel, applySun, applySceneTheme };
