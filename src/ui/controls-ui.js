@@ -179,7 +179,7 @@ export function applyState() {
     const tLbl = localTimeAndes().label;
     if (lp) {
       lp.classList.toggle('live', !!RT.liveTime);
-      lp.innerHTML = RT.liveTime ? `<span>Live</span><span class="lp-sep">·</span><span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
+      lp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
       lp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Click to reset Season, Day & Sun to real-time Andes, NY';
     }
     if (mlp) {
