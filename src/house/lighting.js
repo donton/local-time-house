@@ -11,7 +11,7 @@ let _outdoorNightHook = null;
 export function registerOutdoorNightHook(fn) {
   _outdoorNightHook = fn;
 }
-const KITCHEN_LIGHT = { mode: 'track', trackGrp: null, trackCableGrp: null, gimbalGrp: null, acts: [] };
+const KITCHEN_LIGHT = { mode: 'gimbal', trackGrp: null, trackCableGrp: null, gimbalGrp: null, acts: [] };
 
 const hemi = new THREE.HemisphereLight(0xf4f1ea, 0xd9d1c4, 1.35);   // sky + ground bounce (no direction, so nothing shines through walls)
 scene.add(hemi);
@@ -56,14 +56,14 @@ const RCP = {
         { pos: [13.00, 7.85], target: [14.45, 4.0, 7.85] }, // east south pantry & microwave
       ],
     },
-    // 2" recessed ceiling gimbals (3000K, 45° beam) — alternate exploration to T1
+    // 2" recessed ceiling gimbals (3000K, 45° beam) — default kitchen lighting
     D6: [
       { pos: [3.75, 3.86], target: [2.20, 2.9, 3.50] },
       { pos: [6.76, 3.86], target: [6.76, 2.9, 2.20] },
       { pos: [9.80, 3.86], target: [9.50, 2.9, 2.20] },
-      { pos: [12.81, 3.86], target: [13.80, 3.5, 3.86] },
+      { pos: [12.81, 3.86], target: [12.20, 2.9, 3.86] },
       { pos: [3.75, 6.61], target: [2.00, 2.9, 6.61] },
-      { pos: [12.81, 6.61], target: [14.00, 3.5, 6.61] },
+      { pos: [12.81, 6.61], target: [12.20, 2.9, 6.61] },
     ],
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
     D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
@@ -126,6 +126,7 @@ function fixtures() {
       if (F.T1) {                                                                  // U-shaped suspended track rail + aimed track heads (white)
         const { y, xW, xE, zN, zS, drops, heads } = F.T1, rw = 0.11, rh = 0.13;
         const trackGrp = new THREE.Group(), trackCableGrp = new THREE.Group();
+        trackGrp.visible = false; trackCableGrp.visible = false;
         g.add(trackGrp); R.add(trackCableGrp);
         KITCHEN_LIGHT.trackGrp = trackGrp; KITCHEN_LIGHT.trackCableGrp = trackCableGrp;
         const addPart = (geo, mat, parent = trackGrp) => { const m = new THREE.Mesh(geo, mat); m.userData.nocut = true; parent.add(m); return m; };
@@ -167,7 +168,7 @@ function fixtures() {
 
       if (F.D6) {                                                                  // 2" recessed ceiling gimbals (3000K, 45° beam)
         const gimbalGrp = new THREE.Group();
-        gimbalGrp.visible = false;
+        gimbalGrp.visible = true;
         R.add(gimbalGrp);
         KITCHEN_LIGHT.gimbalGrp = gimbalGrp;
         F.D6.forEach(({ pos: [x, z], target: [tx, ty, tz] }) => {
@@ -346,7 +347,7 @@ const NIGHT_LIGHTS = [
   ['ground', DINING_CENTER[0], 6.25, DINING_CENTER[1], 5.5, 5.5],                                   // dining paper lantern (24" globe) + kitchen bounce
   ['ground', 4.5, 5.15, 1.45, 1.1, 3.2],                                                            // L3 under-cabinet LED tape (west)
   ['ground', 8.2, 5.15, 1.45, 1.1, 3.2],                                                            // L3 under-cabinet LED tape (range/east)
-  ['ground', 8.2, 11.2, 5.5, 2.2, 9.0],                                                             // kitchen vaulted ceiling indirect bounce
+  ['ground', 7.2, 11.2, 5.5, 2.2, 8.5],                                                             // kitchen vaulted ceiling indirect bounce (stays west of stair wall)
   ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
@@ -365,13 +366,18 @@ for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
 }
 for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of TRACK_SPOTS) {
   const L = new THREE.SpotLight(0xffd2a1, 0, dist, angle, 0.80, 1.5);
-  L.visible = true; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  L.visible = false; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
   G.ground.add(L, L.target);
   nightRig.push({ L, cd, mode: 'track' });
 }
 for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of GIMBAL_SPOTS) {
   const L = new THREE.SpotLight(0xffd9b3, 0, dist, angle, 0.72, 1.5);             // 3000 K, 45° beam
-  L.visible = false; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  L.visible = true; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  if (x > 10 && !LITE) {
+    L.castShadow = true; L.shadow.autoUpdate = false; L.shadow.needsUpdate = true;
+    L.shadow.mapSize.set(512, 512); L.shadow.bias = -0.001; L.shadow.normalBias = 0.02;
+    L.shadow.camera.near = 1; L.shadow.camera.far = dist;
+  }
   G.ground.add(L, L.target);
   nightRig.push({ L, cd, mode: 'gimbal' });
 }
