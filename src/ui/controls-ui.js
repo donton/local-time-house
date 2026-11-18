@@ -89,6 +89,7 @@ export function applyState() {
   G.wingRoof.visible = state.roof && showG;
   const e = state.explode;
   G.loft.position.y = e * 9;
+  if (RT.loftLights) RT.loftLights.position.y = e * 9;
   G.wingRoof.position.y = e * 9;
   G.mainRoof.position.y = e * 20;
   document.getElementById('labels').style.display = state.labels ? '' : 'none';
@@ -126,7 +127,7 @@ export function applyState() {
       if (el) el.disabled = state.night;
     }
   }
-  if (state.night !== RT.nightOn) applyNight(state.night);
+  if (state.night !== RT.nightOn || (RT.nightOn && _prevUI.floors !== state.floors)) applyNight(state.night);
 
   if (RT.siteReady && state.season !== RT.seasonOn) {
     RT.seasonOn = state.season;

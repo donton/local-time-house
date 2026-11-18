@@ -358,17 +358,22 @@ const NIGHT_LIGHTS = [
   ['loft', 44.5, LV.LOFT + 5.2, 9.2, 2.2, 5.5],                                                     // upstairs bath bounce
   ['loft', 46.8, LV.LOFT + 5.78, 7.19, 3.0, 4.2],                                                   // upstairs bath vanity sconces
 ];
+const loftLights = new THREE.Group();
+loftLights.name = 'loftLights';
+root.add(loftLights);
+RT.loftLights = loftLights;
+
 for (const [grp, x, y, z, ty, cd, ang, dist] of RECESS_SPOTS) {
   const L = new THREE.SpotLight(0xffcf96, 0, dist, ang, 0.85, 1.6);
   L.visible = true; L.position.set(x, y, z); L.target.position.set(x, ty, z);
-  G[grp].add(L, L.target);
-  nightRig.push({ L, cd });
+  (grp === 'loft' ? loftLights : G[grp]).add(L, L.target);
+  nightRig.push({ L, cd, floor: grp });
 }
 for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of TRACK_SPOTS) {
   const L = new THREE.SpotLight(0xffd2a1, 0, dist, angle, 0.80, 1.5);
-  L.visible = false; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
+  L.visible = true; L.position.set(x, y, z); L.target.position.set(tx, ty, tz);
   G.ground.add(L, L.target);
-  nightRig.push({ L, cd, mode: 'track' });
+  nightRig.push({ L, cd, mode: 'track', floor: 'ground' });
 }
 for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of GIMBAL_SPOTS) {
   const L = new THREE.SpotLight(0xffd9b3, 0, dist, angle, 0.72, 1.5);             // 3000 K, 45° beam
@@ -379,7 +384,7 @@ for (const { pos: [x, y, z], target: [tx, ty, tz], cd, angle, dist } of GIMBAL_S
     L.shadow.camera.near = 1; L.shadow.camera.far = dist;
   }
   G.ground.add(L, L.target);
-  nightRig.push({ L, cd, mode: 'gimbal' });
+  nightRig.push({ L, cd, mode: 'gimbal', floor: 'ground' });
 }
 for (const [axis, x, z, y, n] of RCP.ground.D5) {                                // exterior sconces light the siding (first in G.ground so indices 0..5 on mobile)
   const L = new THREE.PointLight(0xffc98a, 0, 6, 2); L.visible = true; L.userData.ext = true;
@@ -389,8 +394,9 @@ for (const [axis, x, z, y, n] of RCP.ground.D5) {                               
   nightRig.push({ L, cd: 5 });
 }
 for (const [grp, x, y, z, cd, dist] of NIGHT_LIGHTS) {
-  const L = new THREE.PointLight(0xffcf96, 0, dist, 1.8); L.visible = true; L.position.set(x, y, z); G[grp].add(L);
-  nightRig.push({ L, cd });
+  const L = new THREE.PointLight(0xffcf96, 0, dist, 1.8); L.visible = true; L.position.set(x, y, z);
+  (grp === 'loft' ? loftLights : G[grp]).add(L);
+  nightRig.push({ L, cd, floor: grp });
 }
 // Outside surfaces take light only from the exterior sconces. Three.js orders shadow-casting lights first
 // (and on mobile LITE mode, D5 sconces are the first 6 PointLights in G.ground), so these materials loop
@@ -409,7 +415,6 @@ function setKitchenLightMode(mode) {
   for (const item of nightRig) {
     if (!item.mode) continue;
     const active = item.mode === KITCHEN_LIGHT.mode;
-    item.L.visible = active;
     item.L.intensity = (lit && active) ? item.cd * NIGHTSET.dim : 0;
   }
   markShadows();
@@ -425,10 +430,10 @@ function applyNight(on) {
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
   setEnvNight(on ? 1 : 0);
+  const showL = state.floors !== 'ground';
   for (const item of nightRig) {
-    const active = !item.mode || item.mode === KITCHEN_LIGHT.mode;
+    const active = (!item.mode || item.mode === KITCHEN_LIGHT.mode) && (item.floor !== 'loft' || showL);
     item.L.intensity = (on && active) ? item.cd * NIGHTSET.dim : 0;
-    item.L.visible = active;
     if (on && active && item.L.castShadow) item.L.shadow.needsUpdate = true;
   }
   if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
@@ -503,9 +508,10 @@ export function lightsOut() {
   if (!state.night) { state.night = true; MODES.applyState(); return; }
   if (LIGHTS_OUT.busy) return;
   LIGHTS_OUT.busy = true; const goingOff = !LIGHTS_OUT.off;
-  const activeRig = nightRig.filter(item => !item.mode || item.mode === KITCHEN_LIGHT.mode);
+  const showL = state.floors !== 'ground';
+  const activeRig = nightRig.filter(item => (!item.mode || item.mode === KITCHEN_LIGHT.mode) && (item.floor !== 'loft' || showL));
   const order = goingOff ? activeRig : activeRig.slice().reverse();
-  order.forEach(({ L }, i) => setTimeout(() => { L.visible = !goingOff; markShadows(); }, 260 * i));
+  order.forEach(({ L, cd }, i) => setTimeout(() => { L.intensity = goingOff ? 0 : cd * NIGHTSET.dim; wake(); }, 260 * i));
   setTimeout(() => {
     lampMat.emissiveIntensity = goingOff ? 0 : 2.6; paperMat.emissiveIntensity = goingOff ? 0 : 1.1; creamMat.emissiveIntensity = goingOff ? 0 : 1.4;
     const gl = MATS.glass; if (gl) gl.emissiveIntensity = goingOff ? 0 : 0.35;
