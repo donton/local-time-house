@@ -85,7 +85,7 @@ function showCap(text, eyebrow, sub) {
 function tourGo(i) {
   TOUR.i = (i + TOUR_STOPS.length) % TOUR_STOPS.length;
   const s = TOUR_STOPS[TOUR.i], world = !!s.world, walkStop = !!s.walk;
-  Object.assign(state, { floors: 'both', walls: 'up', roof: true, explode: 0, labels: false, night: !!s.night }); MODES.applyState(); MODES.select(null);
+  Object.assign(state, { floors: 'both', walls: 'up', roof: true, explode: 0, labels: false, night: !!s.night, sun: 14 }); MODES.applyState(); MODES.select(null);
   document.getElementById('tour-name').textContent = s.name;
   document.getElementById('tour-count').textContent = `${TOUR.i + 1} / ${TOUR_STOPS.length}`;
   TOUR.prog = 0;
@@ -118,7 +118,8 @@ function enterTour() {
   if (WALK.on) exitWalk();
   if (TL.on) MODES.exitTimeline();
   if (BD.on) MODES.exitBuild();
-  TOUR.saved = { state: { ...state }, pos: camera.position.clone(), target: controls.target.clone() };
+  TOUR.saved = { state: { ...state }, liveTime: RT.liveTime, pos: camera.position.clone(), target: controls.target.clone() };
+  RT.liveTime = false; RT.liveSync = null;
   TOUR.on = true; TOUR.play = true; TOUR.speed = 1;
   document.getElementById('tour-play').innerHTML = '<svg viewBox="0 0 256 256" fill="currentColor" aria-hidden="true" width="14" height="14"><path d="M200,32H160a16,16,0,0,0-16,16V208a16,16,0,0,0,16,16h40a16,16,0,0,0,16-16V48A16,16,0,0,0,200,32Zm0,176H160V48h40ZM96,32H56A16,16,0,0,0,40,48V208a16,16,0,0,0,16,16H96a16,16,0,0,0,16-16V48A16,16,0,0,0,96,32Zm0,176H56V48H96Z"/></svg>';
   document.getElementById('tour-speed').textContent = '1×';
@@ -130,6 +131,7 @@ function exitTour() {
   tourWalkOff();
   TOUR.on = false; TOUR.play = false; document.body.classList.remove('touring'); TOUR.fly = null; controls.minDistance = 3; setFov(phoneFov(FOV.orbit)); showCap('');
   document.getElementById('tourbar').hidden = true;
+  RT.liveTime = TOUR.saved.liveTime;
   Object.assign(state, TOUR.saved.state); MODES.applyState();
   camera.position.copy(TOUR.saved.pos); controls.target.copy(TOUR.saved.target); controls.enabled = true; controls.update();
 }
