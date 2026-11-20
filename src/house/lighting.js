@@ -17,10 +17,11 @@ const hemi = new THREE.HemisphereLight(0xf4f1ea, 0xd9d1c4, 1.35);   // sky + gro
 scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff3e2, 2.3);
 sun.position.set(-9, 22, 14); sun.castShadow = true;
+sun.target.position.set(0, 1.5, 1.5);
 sun.shadow.mapSize.set(LITE ? 1024 : 2048, LITE ? 1024 : 2048);
-Object.assign(sun.shadow.camera, { left: -18, right: 18, top: 18, bottom: -18, near: 1, far: 70 });
+Object.assign(sun.shadow.camera, { left: -24, right: 24, top: 24, bottom: -24, near: 1, far: 85 });
 sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.02;
-scene.add(sun);
+scene.add(sun, sun.target);
 const fill = new THREE.DirectionalLight(0xe8eef5, 0); fill.position.set(14, 10, -12); scene.add(fill);   // off: it cast no shadows
 
 /* Lighting — fixtures placed from the reflected ceiling plans A103.1 (ground) and A103.2 (loft).
@@ -92,14 +93,22 @@ const ceilAt = (floor, x, z) => {
 };
 
 function fixtures() {
+  const geoCache = new Map();
+  const cached = (key, make) => {
+    let g = geoCache.get(key);
+    if (!g) { g = make(); geoCache.set(key, g); }
+    return g;
+  };
+  const cyl = (rTop, rBot, h, seg = 20) => cached(`cyl:${rTop}:${rBot}:${h}:${seg}`, () => new THREE.CylinderGeometry(rTop, rBot, h, seg));
+
   for (const floor of ['ground', 'loft']) {
     const g = G[floor], F = RCP[floor];
     // Fixtures on the sloped roof underside belong to the roof group, so they hide (and explode) with the roof.
     const R = G.mainRoof;
     const disc = (x, z, r, drop, glowR, gg = g) => {
       const top = ceilAt(floor, x, z);
-      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, drop, 20), trimMat); m.position.set(x, top - drop / 2, z); gg.add(m);
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(glowR, glowR, 0.02, 20), lampMat); lens.position.set(x, top - drop - 0.005, z); gg.add(lens);
+      const m = new THREE.Mesh(cyl(r, r, drop, 20), trimMat); m.position.set(x, top - drop / 2, z); gg.add(m);
+      const lens = new THREE.Mesh(cyl(glowR, glowR, 0.02, 20), lampMat); lens.position.set(x, top - drop - 0.005, z); gg.add(lens);
     };
     // Recessed: 4" in the kitchen / dining, 2" everywhere else (owner's selection). Thin black trim + lens.
     const inKitchen = (x, z) => floor === 'ground' && x > 0.51 && x < 16.52 && z > 0.52 && z < 16.54 && !(x > 15 && z > 12);   // the two at the kitchen edge by the foyer are 2" like the other two
@@ -108,9 +117,9 @@ function fixtures() {
     (F.L2 || []).forEach(([x, z]) => recessed(x, z, R));
     (F.L4 || []).forEach(([x, z]) => {                                            // brushed-metal cylinder (7.13" H × 5.5" Ø) on wing ceiling
       const top = ceilAt(floor, x, z), r = 5.5 / 24, h = 7.13 / 12, metal = M('steelTop');
-      const flange = new THREE.Mesh(new THREE.CylinderGeometry(r * 1.24, r * 1.24, 0.016, 24), metal); flange.position.set(x, top - 0.008, z); G.wingRoof.add(flange);
-      const body = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), metal); body.position.set(x, top - h / 2, z); G.wingRoof.add(body);
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(r * 0.90, r * 0.90, 0.015, 24), lampMat); lens.position.set(x, top - h - 0.003, z); G.wingRoof.add(lens);
+      const flange = new THREE.Mesh(cyl(r * 1.24, r * 1.24, 0.016, 24), metal); flange.position.set(x, top - 0.008, z); G.wingRoof.add(flange);
+      const body = new THREE.Mesh(cyl(r, r, h, 24), metal); body.position.set(x, top - h / 2, z); G.wingRoof.add(body);
+      const lens = new THREE.Mesh(cyl(r * 0.90, r * 0.90, 0.015, 24), lampMat); lens.position.set(x, top - h - 0.003, z); G.wingRoof.add(lens);
     });
     if (F.T1 || F.D6) {
       const trackMat = new THREE.MeshStandardMaterial({ color: 0xf4f3ef, roughness: 0.38, metalness: 0.15 });
@@ -133,35 +142,42 @@ function fixtures() {
         const northBar = addPart(new THREE.BoxGeometry(xE - xW + rw, rh, rw), trackMat);
         northBar.position.set((xW + xE) / 2, y, zN);
         const legLen = zS - (zN + rw / 2), legZ = (zN + rw / 2 + zS) / 2;
+        const legGeo = new THREE.BoxGeometry(rw, rh, legLen);
+        const capGeo = new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03);
         for (const lx of [xW, xE]) {
-          const leg = addPart(new THREE.BoxGeometry(rw, rh, legLen), trackMat);
+          const leg = addPart(legGeo, trackMat);
           leg.position.set(lx, y, legZ);
-          const cap = addPart(new THREE.BoxGeometry(rw + 0.016, rh + 0.012, 0.03), trackMat);
+          const cap = addPart(capGeo, trackMat);
           cap.position.set(lx, y, zS + 0.015);
         }
         drops.forEach(([dx, dz], idx) => {
           const top = ceilAt(floor, dx, dz), isFeed = idx === 3;                   // center north drop carries the power feed
-          const collar = addPart(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 10), trackMat);
+          const collar = addPart(cyl(0.025, 0.025, 0.04, 10), trackMat);
           collar.position.set(dx, y + rh / 2 + 0.02, dz);
           const cableTop = top - 0.02, cableBot = y + rh / 2 + 0.04, h = Math.max(0.05, cableTop - cableBot);
           const cable = addPart(new THREE.CylinderGeometry(isFeed ? 0.018 : 0.011, isFeed ? 0.018 : 0.011, h, 8), isFeed ? trackMat : cableMat, trackCableGrp);
           cable.position.set(dx, (cableTop + cableBot) / 2, dz);
-          const canopy = addPart(new THREE.CylinderGeometry(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trackMat, trackCableGrp);
+          const canopy = addPart(cyl(isFeed ? 0.14 : 0.075, isFeed ? 0.14 : 0.075, 0.035, 16), trackMat, trackCableGrp);
           canopy.position.set(dx, top - 0.015, dz);
         });
         const yPivot = y - rh / 2 - 0.21;
+        const adapterGeo = cached('t1:adapter', () => new THREE.BoxGeometry(0.14, 0.07, 0.14));
+        const stemGeo = cyl(0.02, 0.02, 0.14, 10);
+        const headBodyGeo = cached('t1:body', () => new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08));
+        const headRearGeo = cached('t1:rear', () => new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12));
+        const headLensGeo = cached('t1:lens', () => new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255));
         heads.forEach(({ pos: [hx, hz], target: [tx, ty, tz] }) => {
-          const adapter = addPart(new THREE.BoxGeometry(0.14, 0.07, 0.14), trackMat);
+          const adapter = addPart(adapterGeo, trackMat);
           adapter.position.set(hx, y - rh / 2 - 0.035, hz);
-          const stem = addPart(new THREE.CylinderGeometry(0.02, 0.02, 0.14, 10), trackMat);
+          const stem = addPart(stemGeo, trackMat);
           stem.position.set(hx, y - rh / 2 - 0.14, hz);
           const headGrp = new THREE.Group();
           headGrp.position.set(hx, yPivot, hz);
           headGrp.lookAt(tx, ty, tz);
           trackGrp.add(headGrp);
-          addPart(new THREE.CylinderGeometry(0.11, 0.11, 0.36, 18).rotateX(Math.PI / 2).translate(0, 0, 0.08), trackMat, headGrp);
-          addPart(new THREE.CylinderGeometry(0.095, 0.105, 0.05, 16).rotateX(Math.PI / 2).translate(0, 0, -0.12), trackMat, headGrp);
-          addPart(new THREE.CylinderGeometry(0.088, 0.088, 0.02, 16).rotateX(Math.PI / 2).translate(0, 0, 0.255), lampMat, headGrp);
+          addPart(headBodyGeo, trackMat, headGrp);
+          addPart(headRearGeo, trackMat, headGrp);
+          addPart(headLensGeo, lampMat, headGrp);
         });
         KITCHEN_LIGHT.acts.push(act(trackGrp, kActDef()), act(trackCableGrp, kActDef()));
       }
@@ -171,9 +187,12 @@ function fixtures() {
         gimbalGrp.visible = true;
         R.add(gimbalGrp);
         KITCHEN_LIGHT.gimbalGrp = gimbalGrp;
+        const trimGeo = cyl(0.125, 0.125, 0.02, 20);
+        const baffleGeo = cached('d6:baffle', () => new THREE.CylinderGeometry(0.083, 0.083, 0.035, 18).rotateX(Math.PI / 2));
+        const lensGeo = cached('d6:lens', () => new THREE.CylinderGeometry(0.068, 0.068, 0.015, 18).rotateX(Math.PI / 2).translate(0, 0, 0.015));
         F.D6.forEach(({ pos: [x, z], target: [tx, ty, tz] }) => {
           const top = ceilAt(floor, x, z);
-          const trim = new THREE.Mesh(new THREE.CylinderGeometry(0.125, 0.125, 0.02, 20), trackMat);
+          const trim = new THREE.Mesh(trimGeo, trackMat);
           trim.rotation.x = -Math.PI / 4;                                          // flush with 45° north roof slope
           trim.position.set(x, top - 0.005, z);
           gimbalGrp.add(trim);
@@ -181,10 +200,8 @@ function fixtures() {
           eye.position.set(x, top - 0.015, z);
           eye.lookAt(tx, ty, tz);
           gimbalGrp.add(eye);
-          const baffle = new THREE.Mesh(new THREE.CylinderGeometry(0.083, 0.083, 0.035, 18).rotateX(Math.PI / 2), trimMat);
-          eye.add(baffle);
-          const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.068, 0.068, 0.015, 18).rotateX(Math.PI / 2).translate(0, 0, 0.015), lampMat);
-          eye.add(lens);
+          eye.add(new THREE.Mesh(baffleGeo, trimMat));
+          eye.add(new THREE.Mesh(lensGeo, lampMat));
         });
         KITCHEN_LIGHT.acts.push(act(gimbalGrp, kActDef()));
       }
@@ -197,13 +214,13 @@ function fixtures() {
         const rr = Math.sqrt(1 - (k / 4) ** 2) * r;
         const rib = new THREE.Mesh(new THREE.TorusGeometry(rr + 0.003, 0.006, 4, 48), ribMat); rib.rotation.x = Math.PI / 2; rib.position.set(x, cy + (k / 4) * r, z); g.add(rib);
       }
-      const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.12, 0.08, 16), trimMat); cap.position.set(x, cy + r + 0.03, z); g.add(cap);
+      const cap = new THREE.Mesh(cyl(0.1, 0.12, 0.08, 16), trimMat); cap.position.set(x, cy + r + 0.03, z); g.add(cap);
     });
     (F.F1 || []).forEach(([x, z]) => {                                            // ceiling fan with light kit (mounted to dormer ceiling)
       const top = ceilAt(floor, x, z);
-      const rodM = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.6, 8), trimMat); rodM.position.set(x, top - 0.3, z); R.add(rodM);
-      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.22, 0.25, 20), trimMat); hub.position.set(x, top - 0.7, z); R.add(hub);
-      const lens = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 20), lampMat); lens.position.set(x, top - 0.84, z); R.add(lens);
+      const rodM = new THREE.Mesh(cyl(0.03, 0.03, 0.6, 8), trimMat); rodM.position.set(x, top - 0.3, z); R.add(rodM);
+      const hub = new THREE.Mesh(cyl(0.28, 0.22, 0.25, 20), trimMat); hub.position.set(x, top - 0.7, z); R.add(hub);
+      const lens = new THREE.Mesh(cyl(0.2, 0.2, 0.03, 20), lampMat); lens.position.set(x, top - 0.84, z); R.add(lens);
       const spin = new THREE.Group(); spin.position.set(x, top - 0.68, z); R.add(spin);
       for (let k = 0; k < 3; k++) {
         const bl = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.03, 0.4), M('oak'));
@@ -219,34 +236,42 @@ function fixtures() {
       const m = new THREE.Mesh(new THREE.BoxGeometry(x1 - x0, 0.02, 0.08), lampMat); m.position.set((x0 + x1) / 2, KIT.UP[0] - 0.01, KIT.Z0 + KIT.UPD - 0.25); g.add(m);
     });
     const coneMat = M('frame');
+    const hallDomeGeo = cached('d4:dome', () => new THREE.SphereGeometry(0.17, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2));
+    const hallGlobeGeo = cached('d4:hallGlobe', () => new THREE.SphereGeometry(0.258, 32, 20));
+    const intGlobeGeo = cached('d4:intGlobe', () => new THREE.SphereGeometry(0.25, 32, 20));
+    const extPlateGeo = cyl(0.22, 0.22, 0.05, 28);
+    const extArmGeo = cyl(0.025, 0.025, 0.3, 10);
+    const extShadeGeo = cached('d5:shade', () => new THREE.ConeGeometry(0.4, 0.78, 36, 1, true));
+    const extCapGeo = cyl(0.05, 0.05, 0.04, 16);
+    const extGlowGeo = cached('d5:glow', () => new THREE.CircleGeometry(0.33, 32));
     const sconce = ([axis, x, z, y, n, kind], ext) => {                           // wall sconce: round glowing globe, no visible base
       if (kind === 'hall') {                                                       // hall + stair (owner): cream glass globe on a chrome dome
         // 6.4" H × 6.2" W × 6.2" D overall: 6.2" Ø globe (slightly taller than wide), ~4" chrome canopy at the wall
         const off = d => new THREE.Vector3(x + (axis === 'x' ? n * d : 0), y + 0.05, z + (axis === 'z' ? n * d : 0));
-        const dome = new THREE.Mesh(new THREE.SphereGeometry(0.17, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), M('chrome'));
+        const dome = new THREE.Mesh(hallDomeGeo, M('chrome'));
         dome.rotation[axis === 'x' ? 'z' : 'x'] = (axis === 'x' ? -n : n) * Math.PI / 2;
         dome.scale.set(1, 0.65, 1); dome.position.copy(off(0)); dome.userData.cutAxis = axis; g.add(dome);
-        const globe = new THREE.Mesh(new THREE.SphereGeometry(0.258, 32, 20), creamMat);
+        const globe = new THREE.Mesh(hallGlobeGeo, creamMat);
         globe.scale.set(1, 1.032, 1); globe.position.copy(off(6.2 / 12 - 0.258)); globe.userData.cutAxis = axis; g.add(globe);
         return;
       }
       const at = (d, dy) => new THREE.Vector3(x + (axis === 'x' ? n * d : 0), y + dy, z + (axis === 'z' ? n * d : 0));
       if (ext) {                                                                   // exterior: black cone downlight on a round plate (owner's selection)
         const tag = m => { m.userData.cutAxis = axis; g.add(m); return m; };
-        const plate = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.05, 28), coneMat);
+        const plate = new THREE.Mesh(extPlateGeo, coneMat);
         plate.rotation[axis === 'x' ? 'z' : 'x'] = Math.PI / 2; plate.position.copy(at(0.025, 0.12)); tag(plate);
-        const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.3, 10), coneMat);
+        const arm = new THREE.Mesh(extArmGeo, coneMat);
         arm.rotation[axis === 'x' ? 'z' : 'x'] = Math.PI / 2; arm.position.copy(at(0.2, 0.12)); tag(arm);
-        const shade = new THREE.Mesh(new THREE.ConeGeometry(0.4, 0.78, 36, 1, true), coneMat);   // ~10" Ø × 9" open cone
+        const shade = new THREE.Mesh(extShadeGeo, coneMat);   // ~10" Ø × 9" open cone
         shade.material = coneMat; shade.position.copy(at(0.5, 0.0)); shade.castShadow = true; tag(shade);
-        const capTop = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 16), coneMat); capTop.position.copy(at(0.5, 0.4)); tag(capTop);
-        const glow = new THREE.Mesh(new THREE.CircleGeometry(0.33, 32), lampMat);   // lit inside of the shade, seen from below
+        const capTop = new THREE.Mesh(extCapGeo, coneMat); capTop.position.copy(at(0.5, 0.4)); tag(capTop);
+        const glow = new THREE.Mesh(extGlowGeo, lampMat);   // lit inside of the shade, seen from below
         glow.rotation.x = Math.PI / 2; glow.position.copy(at(0.5, -0.25)); glow.castShadow = false; tag(glow);
         return;
       }
-      const r = ext ? 0.29 : 0.25;                                                 // 7" Ø outside, 6" Ø inside
+      const r = 0.25;                                                              // 6" Ø inside
       const off = r - 0.04;                                                        // tucked a hair into the wall so no gap or mount shows
-      const globe = new THREE.Mesh(new THREE.SphereGeometry(r, 32, 20), lampMat);
+      const globe = new THREE.Mesh(intGlobeGeo, lampMat);
       globe.position.set(x + (axis === 'x' ? n * off : 0), y + 0.05, z + (axis === 'z' ? n * off : 0)); globe.userData.cutAxis = axis; g.add(globe);
     };
     (F.D4 || []).forEach(f => sconce(f, false));
@@ -404,7 +429,13 @@ for (const [grp, x, y, z, cd, dist] of NIGHT_LIGHTS) {
 
 for (const n of ['siding', 'sidingWood', 'skirt', 'foundation', 'roof', 'membrane', 'soffit', 'snow', 'concrete', 'deck', 'gravel', 'frame', 'steel', 'ground']) exteriorLightsOnly(MATS[n]);
 
+function cancelLightsOut() {
+  LIGHTS_OUT.busy = false;
+  LIGHTS_OUT.seq = null;
+}
+
 function setKitchenLightMode(mode) {
+  cancelLightsOut();
   KITCHEN_LIGHT.mode = mode === 'gimbal' ? 'gimbal' : 'track';
   const isTrack = KITCHEN_LIGHT.mode === 'track';
   if (KITCHEN_LIGHT.trackGrp) KITCHEN_LIGHT.trackGrp.visible = isTrack;
@@ -421,7 +452,8 @@ function setKitchenLightMode(mode) {
   wake();
 }
 
-function applyNight(on) {
+function applyNight(on, { preserveLightsOut = false } = {}) {
+  cancelLightsOut();
   RT.nightOn = on;
   hemi.intensity = on ? NIGHTSET.hemi : DAY.hemi;
   hemi.color.set(on ? NIGHTSET.hemiSky : 0xf4f1ea); hemi.groundColor.set(on ? 0x3d3a35 : 0xd9d1c4);
@@ -430,17 +462,18 @@ function applyNight(on) {
   fill.intensity = on ? NIGHTSET.fill : DAY.fill;
   renderer.toneMappingExposure = on ? NIGHTSET.exposure : DAY.exposure;
   setEnvNight(on ? 1 : 0);
+  if (!on || !preserveLightsOut) LIGHTS_OUT.off = false;
+  const lit = on && !LIGHTS_OUT.off;
   const showL = state.floors !== 'ground';
   for (const item of nightRig) {
     const active = (!item.mode || item.mode === KITCHEN_LIGHT.mode) && (item.floor !== 'loft' || showL);
-    item.L.intensity = (on && active) ? item.cd * NIGHTSET.dim : 0;
-    if (on && active && item.L.castShadow) item.L.shadow.needsUpdate = true;
+    item.L.intensity = (lit && active) ? item.cd * NIGHTSET.dim : 0;
+    if (lit && active && item.L.castShadow) item.L.shadow.needsUpdate = true;
   }
-  if (typeof LIGHTS_OUT !== 'undefined') LIGHTS_OUT.off = false;
-  lampMat.emissiveIntensity = on ? 2.6 : 0;
-  paperMat.emissiveIntensity = on ? 1.1 : 0;
-  creamMat.emissiveIntensity = on ? 1.4 : 0;
-  const glass = MATS.glass; if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = on ? 0.35 : 0; }
+  lampMat.emissiveIntensity = lit ? 2.6 : 0;
+  paperMat.emissiveIntensity = lit ? 1.1 : 0;
+  creamMat.emissiveIntensity = lit ? 1.4 : 0;
+  const glass = MATS.glass; if (glass) { glass.emissive.set(0xffc98a); glass.emissiveIntensity = lit ? 0.35 : 0; }
   if (_outdoorNightHook) _outdoorNightHook(on);
   applySceneTheme();
 }
@@ -507,16 +540,37 @@ new MutationObserver(applySceneTheme).observe(document.documentElement, { attrib
 export function lightsOut() {
   if (!state.night) { state.night = true; MODES.applyState(); return; }
   if (LIGHTS_OUT.busy) return;
-  LIGHTS_OUT.busy = true; const goingOff = !LIGHTS_OUT.off;
+  LIGHTS_OUT.busy = true;
+  const goingOff = !LIGHTS_OUT.off;
   const showL = state.floors !== 'ground';
   const activeRig = nightRig.filter(item => (!item.mode || item.mode === KITCHEN_LIGHT.mode) && (item.floor !== 'loft' || showL));
   const order = goingOff ? activeRig : activeRig.slice().reverse();
-  order.forEach(({ L, cd }, i) => setTimeout(() => { L.intensity = goingOff ? 0 : cd * NIGHTSET.dim; wake(); }, 260 * i));
-  setTimeout(() => {
-    lampMat.emissiveIntensity = goingOff ? 0 : 2.6; paperMat.emissiveIntensity = goingOff ? 0 : 1.1; creamMat.emissiveIntensity = goingOff ? 0 : 1.4;
+  LIGHTS_OUT.seq = { order, idx: 0, t: 0.26, goingOff };
+  wake();
+}
+
+export function lightsOutStep(dt) {
+  const seq = LIGHTS_OUT.seq;
+  if (!seq) { LIGHTS_OUT.busy = false; return; }
+  seq.t += dt;
+  while (seq.t >= 0.26 && seq.idx < seq.order.length) {
+    seq.t -= 0.26;
+    const { L, cd } = seq.order[seq.idx++];
+    L.intensity = seq.goingOff ? 0 : cd * NIGHTSET.dim;
+    wake();
+  }
+  if (seq.idx >= seq.order.length) {
+    const goingOff = seq.goingOff;
+    lampMat.emissiveIntensity = goingOff ? 0 : 2.6;
+    paperMat.emissiveIntensity = goingOff ? 0 : 1.1;
+    creamMat.emissiveIntensity = goingOff ? 0 : 1.4;
     const gl = MATS.glass; if (gl) gl.emissiveIntensity = goingOff ? 0 : 0.35;
-    LIGHTS_OUT.off = goingOff; LIGHTS_OUT.busy = false; MODES.updateWalls();
-  }, 260 * order.length);
+    LIGHTS_OUT.off = goingOff;
+    LIGHTS_OUT.busy = false;
+    LIGHTS_OUT.seq = null;
+    MODES.updateWalls();
+    markShadows();
+  }
 }
 MODES.lightsOut = lightsOut;
 

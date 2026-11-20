@@ -10,7 +10,7 @@ import { root, G } from './house/site-and-floors.js';
 import { KIT, DR } from './house/kitchen.js';
 import { SKYLIGHTS } from './house/loft-and-roof.js';
 import { renderer, labelRenderer, scene, camera, controls, phoneFov, homePos, clock, GOV, FRAME_MS, governor } from './core/renderer.js';
-import './house/lighting.js';
+import { lightsOutStep } from './house/lighting.js';
 import { LAND } from './landscape/terrain-and-trees.js';
 import { PATIO, WEST_DECK, GRILL } from './landscape/outdoor-living.js';
 import { _cv, updateWalls } from './systems/cutaway.js';
@@ -61,9 +61,10 @@ addEventListener('resize', () => {
 
 export function frame(dt) {
   if (RT.liveSync) liveSyncStep(dt);
+  if (LIGHTS_OUT.busy) lightsOutStep(dt);
   if (WALK.on) walkStep(dt);
   if (TOUR.on) tourStep(dt);
-  if (!WALK.on && controls.enabled) controls.update();
+  if (!WALK.on && !FLY.cur && controls.enabled) controls.update();
   interactStep(dt);
   phoneStep(dt);
   if (RT.shadowFrames > 0) {

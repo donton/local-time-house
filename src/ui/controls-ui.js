@@ -127,7 +127,9 @@ export function applyState() {
       if (el) el.disabled = state.night;
     }
   }
-  if (state.night !== RT.nightOn || (RT.nightOn && _prevUI.floors !== state.floors)) applyNight(state.night);
+  if (state.night !== RT.nightOn || (RT.nightOn && _prevUI.floors !== state.floors)) {
+    applyNight(state.night, { preserveLightsOut: state.night === RT.nightOn });
+  }
 
   if (RT.siteReady && state.season !== RT.seasonOn) {
     RT.seasonOn = state.season;
@@ -178,16 +180,14 @@ export function applyState() {
     const wxHtml = w && typeof w === 'object' ? `<span class="lp-sep">·</span>${WX_SVG[w.key] || ''}<span>${w.temp}°</span>` : '';
     const wxTip = w && typeof w === 'object' ? ` · ${w.temp}°F ${w.label}` : '';
     const tLbl = localTimeAndes().label;
-    if (lp) {
-      lp.classList.toggle('live', !!RT.liveTime);
-      lp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
-      lp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Click to reset Season, Day & Sun to real-time Andes, NY';
-    }
-    if (mlp) {
-      mlp.classList.toggle('live', !!RT.liveTime);
-      mlp.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
-      mlp.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : 'Tap to reset Season, Day & Sun to real-time Andes, NY';
-    }
+    const syncLivePill = (el, verb) => {
+      if (!el) return;
+      el.classList.toggle('live', !!RT.liveTime);
+      el.innerHTML = RT.liveTime ? `<span>${tLbl}</span>${wxHtml}` : `${WX_SVG.sync}<span>Reset to live</span>`;
+      el.title = RT.liveTime ? `Synced to real-time Andes, NY${wxTip}` : `${verb} to reset Season, Day & Sun to real-time Andes, NY`;
+    };
+    syncLivePill(lp, 'Click');
+    syncLivePill(mlp, 'Tap');
   }
   const shadowSig = `${state.floors}|${state.walls}|${state.roof}|${e}|${state.sun}|${state.season}|${state.night}`;
   if (shadowSig !== _lastShadowSig) { _lastShadowSig = shadowSig; markShadows(); }

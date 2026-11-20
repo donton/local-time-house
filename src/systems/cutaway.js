@@ -52,7 +52,7 @@ function clipVariant(el) {
   }
 })();
 const _cv = new THREE.Vector3();
-function updateWalls() {
+function updateWalls(syncMaterials = true) {
   const mode = state.walls;
   CUT.planes.ground.constant = root.position.y + FT * (G.ground.position.y + STUB);
   CUT.planes.loft.constant = root.position.y + FT * (G.loft.position.y + LV.LOFT + STUB);
@@ -86,11 +86,13 @@ function updateWalls() {
       for (const { L } of nightRig) if (L.castShadow) L.shadow.needsUpdate = true;
     }
   }
-  for (const v of CUT.variants) {                                                 // keep night glow etc. in step
-    const b = v.userData.base; v.color.copy(b.color); v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.opacity = b.opacity;
+  if (syncMaterials) {
+    for (const v of CUT.variants) {                                               // keep night glow etc. in step
+      const b = v.userData.base; v.color.copy(b.color); v.emissive.copy(b.emissive); v.emissiveIntensity = b.emissiveIntensity; v.opacity = b.opacity;
+    }
   }
 }
-controls.addEventListener('change', () => { if (state.walls === 'cutaway') updateWalls(); });
+controls.addEventListener('change', () => { if (state.walls === 'cutaway') updateWalls(false); });
 
 MODES.updateWalls = updateWalls;
 export { capMat, clipVariant, _cv, updateWalls };

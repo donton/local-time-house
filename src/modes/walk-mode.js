@@ -21,7 +21,21 @@ const toW = (x, y, z) => new THREE.Vector3((x - 24) * FT, y * FT, (z - 13.5) * F
 
 const wrc = new THREE.Raycaster();
 const _rcCand = [];
+let _lastColliderSig = '';
+let _lastWalkX = NaN, _lastWalkZ = NaN, _settledFeet = NaN;
 function buildColliders() {
+  _lastWalkX = NaN;
+  _lastWalkZ = NaN;
+  _settledFeet = NaN;
+  const sig = `${state.floors}|${state.walls}|${state.roof}|${state.explode}|${state.season}`;
+  if (sig === _lastColliderSig && RT.solids.length > 0) {
+    for (let i = 0; i < RT.solids.length; i++) {
+      const o = RT.solids[i];
+      if (o.userData._wboxDirty) { o.userData._wbox.setFromObject(o); o.userData._wboxDirty = false; }
+    }
+    return;
+  }
+  _lastColliderSig = sig;
   RT.solids = []; RT.grounds = [];
   root.updateMatrixWorld(true);
   root.traverse(o => {
@@ -29,6 +43,7 @@ function buildColliders() {
       o.userData._wdyn = !!actOf(o);
       if (!o.userData._wbox) o.userData._wbox = new THREE.Box3();
       o.userData._wbox.setFromObject(o);
+      o.userData._wboxDirty = false;
       RT.solids.push(o);
     }
   });
@@ -37,6 +52,7 @@ function buildColliders() {
     o.userData._wdyn = false;
     if (!o.userData._wbox) o.userData._wbox = new THREE.Box3();
     o.userData._wbox.setFromObject(o);
+    o.userData._wboxDirty = false;
   }
   RT.grounds = RT.solids.concat(landMeshes);
 }
@@ -118,11 +134,24 @@ function walkStep(dt) {
     if (blocked) continue;
     WALK.pos.x = nx; WALK.pos.z = nz;
   }
-  const fy = walkableFloorAt(WALK.pos.x, WALK.pos.z, WALK.feet);
-  if (fy !== -Infinity && fy !== Infinity) WALK.feet = fy >= WALK.feet ? fy : WALK.feet + (fy - WALK.feet) * Math.min(1, dt * 10);
+  const moved = WALK.pos.x !== _lastWalkX || WALK.pos.z !== _lastWalkZ;
+  if (moved || Math.abs(WALK.feet - _settledFeet) > 1e-4) {
+    const fy = walkableFloorAt(WALK.pos.x, WALK.pos.z, WALK.feet);
+    if (fy !== -Infinity && fy !== Infinity) {
+      _settledFeet = fy;
+      WALK.feet = fy >= WALK.feet ? fy : WALK.feet + (fy - WALK.feet) * Math.min(1, dt * 10);
+      if (Math.abs(WALK.feet - _settledFeet) <= 1e-4) WALK.feet = _settledFeet;
+    } else {
+      _settledFeet = WALK.feet;
+    }
+  }
   camera.position.set(WALK.pos.x, WALK.feet + EYE, WALK.pos.z);
   camera.rotation.set(WALK.pitch, WALK.yaw, 0, 'YXZ');
-  walkSyncRoom();
+  if (moved) {
+    _lastWalkX = WALK.pos.x;
+    _lastWalkZ = WALK.pos.z;
+    walkSyncRoom();
+  }
 }
 
 let lastWalkRoom = '';

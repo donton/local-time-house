@@ -11,6 +11,7 @@ import { _cv } from './cutaway.js';
 import { bindRoomClickSelection } from './labels-selection.js';
 
 const fireCan = document.createElement('canvas'); fireCan.width = 128; fireCan.height = 72;
+const fireCtx = fireCan.getContext('2d');
 const fireTex = new THREE.CanvasTexture(fireCan); fireTex.colorSpace = THREE.SRGBColorSpace;
 function drawFire(ctx, w, h, t) {
   ctx.fillStyle = '#120804'; ctx.fillRect(0, 0, w, h);
@@ -26,12 +27,13 @@ const fireMat = new THREE.MeshBasicMaterial({ map: fireTex });
 const fireLight = new THREE.PointLight(0xff8a3c, 0, 7, 2); fireLight.visible = true;
 
 const tvCan = document.createElement('canvas'); tvCan.width = 256; tvCan.height = 148;
+const tvCtx = tvCan.getContext('2d');
 const tvTex = new THREE.CanvasTexture(tvCan); tvTex.colorSpace = THREE.SRGBColorSpace;
 const tvLight = new THREE.PointLight(0x9fb8ff, 0, 8, 2); tvLight.visible = true;
 
 const TV_CH = ['', 'Fireplace channel', 'Catskills at dusk', 'Color bars', 'The big game'];
 function drawTV(ch, t) {
-  const c = tvCan.getContext('2d'), w = tvCan.width, h = tvCan.height;
+  const c = tvCtx, w = tvCan.width, h = tvCan.height;
   if (ch === 1) drawFire(c, w, h, t);
   else if (ch === 2) {
     const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#2b3a67'); g.addColorStop(0.55, '#e4875a'); g.addColorStop(1, '#f2c27a');
@@ -192,10 +194,13 @@ export function useAct(a) {
   // P2: Removed setTimeout(buildColliders, 1000) — dynamic collider Box3 bounds update via markObjBoundsDirty
 }
 
-let hoverQ = null;
+const actTipEl = document.getElementById('act-tip');
+const actHintEl = document.getElementById('act-hint');
+const IS_COARSE = matchMedia('(pointer: coarse)').matches;
+let hoverQ = null, lastHoverT = 0;
 renderer.domElement.addEventListener('pointermove', e => {
   if (WALK.on || TOUR.on || TL.on || BD.on || e.buttons) {
-    document.getElementById('act-tip').hidden = true;
+    if (actTipEl && !actTipEl.hidden) actTipEl.hidden = true;
     return;
   }
   hoverQ = [e.clientX, e.clientY];
@@ -203,18 +208,21 @@ renderer.domElement.addEventListener('pointermove', e => {
 
 export function hoverCheck() {
   if (!hoverQ) return;
+  const now = performance.now();
+  if (now - lastHoverT < 70) return;
+  lastHoverT = now;
   const [cx, cy] = hoverQ;
   hoverQ = null;
   const a = pickAct((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1, 400);
-  const tip = document.getElementById('act-tip'), el = renderer.domElement;
+  const el = renderer.domElement;
   if (a) {
-    tip.textContent = a.label(a);
-    tip.style.left = (cx + 14) + 'px';
-    tip.style.top = (cy + 14) + 'px';
-    tip.hidden = false;
+    actTipEl.textContent = a.label(a);
+    actTipEl.style.left = (cx + 14) + 'px';
+    actTipEl.style.top = (cy + 14) + 'px';
+    actTipEl.hidden = false;
     if (!el.style.cursor.startsWith('grab')) el.style.cursor = 'pointer';
   } else {
-    tip.hidden = true;
+    actTipEl.hidden = true;
     if (el.style.cursor === 'pointer') el.style.cursor = '';
   }
 }
@@ -222,12 +230,11 @@ export function hoverCheck() {
 export function walkAim() {
   if (++RT.aimTick % 5) return;
   RT.aimAct = pickAct(0, 0, 11 * FT);
-  const h = document.getElementById('act-hint');
   if (RT.aimAct) {
-    h.textContent = (matchMedia('(pointer: coarse)').matches ? 'Tap · ' : 'F · ') + RT.aimAct.label(RT.aimAct);
-    h.hidden = false;
-  } else {
-    h.hidden = true;
+    actHintEl.textContent = (IS_COARSE ? 'Tap · ' : 'F · ') + RT.aimAct.label(RT.aimAct);
+    actHintEl.hidden = false;
+  } else if (!actHintEl.hidden) {
+    actHintEl.hidden = true;
   }
 }
 
@@ -277,7 +284,7 @@ export function interactStep(dt) {
   const fireOn = fireLight.visible && fireLight.intensity > 0, tvAct = RT.tvScreen && RT.tvScreen.visible;
   if ((fireOn || tvAct) && (RT.fxDraw += dt) > 0.07) {
     RT.fxDraw = 0;
-    if (fireOn) { drawFire(fireCan.getContext('2d'), 128, 72, RT.fxT); fireTex.needsUpdate = true; }
+    if (fireOn) { drawFire(fireCtx, 128, 72, RT.fxT); fireTex.needsUpdate = true; }
     if (tvAct) { const d = actOf(RT.tvScreen); if (d.ch === 1 || d.ch === 2 || d.ch === 4) drawTV(d.ch, RT.fxT); }
   }
   if (fireOn) fireLight.intensity = 7 + Math.sin(RT.fxT * 13) * 1.2 + Math.sin(RT.fxT * 31) * 0.8;
@@ -296,7 +303,9 @@ export function interactStep(dt) {
   });
   for (const S of FX_SHOWERS) {
     if (!S.mesh) continue;
-    const on = S.mesh.visible, [hx, hy, hz] = S.head, o = S.dummy;
+    const on = S.mesh.visible;
+    if (!on && S.fog === 0) continue;
+    const [hx, hy, hz] = S.head, o = S.dummy;
     if (on) {
       S.drops.forEach((d, i) => {
         d[1] -= dt * 9;
@@ -314,21 +323,24 @@ export function interactStep(dt) {
 
   // P3: Frustum + View-Direction + Distance Culling for Planar Reflector Mirrors
   _cv.copy(camera.position).sub(root.position).divideScalar(FT);
-  camera.getWorldDirection(_camFwd);
-  _projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
-  _frustum.setFromProjectionMatrix(_projScreenMatrix);
-  const maxMirrorDist = WALK.on ? 13 : 10;
-  for (const m of FX_MIRRORS) {
-    const dist = Math.hypot(_cv.x - m.pos[0], _cv.y - m.pos[1], _cv.z - m.pos[2]);
-    const show = _cv.x < m.pos[0] - 0.15
-      && _camFwd.x > 0.12
-      && dist < maxMirrorDist
-      && state.explode < 0.05
-      && !m.ref.userData.phaseHidden
-      && (m.floorKey === 'ground' || state.floors === 'both')
-      && _frustum.intersectsObject(m.ref);
-    m.ref.visible = show;
-    m.fogMesh.visible = show && m.fogMat.opacity > 0.01;
+  if (state.explode >= 0.05) {
+    for (const m of FX_MIRRORS) { m.ref.visible = false; m.fogMesh.visible = false; }
+  } else {
+    camera.getWorldDirection(_camFwd);
+    _projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    _frustum.setFromProjectionMatrix(_projScreenMatrix);
+    const maxMirrorDist = WALK.on ? 13 : 10;
+    for (const m of FX_MIRRORS) {
+      const dist = Math.hypot(_cv.x - m.pos[0], _cv.y - m.pos[1], _cv.z - m.pos[2]);
+      const show = _cv.x < m.pos[0] - 0.15
+        && _camFwd.x > 0.12
+        && dist < maxMirrorDist
+        && !m.ref.userData.phaseHidden
+        && (m.floorKey === 'ground' || state.floors === 'both')
+        && _frustum.intersectsObject(m.ref);
+      m.ref.visible = show;
+      m.fogMesh.visible = show && m.fogMat.opacity > 0.01;
+    }
   }
 
   for (const f of skyFx) {
@@ -344,7 +356,7 @@ export function interactStep(dt) {
   }
   if (WALK.on) walkAim();
   else if (!TL.on && !BD.on) {
-    document.getElementById('act-hint').hidden = true;
+    if (!actHintEl.hidden) actHintEl.hidden = true;
     hoverCheck();
   }
   if (TL.on) MODES.tlTick(dt);
