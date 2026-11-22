@@ -335,7 +335,9 @@ const RECESS_SPOTS = [
   ['ground', 9.5, 8.78, 24.06, 0, 14, 0.72, 5.2],                                                   // sunken living south pair
   ['ground', 28.75, 7.95, 2.6, 0, 12, 0.70, 4.5],                                                   // guest bed north cans (over bed)
   ['ground', 28.75, 7.95, 8.8, 0, 12, 0.70, 4.5],                                                   // guest bed south cans (in front of closet)
-  ['ground', 35.0, 7.95, 5.9, 0, 14, 0.72, 4.8],                                                    // guest bath cans
+  ['ground', 35.0, 7.95, 2.2, 0, 16, 0.72, 4.0],                                                    // guest bath north can (shower)
+  ['ground', 35.0, 7.95, 5.9, 0, 16, 0.72, 4.0],                                                    // guest bath mid can
+  ['ground', 35.0, 7.95, 9.6, 0, 16, 0.72, 4.0],                                                    // guest bath south can (vanity)
   ['ground', 26.4, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor west can
   ['ground', 30.8, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor mid can
   ['ground', 35.0, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor east can
