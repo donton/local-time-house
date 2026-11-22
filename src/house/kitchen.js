@@ -392,7 +392,7 @@ function buildKitchen(g) {
 
   // ---- 5 mm stainless countertops, 1" past the fronts; integral sink under W07
   box(g, [KIT.X0, kx(77)], [B, KIT.TOP], [KIT.Z0, zN + 0.15], 'steelTop', R);
-  box(g, [kx(107), kx(129) + 0.02], [B, KIT.TOP], [KIT.Z0, zN + 0.15], 'steelTop', R);
+  box(g, [kx(107), kx(129) + FT_], [B, KIT.TOP], [KIT.Z0, zN + 0.15], 'steelTop', R);
   // The west-run counter is one sheet with a rounded cut-out; the bowl is the same 5 mm stainless, welded to the
   // edge of the cut-out, so top and sink read as a single piece (no rim, no seam).
   { const t = 0.0164, bowlD = 0.7, bx0 = kx(3), bx1 = kx(21), bz0 = kz(29), bz1 = kz(55), r = 0.1, T0 = KIT.TOP;
