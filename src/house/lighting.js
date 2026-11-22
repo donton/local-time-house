@@ -68,8 +68,7 @@ const RCP = {
     ],
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
     D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
-         ['x', 38.68, 7.3, 5.8, -1], ['x', 38.68, 9.9, 5.8, -1],                     // guest bath, either side of the mirror
-         ['z', 31.1, 16.48, 6.0, -1, 'hall'], ['z', 37.9, 16.48, 6.0, -1, 'hall']], // corridor
+         ['x', 38.68, 7.3, 5.8, -1], ['x', 38.68, 9.9, 5.8, -1]],                    // guest bath, either side of the mirror
     D5: [['x', -0.4, 4.1, 12.4, -1], ['x', -0.4, 12.5, 12.4, -1],                  // west gable (A201: above W07 / W15)
          ['x', 17.43, 20.5, 6.5, +1],                                               // porch, wing east wall
          ['z', 31.1, 17.45, 6.5, +1], ['z', 39.6, 17.45, 6.5, +1],                  // south wall
