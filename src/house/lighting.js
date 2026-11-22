@@ -68,7 +68,7 @@ const RCP = {
     ],
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
     D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
-         ['x', 38.2, 7.2, 5.8, -1], ['x', 38.2, 10.0, 5.8, -1],                     // guest bath, either side of the mirror
+         ['x', 38.68, 7.3, 5.8, -1], ['x', 38.68, 9.9, 5.8, -1],                     // guest bath, either side of the mirror
          ['z', 31.1, 16.48, 6.0, -1, 'hall'], ['z', 37.9, 16.48, 6.0, -1, 'hall']], // corridor
     D5: [['x', -0.4, 4.1, 12.4, -1], ['x', -0.4, 12.5, 12.4, -1],                  // west gable (A201: above W07 / W15)
          ['x', 17.43, 20.5, 6.5, +1],                                               // porch, wing east wall
@@ -376,7 +376,8 @@ const NIGHT_LIGHTS = [
   ['ground', 19.2, 4.6, 13.0, 1.6, 4.5],                                                            // entry + stair hall bounce
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
-  ['ground', 35.8, 4.5, 6.5, 1.4, 4.2],                                                             // guest bath bounce
+  ['ground', 35.8, 4.5, 6.5, 1.3, 2.6],                                                             // guest bath bounce
+  ['ground', 37.8, 5.8, 8.6, 2.2, 2.4],                                                             // guest bath vanity sconces
   ['ground', 43.5, 4.5, 8.5, 1.5, 4.5],                                                             // east office bounce
   ['ground', 46.25, 3.2, 12.65, 1.3, 3.8],                                                          // east office conical desk lamp
   ['loft', 33.0, LV.LOFT + 4.2, 11.2, 1.8, 5.2],                                                    // loft bounce
