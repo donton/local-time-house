@@ -147,6 +147,19 @@ function buildLoft(g) {
   addHorizLaundry(36.0, 38.35, 'washer', -1, 'nautical');
   addHorizLaundry(38.45, 40.8, 'dryer', +1, 'fabric');
   box(horizOpt, [35.8, 40.86], [LV.LOFT + 3.2, LV.LOFT + 3.3], [0.55, 3.15], 'millwork', { room: 'laundry' });
+  {
+    const R = { room: 'laundry' }, y = LV.LOFT;
+    box(horizOpt, [30.85, 35.75], [y + 5.15, y + 5.23], [0.52, 2.12], 'millwork', R);
+    for (const bx of [30.85, 33.26, 35.67]) {
+      box(horizOpt, [bx, bx + 0.08], [y + 4.72, y + 5.15], [0.52, 2.08], 'millwork', R);
+    }
+    addGeo(horizOpt, new THREE.CylinderGeometry(0.04, 0.04, 4.90, 12).rotateZ(Math.PI / 2).translate(33.30, y + 4.80, 1.48), 'chrome', R);
+    const hangMats = ['nautical', 'fabric', 'chalk', 'siding', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric'];
+    for (let i = 0; i < hangMats.length; i++) {
+      const hx = 31.30 + i * 0.50;
+      box(horizOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], R);
+    }
+  }
   const horizAnchor = new THREE.Object3D();
   horizAnchor.position.set(38.4, LV.LOFT + 4.3, 1.82);
   horizOpt.add(horizAnchor);
