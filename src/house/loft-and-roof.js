@@ -1,7 +1,7 @@
 // Loft walls & rooms, upstairs bath, standing-seam metal roof, skylights, and flat wing roof.
 import * as THREE from 'three';
 import { LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
-import { state, RT, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
+import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
 import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
@@ -353,7 +353,7 @@ function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor) {
   });
   const _v = new THREE.Vector3();
   updateLaundryToggle = camera => {
-    if (!G.loft.visible || BD.on || TL.on || TOUR.on || (state.roof && state.walls === 'up' && state.floors === 'both' && state.explode === 0)) {
+    if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && state.roof && state.walls === 'up' && state.floors === 'both' && state.explode === 0)) {
       btn.hidden = true;
       return;
     }
