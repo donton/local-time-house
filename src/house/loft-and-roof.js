@@ -66,42 +66,85 @@ function buildLoft(g) {
     intWall(g, axis, u, t, [LV.LOFT, y1], holes, { top: topFn });
   };
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
-  P('z', [0.52, 5.42], [30.23, 30.77], [[2.3, 5.42, LV.LOFT, LV.LOFT + 5]]);           // MECH | laundry, door 203 (5' tall)
-  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+laundry | bedroom (full height to sloped roof)
-  P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+laundry | bath (full height to sloped roof)
+  P('z', [0.52, 5.42], [30.23, 30.77], [[0.72, 3.02, LV.LOFT, LV.LOFT + 5]]);          // MECH | closet-laundry, door 203 on north/right side (5' tall)
+  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+closet | bedroom (full height to sloped roof)
+  P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+closet | bath (full height to sloped roof)
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
   doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, open: 165, wt: 0.54 });  // 201
-  doorLeaf(g, { axis: 'z', u: [2.3, 5.42], face: 30.77, swing: +1, hinge: 'b', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });      // 203 (shown closed, behind the figure)
-  pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (laundry | bedroom)
+  doorLeaf(g, { axis: 'z', u: [0.72, 3.02], face: 30.77, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });     // 203 (north/right side of MECH wall)
+  pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
   // MECH (west, revised): hot water heater (keynote 28), HRV
   RT.NOCUT = true;
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
   box(g, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
-  // Laundry (east, revised): side-by-side front-loading washer + dryer with interactive doors (keynote 25)
-  const addLaundry = (x0, x1, label, hingeDir, clothMat) => {
-    const cx = (x0 + x1) / 2, cy = LV.LOFT + 1.4, y0 = LV.LOFT, R = { room: 'laundry' };
-    box(g, [x0, x1], [y0, y0 + 3.2], [0.6, 3.04], 'porcelain', R);
-    box(g, [x0 + 0.08, x1 - 0.08], [y0 + 2.72, y0 + 3.12], [3.04, 3.08], 'steel', R);          // control console strip
-    box(g, [cx - 0.35, cx + 0.15], [y0 + 2.82, y0 + 3.02], [3.08, 3.10], 'frame', R);          // LED display
-    addGeo(g, new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16).rotateX(Math.PI / 2).translate(x1 - 0.35, y0 + 2.92, 3.10), 'chrome', R); // dial
+  // Stacked washer + dryer rotated against the MECH wall (x = 30.77, facing east into the walk-in closet)
+  const addStackedLaundry = (y0, label, hingeDir, clothMat) => {
+    const z0 = 3.15, z1 = 5.40, cz = (z0 + z1) / 2, cy = y0 + 1.4, R = { room: 'laundry' };
+    box(g, [30.79, 33.24], [y0, y0 + 3.15], [z0, z1], 'porcelain', R);
+    box(g, [33.24, 33.28], [y0 + 2.68, y0 + 3.08], [z0 + 0.08, z1 - 0.08], 'steel', R);          // control console strip
+    box(g, [33.28, 33.30], [y0 + 2.78, y0 + 2.98], [cz - 0.35, cz + 0.15], 'frame', R);          // LED display
+    addGeo(g, new THREE.CylinderGeometry(0.11, 0.11, 0.08, 16).rotateZ(Math.PI / 2).translate(33.30, y0 + 2.88, z1 - 0.35), 'chrome', R); // dial
     // recessed drum cavity
-    addGeo(g, new THREE.CylinderGeometry(0.68, 0.68, 0.06, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.02), 'frame', R);
-    addGeo(g, new THREE.CylinderGeometry(0.56, 0.56, 0.05, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.04), 'steel', R);
-    if (clothMat) box(g, [cx - 0.32, cx + 0.30], [cy - 0.48, cy - 0.14], [2.95, 3.05], clothMat, R);
-    // pivoting porthole door
+    addGeo(g, new THREE.CylinderGeometry(0.68, 0.68, 0.06, 24).rotateZ(Math.PI / 2).translate(33.22, cy, cz), 'frame', R);
+    addGeo(g, new THREE.CylinderGeometry(0.56, 0.56, 0.05, 24).rotateZ(Math.PI / 2).translate(33.24, cy, cz), 'steel', R);
+    if (clothMat) box(g, [33.14, 33.25], [cy - 0.48, cy - 0.14], [cz - 0.30, cz + 0.32], clothMat, R);
+    // pivoting porthole door on +x face
     const n0 = g.children.length;
-    addGeo(g, new THREE.TorusGeometry(0.68, 0.06, 10, 28).translate(cx, cy, 3.09), 'chrome', R);
-    addGeo(g, new THREE.CylinderGeometry(0.63, 0.63, 0.04, 24).rotateX(Math.PI / 2).translate(cx, cy, 3.09), 'glass', { ...R, cast: false });
-    const hx = hingeDir < 0 ? cx - 0.72 : cx + 0.72;
-    const pv = pivotFrom(g, n0, hx, cy, 3.09);
-    act(pv, { kind: 'laundry', label: d => d.on ? 'Close ' + label : 'Open ' + label, run: d => tweenTo(pv.rotation, 'y', d.on ? hingeDir * 1.55 : 0, 0.7) });
+    addGeo(g, new THREE.TorusGeometry(0.68, 0.06, 10, 28).rotateY(Math.PI / 2).translate(33.29, cy, cz), 'chrome', R);
+    addGeo(g, new THREE.CylinderGeometry(0.63, 0.63, 0.04, 24).rotateZ(Math.PI / 2).translate(33.29, cy, cz), 'glass', { ...R, cast: false });
+    const hz = hingeDir < 0 ? cz - 0.72 : cz + 0.72;
+    const pv = pivotFrom(g, n0, 33.29, cy, hz);
+    act(pv, { kind: 'laundry', label: d => d.on ? 'Close ' + label : 'Open ' + label, run: d => tweenTo(pv.rotation, 'y', d.on ? -hingeDir * 1.55 : 0, 0.7) });
   };
-  addLaundry(36.0, 38.35, 'washer', -1, 'nautical');
-  addLaundry(38.45, 40.8, 'dryer', +1, 'fabric');
-  box(g, [35.8, 40.86], [LV.LOFT + 3.2, LV.LOFT + 3.3], [0.55, 3.15], 'millwork', { room: 'laundry' });
+  addStackedLaundry(LV.LOFT, 'washer', -1, 'nautical');
+  addStackedLaundry(LV.LOFT + 3.18, 'dryer', -1, 'fabric');
+
+  // Walk-in closet: straight ahead of pocket door 202 (north wall x 33.5–40.86) + shallow east-wall shelving
+  {
+    const R = { room: 'laundry' }, y = LV.LOFT;
+    // North wall run (z 0.52 → 2.22): dresser/drawer bank on left, tall hanging + shoe storage straight ahead of door 202
+    box(g, [33.50, 33.58], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // west end panel (under roof slope)
+    box(g, [37.15, 37.23], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // center divider
+    box(g, [40.78, 40.86], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // east end panel
+    // Left bay (x 33.58–37.15): 3-drawer chest + upper open shelves
+    box(g, [33.58, 37.15], [y, y + 2.85], [0.52, 2.15], 'millwork', R);
+    for (let i = 0; i < 3; i++) {
+      const dy0 = y + 0.25 + i * 0.82;
+      box(g, [33.66, 37.07], [dy0, dy0 + 0.74], [2.15, 2.21], 'oak', R);
+      box(g, [35.15, 35.58], [dy0 + 0.52, dy0 + 0.57], [2.21, 2.24], 'chrome', R);
+    }
+    box(g, [33.58, 37.15], [y + 2.85, y + 2.94], [0.52, 2.22], 'oak', R); // counter top
+    box(g, [33.58, 37.15], [y + 4.10, y + 4.18], [0.52, 1.95], 'millwork', R); // upper shelf
+    box(g, [33.58, 37.15], [y + 5.15, y + 5.23], [0.52, 1.65], 'millwork', R); // top shelf under slope
+    // Right bay (x 37.23–40.78, straight ahead of door 202): shoe shelves below, hanging rod + clothes, top shelf
+    box(g, [37.23, 40.78], [y + 0.65, y + 0.72], [0.52, 2.15], 'millwork', R);
+    box(g, [37.23, 40.78], [y + 1.30, y + 1.37], [0.52, 2.15], 'millwork', R);
+    box(g, [37.23, 40.78], [y + 5.15, y + 5.23], [0.52, 2.20], 'millwork', R);
+    addGeo(g, new THREE.CylinderGeometry(0.04, 0.04, 3.55, 12).rotateZ(Math.PI / 2).translate(39.0, y + 4.80, 1.48), 'chrome', R); // hanging rod
+    const hangMats = ['nautical', 'fabric', 'chalk', 'nautical', 'siding', 'fabric', 'chalk', 'nautical'];
+    for (let i = 0; i < hangMats.length; i++) {
+      const hx = 37.45 + i * 0.42;
+      box(g, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], R);
+    }
+    // Folded stacks on upper shelves
+    box(g, [34.0, 34.9], [y + 4.18, y + 4.62], [1.05, 1.75], 'nautical', R);
+    box(g, [35.2, 36.1], [y + 4.18, y + 4.54], [1.05, 1.75], 'fabric', R);
+    box(g, [37.6, 38.6], [y + 0.72, y + 1.10], [1.1, 1.9], 'frame', R);
+    box(g, [39.0, 40.1], [y + 0.72, y + 1.12], [1.1, 1.9], 'nautical', R);
+
+    // East wall run (x 39.66–40.86, z 2.22–4.85): floor-to-ceiling open shelving on the right as you enter
+    box(g, [39.66, 40.86], [y, y + 7.2], [2.22, 2.30], 'millwork', R);     // north divider
+    box(g, [39.66, 40.86], [y, y + 7.2], [4.77, 4.85], 'millwork', R);     // south end panel (clears door 202)
+    for (const sy of [0.15, 1.4, 2.65, 3.9, 5.15, 6.4, 7.12]) {
+      box(g, [39.66, 40.86], [y + sy, y + sy + 0.08], [2.30, 4.77], 'millwork', R);
+    }
+    box(g, [39.85, 40.65], [y + 2.73, y + 3.25], [2.6, 3.5], 'fabric', R);
+    box(g, [39.85, 40.65], [y + 3.98, y + 4.48], [3.6, 4.5], 'nautical', R);
+    box(g, [39.85, 40.65], [y + 5.23, y + 5.75], [2.7, 3.7], 'chalk', R);
+  }
 
   // Primary bedroom: bed (dashed on A101.2)
   bedSized(g, 32.9, 5.97, [76 / 12, 80 / 12], LV.LOFT, 'bedroom');                 // king: 76" × 80" mattress, centered as drawn
