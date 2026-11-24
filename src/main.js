@@ -8,7 +8,7 @@ import { WALL_DEFS } from './core/builder.js';
 // 1. Import house, renderer, lighting, landscape, systems, core modes, UI, and batcher in exact initialization order
 import { root, G } from './house/site-and-floors.js';
 import { KIT, DR } from './house/kitchen.js';
-import { SKYLIGHTS } from './house/loft-and-roof.js';
+import { SKYLIGHTS, updateLaundryToggle } from './house/loft-and-roof.js';
 import { renderer, labelRenderer, scene, camera, controls, phoneFov, homePos, clock, GOV, FRAME_MS, governor } from './core/renderer.js';
 import { lightsOutStep } from './house/lighting.js';
 import { LAND } from './landscape/terrain-and-trees.js';
@@ -102,6 +102,7 @@ renderer.setAnimationLoop(() => {
   const wasDirty = RT.DIRTY > 0;
   if (RT.DIRTY > 0) RT.DIRTY--;
   renderer.render(scene, camera);
+  updateLaundryToggle(camera);
   if (state.labels) {
     const camMoved = _lPos.distanceToSquared(camera.position) > 1e-6 || Math.abs(_lQuat.dot(camera.quaternion)) < 0.999999;
     if (wasDirty || camMoved) {
