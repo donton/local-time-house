@@ -72,7 +72,7 @@ function buildLoft(g) {
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
   doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, open: 165, wt: 0.54 });  // 201
-  doorLeaf(g, { axis: 'z', u: [0.72, 3.02], face: 30.77, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });     // 203 (north/right side of MECH wall)
+  doorLeaf(g, { axis: 'z', u: [0.72, 3.02], face: 30.77, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, mat: 'chalk', wt: 0 }); // 203 (hidden flush door on north/right side of MECH wall)
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
@@ -102,48 +102,19 @@ function buildLoft(g) {
   addStackedLaundry(LV.LOFT, 'washer', -1, 'nautical');
   addStackedLaundry(LV.LOFT + 3.18, 'dryer', -1, 'fabric');
 
-  // Walk-in closet: straight ahead of pocket door 202 (north wall x 33.5–40.86) + shallow east-wall shelving
+  // Walk-in closet: simple full-width hanging storage along the north wall (extends to the hidden MECH door)
   {
     const R = { room: 'laundry' }, y = LV.LOFT;
-    // North wall run (z 0.52 → 2.22): dresser/drawer bank on left, tall hanging + shoe storage straight ahead of door 202
-    box(g, [33.50, 33.58], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // west end panel (under roof slope)
-    box(g, [37.15, 37.23], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // center divider
-    box(g, [40.78, 40.86], [y, y + 5.3], [0.52, 2.22], 'millwork', R);    // east end panel
-    // Left bay (x 33.58–37.15): 3-drawer chest + upper open shelves
-    box(g, [33.58, 37.15], [y, y + 2.85], [0.52, 2.15], 'millwork', R);
-    for (let i = 0; i < 3; i++) {
-      const dy0 = y + 0.25 + i * 0.82;
-      box(g, [33.66, 37.07], [dy0, dy0 + 0.74], [2.15, 2.21], 'oak', R);
-      box(g, [35.15, 35.58], [dy0 + 0.52, dy0 + 0.57], [2.21, 2.24], 'chrome', R);
+    box(g, [30.85, 40.78], [y + 5.15, y + 5.23], [0.52, 2.12], 'millwork', R); // continuous top shelf
+    for (const bx of [30.85, 35.80, 40.70]) {
+      box(g, [bx, bx + 0.08], [y + 4.72, y + 5.15], [0.52, 2.08], 'millwork', R); // shelf/rod brackets
     }
-    box(g, [33.58, 37.15], [y + 2.85, y + 2.94], [0.52, 2.22], 'oak', R); // counter top
-    box(g, [33.58, 37.15], [y + 4.10, y + 4.18], [0.52, 1.95], 'millwork', R); // upper shelf
-    box(g, [33.58, 37.15], [y + 5.15, y + 5.23], [0.52, 1.65], 'millwork', R); // top shelf under slope
-    // Right bay (x 37.23–40.78, straight ahead of door 202): shoe shelves below, hanging rod + clothes, top shelf
-    box(g, [37.23, 40.78], [y + 0.65, y + 0.72], [0.52, 2.15], 'millwork', R);
-    box(g, [37.23, 40.78], [y + 1.30, y + 1.37], [0.52, 2.15], 'millwork', R);
-    box(g, [37.23, 40.78], [y + 5.15, y + 5.23], [0.52, 2.20], 'millwork', R);
-    addGeo(g, new THREE.CylinderGeometry(0.04, 0.04, 3.55, 12).rotateZ(Math.PI / 2).translate(39.0, y + 4.80, 1.48), 'chrome', R); // hanging rod
-    const hangMats = ['nautical', 'fabric', 'chalk', 'nautical', 'siding', 'fabric', 'chalk', 'nautical'];
+    addGeo(g, new THREE.CylinderGeometry(0.04, 0.04, 9.93, 12).rotateZ(Math.PI / 2).translate(35.815, y + 4.80, 1.48), 'chrome', R); // full-width hanging rod
+    const hangMats = ['nautical', 'fabric', 'chalk', 'siding', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric', 'siding', 'chalk', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric', 'siding', 'chalk', 'nautical'];
     for (let i = 0; i < hangMats.length; i++) {
-      const hx = 37.45 + i * 0.42;
+      const hx = 31.35 + i * 0.50;
       box(g, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], R);
     }
-    // Folded stacks on upper shelves
-    box(g, [34.0, 34.9], [y + 4.18, y + 4.62], [1.05, 1.75], 'nautical', R);
-    box(g, [35.2, 36.1], [y + 4.18, y + 4.54], [1.05, 1.75], 'fabric', R);
-    box(g, [37.6, 38.6], [y + 0.72, y + 1.10], [1.1, 1.9], 'frame', R);
-    box(g, [39.0, 40.1], [y + 0.72, y + 1.12], [1.1, 1.9], 'nautical', R);
-
-    // East wall run (x 39.66–40.86, z 2.22–4.85): floor-to-ceiling open shelving on the right as you enter
-    box(g, [39.66, 40.86], [y, y + 7.2], [2.22, 2.30], 'millwork', R);     // north divider
-    box(g, [39.66, 40.86], [y, y + 7.2], [4.77, 4.85], 'millwork', R);     // south end panel (clears door 202)
-    for (const sy of [0.15, 1.4, 2.65, 3.9, 5.15, 6.4, 7.12]) {
-      box(g, [39.66, 40.86], [y + sy, y + sy + 0.08], [2.30, 4.77], 'millwork', R);
-    }
-    box(g, [39.85, 40.65], [y + 2.73, y + 3.25], [2.6, 3.5], 'fabric', R);
-    box(g, [39.85, 40.65], [y + 3.98, y + 4.48], [3.6, 4.5], 'nautical', R);
-    box(g, [39.85, 40.65], [y + 5.23, y + 5.75], [2.7, 3.7], 'chalk', R);
   }
 
   // Primary bedroom: bed (dashed on A101.2)

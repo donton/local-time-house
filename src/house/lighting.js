@@ -285,48 +285,6 @@ function fixtures() {
   }
 }
 
-/* A 5'-6" figure for scale (from the owner's photo): red tee, wide light-wash jeans, white sneakers, round
-   glasses, black tote on his right shoulder. Standing in the laundry in front of the MECH door (203), left of
-   the washer + dryer, facing into the room. Stylized, built in feet; exempt from the wall cutaway. */
-(function buildFigure() {
-  const P = new THREE.Group(); P.name = 'figure';
-  const mat = c => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85 });
-  const SKIN = mat(0xE6B497), TEE = mat(0xD3302E), DENIM = mat(0x7593B8), SHOE = mat(0xEEEAE3), HAIR = mat(0x7B5230),
-        BAG = mat(0x1C1C1E), RIM = new THREE.MeshStandardMaterial({ color: 0x2A1D17, roughness: 0.4 }), PRINT = mat(0xF2E6E4);
-  const add = (geo, m, x, y, z, s) => { const o = new THREE.Mesh(geo, m); o.position.set(x, y, z); if (s) o.scale.set(...s); o.castShadow = true; o.receiveShadow = true; o.userData.nocut = true; o.userData.phase = 'furniture'; P.add(o); return o; };
-  // sneakers
-  for (const sx of [-0.3, 0.3]) add(new THREE.CapsuleGeometry(0.15, 0.5, 4, 12).rotateX(Math.PI / 2), SHOE, sx, 0.15, 0.12, [1.1, 0.95, 1]);
-  // wide straight jeans, pooling slightly at the shoes
-  for (const sx of [-0.29, 0.29]) add(new THREE.CylinderGeometry(0.27, 0.31, 2.45, 18), DENIM, sx, 1.45, 0);
-  add(new THREE.BoxGeometry(1.12, 0.5, 0.62), DENIM, 0, 2.85, 0);
-  // tee: soft rounded torso, tucked
-  add(new THREE.CylinderGeometry(0.62, 0.55, 1.55, 24), TEE, 0, 3.78, 0, [1, 1, 0.6]);
-  add(new THREE.SphereGeometry(0.62, 24, 12, 0, Math.PI * 2, 0, Math.PI / 2), TEE, 0, 4.52, 0, [1, 0.28, 0.6]);
-  add(new THREE.PlaneGeometry(0.62, 0.62), PRINT, 0, 3.95, 0.375).material.side = THREE.FrontSide;   // chest graphic
-  // arms: short sleeves, bare forearms, hands
-  for (const sx of [-1, 1]) {
-    add(new THREE.SphereGeometry(0.24, 16, 12), TEE, sx * 0.66, 4.35, 0);
-    add(new THREE.CylinderGeometry(0.2, 0.18, 0.6, 14), TEE, sx * 0.72, 4.0, 0);
-    add(new THREE.CylinderGeometry(0.13, 0.11, 1.0, 12), SKIN, sx * 0.76, 3.2, 0.03);
-    add(new THREE.SphereGeometry(0.14, 12, 10), SKIN, sx * 0.77, 2.65, 0.05, [0.9, 1.15, 0.8]);
-  }
-  // neck, head, hair
-  add(new THREE.CylinderGeometry(0.16, 0.18, 0.32, 14), SKIN, 0, 4.66, 0);
-  add(new THREE.SphereGeometry(0.4, 24, 18), SKIN, 0, 5.05, 0.02, [0.92, 1.12, 1]);
-  add(new THREE.SphereGeometry(0.43, 24, 14, 0, Math.PI * 2, 0, Math.PI * 0.52), HAIR, 0, 5.08, -0.02, [0.95, 1.05, 1.03]);
-  add(new THREE.BoxGeometry(0.78, 0.16, 0.12), HAIR, 0, 5.32, 0.33);                       // swept fringe
-  // round glasses
-  for (const sx of [-0.15, 0.15]) add(new THREE.TorusGeometry(0.11, 0.022, 8, 24), RIM, sx, 5.08, 0.39);
-  add(new THREE.BoxGeometry(0.1, 0.025, 0.025), RIM, 0, 5.1, 0.4);
-  // black tote on his right shoulder (his right = local -x), strap over the shoulder
-  add(new THREE.BoxGeometry(0.22, 1.15, 1.0), BAG, -0.86, 3.05, 0.05);
-  add(new THREE.BoxGeometry(0.05, 0.95, 0.09), BAG, -0.66, 4.05, 0.28).rotation.z = -0.18;
-  add(new THREE.BoxGeometry(0.05, 0.95, 0.09), BAG, -0.66, 4.05, -0.18).rotation.z = -0.18;
-  P.position.set(35.6, LV.LOFT, 3.85);
-  P.rotation.y = -Math.PI * 0.82;                                                   // face north-west, into the walk-in closet & stacked laundry
-  G.loft.add(P);
-})();
-
 // Recessed downlight zones (SpotLights aimed straight down from the actual ceilings — zero upward spill onto ceilings)
 const RECESS_SPOTS = [
   // [group, x, y, z, targetY, candela, angle, dist]
