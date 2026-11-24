@@ -66,7 +66,7 @@ function buildLoft(g) {
     intWall(g, axis, u, t, [LV.LOFT, y1], holes, { top: topFn });
   };
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
-  P('z', [0.52, 5.42], [30.23, 30.77], [[0.72, 3.02, LV.LOFT, LV.LOFT + 5]]);          // MECH | closet-laundry, door 203 on north/right side (5' tall)
+  P('z', [0.52, 5.42], [30.23, 30.77], [[0.72, 3.02, LV.LOFT, LV.LOFT + 5]], true);    // MECH | closet-laundry, door 203 on north/right side (full height to sloped roof)
   P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+closet | bedroom (full height to sloped roof)
   P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+closet | bath (full height to sloped roof)
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
@@ -277,7 +277,6 @@ function buildMainRoof(g) {
   slopedSlab(g, [41.4, 47.56], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [rz, uz(rz)], [LV.DORMER_JOIN_Z, uz(LV.DORMER_JOIN_Z)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [24.16, 41.4], [LV.DORMER_JOIN_Z, LV.DORMER_JOIN_Y - 0.6], [16.54, LV.DORMER_WALL_TOP + 0.01], CT, 'ceiling', { cast: false });
-  box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [3.16, 5.42], 'ceiling', { cast: false });   // MECH + laundry 8'-0" cap
   box(g, [24.7, 40.86], [LV.LOFT_CEIL, LV.LOFT_CEIL + 0.04], [5.97, 16.54], 'ceiling', { cast: false });  // bedroom 8'-0" flat ceiling
   box(g, [0.51, 47.56], [uz(rz) - 0.06, uz(rz) + 0.02], [rz - 0.06, rz + 0.06], 'ceiling', { cast: false }); // seal ridge V-notch
   // ridge cap

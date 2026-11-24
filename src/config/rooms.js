@@ -63,10 +63,10 @@ const ROOMS = [
     rects: [[14.82, 24.16, 10.45, 16.54]], dimRect: [14.52, 24.16, 10.45, 16.54], ceiling: 'Under the roof slope',   // floor stops behind the 3'-0" guard
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Overlooks the kitchen/dining. Desk along the guard (keynote 8), wood-stud slat screen at the stair (keynote 31), built-in millwork (keynote 30).' },
   { id: 'mech', name: 'MECH', floor: 'loft', y: LV.LOFT, mat: 'wood',
-    rects: [[24.7, 30.23, 0.52, 5.42]], ceiling: "North roof slope, capped at 8'-0\"",
+    rects: [[24.7, 30.23, 0.52, 5.42]], ceiling: 'Under the north roof slope',
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Revised: MECH moved to the west room. Hot water heater (keynote 28). Reached from the walk-in closet through Door 203 on the north/right side of the MECH wall.' },
   { id: 'laundry', name: 'Closet & Laundry', floor: 'loft', y: LV.LOFT, mat: 'wood',
-    rects: [[30.77, 40.86, 0.52, 5.42]], ceiling: "North roof slope, capped at 8'-0\"",
+    rects: [[30.77, 40.86, 0.52, 5.42]], ceiling: 'Under the north roof slope',
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Stacked washer/dryer rotated against the MECH wall on the left; Door 203 moved to the north/right side. Straight ahead of Pocket Door 202 is a built-in walk-in closet with drawers, hanging rod, and east-wall shelving.' },
   { id: 'bedroom', name: 'Primary Bedroom', floor: 'loft', y: LV.LOFT, mat: 'wood',
     rects: [[24.7, 40.86, 5.97, 16.54]], ceiling: "8'-0\" flat in the shed dormer",

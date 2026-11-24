@@ -345,7 +345,7 @@ const RECESS_SPOTS = [
   ['ground', 43.5, 7.95, 12.5, 0, 12, 0.72, 4.8],                                                   // east office south cans
   ['loft', 28.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed west cans
   ['loft', 37.0, LV.LOFT_CEIL - 0.05, 11.25, LV.LOFT, 14, 0.78, 5.5],                               // loft primary bed east cans
-  ['loft', 35.5, LV.LOFT_CEIL - 0.05, 3.8, LV.LOFT, 14, 0.72, 4.5],                                 // loft walk-in closet & laundry
+  ['loft', 35.5, roofUnder(3.8) - 0.05, 3.8, LV.LOFT, 14, 0.72, 4.5],                                // loft walk-in closet & laundry
   ['loft', 44.47, 21.25, 7.22, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath north can (vanity)
   ['loft', 44.47, 21.25, 9.86, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath mid can
   ['loft', 44.47, 18.52, 12.58, LV.LOFT, 20, 0.78, 5.8],                                             // upstairs bath south can (shower)
