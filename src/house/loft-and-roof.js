@@ -225,8 +225,8 @@ function buildUpperBath(g) {
   }
   // two 2'-0" mirrors over the basins, 4'-0" → 7'-0"; two D4 sconces stacked between them (see RCP.loft.D4)
   // P3: Keep both vanity mirror frames/boxes, and use a single Reflector pass on the first vanity + shared reflection
-  addMirror(g, 47.51, [y + 4.0, y + 7.0], [SINKS[0] - 1.0, SINKS[0] + 1.0], BATH_MIRROR, 'bath2', 'loft', true);
-  addMirror(g, 47.51, [y + 4.0, y + 7.0], [SINKS[1] - 1.0, SINKS[1] + 1.0], BATH_MIRROR, 'bath2', 'loft', true);
+  addMirror(g, 47.51, [y + 4.0, y + 7.0], [SINKS[0] - 1.0, SINKS[0] + 1.0], BATH_MIRROR, 'bath2', 'loft', false);
+  addMirror(g, 47.51, [y + 4.0, y + 7.0], [SINKS[1] - 1.0, SINKS[1] + 1.0], BATH_MIRROR, 'bath2', 'loft', false);
   RT.NOCUT = false;
 }
 

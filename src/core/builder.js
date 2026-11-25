@@ -25,7 +25,7 @@ function worldUV(geo, tile) {
 
 
 // P3: Adaptive resolution Reflector mirror helper with backing mirror box & fog overlay
-export function addMirror(g, xFace, [y0, y1], [z0, z1], fogMat, room, floorKey, createReflector = true) {
+export function addMirror(g, xFace, [y0, y1], [z0, z1], fogMat, room, floorKey, createReflector = false) {
   box(g, [xFace, xFace + 0.05], [y0, y1], [z0, z1], 'mirror', { room });
   if (!createReflector) return;
   const w = z1 - z0, h = y1 - y0, cy = (y0 + y1) / 2, cz = (z0 + z1) / 2;
