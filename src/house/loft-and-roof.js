@@ -116,7 +116,7 @@ function buildLoft(g) {
     const hangMats = ['nautical', 'fabric', 'chalk', 'siding', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric', 'siding', 'chalk', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric', 'siding', 'chalk', 'nautical'];
     for (let i = 0; i < hangMats.length; i++) {
       const hx = 31.35 + i * 0.50;
-      box(stackedOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], R);
+      box(stackedOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], { ...R, cast: false });
     }
   }
   const stackedAnchor = new THREE.Object3D();
@@ -157,14 +157,15 @@ function buildLoft(g) {
     const hangMats = ['nautical', 'fabric', 'chalk', 'siding', 'nautical', 'fabric', 'chalk', 'nautical', 'fabric'];
     for (let i = 0; i < hangMats.length; i++) {
       const hx = 31.30 + i * 0.50;
-      box(horizOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], R);
+      box(horizOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], { ...R, cast: false });
     }
   }
   const horizAnchor = new THREE.Object3D();
   horizAnchor.position.set(38.4, LV.LOFT + 4.3, 1.82);
   horizOpt.add(horizAnchor);
 
-  for (const grp of [stackedOpt, horizOpt]) grp.traverse(m => { if (m.isMesh) m.userData.noMerge = true; });
+  stackedOpt.userData.isolateBatch = true;
+  horizOpt.userData.isolateBatch = true;
   setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor);
 
   // Primary bedroom: bed (dashed on A101.2)
@@ -352,21 +353,25 @@ function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor) {
     wake(10);
   });
   const _v = new THREE.Vector3();
+  let lastX = -1, lastY = -1, lastHidden = true;
+  const hide = () => { if (!lastHidden) { btn.hidden = true; lastHidden = true; } };
   updateLaundryToggle = camera => {
     if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && state.roof && state.walls === 'up' && state.floors === 'both' && state.explode === 0)) {
-      btn.hidden = true;
+      hide();
       return;
     }
     const anchor = horiz ? horizAnchor : stackedAnchor;
     anchor.getWorldPosition(_v);
     _v.project(camera);
-    if (_v.z < -1 || _v.z > 1) { btn.hidden = true; return; }
-    const x = (_v.x * 0.5 + 0.5) * window.innerWidth;
-    const y = (-_v.y * 0.5 + 0.5) * window.innerHeight;
-    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) { btn.hidden = true; return; }
-    btn.hidden = false;
-    btn.style.left = `${x.toFixed(1)}px`;
-    btn.style.top = `${y.toFixed(1)}px`;
+    if (_v.z < -1 || _v.z > 1) { hide(); return; }
+    const x = Math.round((_v.x * 0.5 + 0.5) * window.innerWidth);
+    const y = Math.round((-_v.y * 0.5 + 0.5) * window.innerHeight);
+    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) { hide(); return; }
+    if (lastHidden) { btn.hidden = false; lastHidden = false; }
+    if (x !== lastX || y !== lastY) {
+      lastX = x; lastY = y;
+      btn.style.transform = `translate3d(${x}px,${y}px,0) translate(-50%,-100%)`;
+    }
   };
 }
 

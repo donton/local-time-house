@@ -229,13 +229,17 @@ export function batchSceneGeometries() {
     grp.updateMatrixWorld(true);
     const invGrp = new THREE.Matrix4().copy(grp.matrixWorld).invert();
     const candidates = [];
+    const isolatedGroups = [];
     grp.traverse(m => {
+      if (m.userData.isolateBatch) { isolatedGroups.push(m); return; }
       if (!m.isMesh || m.isInstancedMesh || Array.isArray(m.material) || cutSet.has(m) || snowSet.has(m) || floorSet.has(m) || actOf(m) || m.userData.noMerge) return;
+      for (let p = m.parent; p && p !== grp; p = p.parent) if (p.userData.isolateBatch) return;
       if (RT.FX_FIRE && m === RT.FX_FIRE.glass) return;
       if (m === RT.tvScreen) return;
       if (FX_SHOWERS.some(S => m === S.steam || m === S.mesh)) return;
       candidates.push(m);
     });
+    grp.userData._isolatedGroups = isolatedGroups;
     for (const m of candidates) {
       const g = m.geometry;
       const attrSig = Object.keys(g.attributes).sort().join(',');
@@ -279,6 +283,10 @@ export function batchSceneGeometries() {
   if (FAN.spin) batchRigidSubgroup(FAN.spin, actSkip, actOf(FAN.spin));
   if (PATIO.logs) batchRigidSubgroup(PATIO.logs, actSkip, actOf(PATIO.firepit));
   if (PATIO.flames) batchRigidSubgroup(PATIO.flames, actSkip, actOf(PATIO.firepit));
+  for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
+    for (const ig of G[key].userData._isolatedGroups || []) batchRigidSubgroup(ig, actSkip);
+    delete G[key].userData._isolatedGroups;
+  }
 
   for (const key of ['ground', 'loft', 'site', 'mainRoof', 'wingRoof']) {
     G[key].traverse(m => {
