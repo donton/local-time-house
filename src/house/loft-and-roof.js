@@ -1,7 +1,7 @@
 // Loft walls & rooms, upstairs bath, standing-seam metal roof, skylights, and flat wing roof.
 import * as THREE from 'three';
-import { LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
-import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
+import { FT, LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
+import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, isShown, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
 import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
@@ -122,6 +122,9 @@ function buildLoft(g) {
   const stackedAnchor = new THREE.Object3D();
   stackedAnchor.position.set(32.0, LV.LOFT + 7.2, 4.275);
   stackedOpt.add(stackedAnchor);
+  const stackedTarget = new THREE.Object3D();
+  stackedTarget.position.set(32.0, LV.LOFT + 3.2, 4.275);
+  stackedOpt.add(stackedTarget);
 
   // --- Option B: Previous horizontal side-by-side W/D on north wall + Door 203 on south side ---
   RT.NOCUT = false;
@@ -163,10 +166,13 @@ function buildLoft(g) {
   const horizAnchor = new THREE.Object3D();
   horizAnchor.position.set(38.4, LV.LOFT + 4.3, 1.82);
   horizOpt.add(horizAnchor);
+  const horizTarget = new THREE.Object3D();
+  horizTarget.position.set(38.4, LV.LOFT + 1.6, 1.82);
+  horizOpt.add(horizTarget);
 
   stackedOpt.userData.isolateBatch = true;
   horizOpt.userData.isolateBatch = true;
-  setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor);
+  setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor, stackedTarget, horizTarget);
 
   // Primary bedroom: bed (dashed on A101.2)
   bedSized(g, 32.9, 5.97, [76 / 12, 80 / 12], LV.LOFT, 'bedroom');                 // king: 76" × 80" mattress, centered as drawn
@@ -332,14 +338,14 @@ function buildWingRoof(g) {
 
 
 let updateLaundryToggle = () => {};
-function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor) {
+function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor, stackedTarget, horizTarget) {
   const btn = document.createElement('button');
   btn.id = 'laundry-swap-btn';
   btn.type = 'button';
   btn.className = 'laundry-swap-btn';
   btn.hidden = true;
   document.body.appendChild(btn);
-  let horiz = false;
+  let horiz = false, forceCheck = true;
   const syncLabel = () => { btn.textContent = horiz ? '⇄ Stacked W/D' : '⇄ Horizontal W/D'; };
   syncLabel();
   btn.addEventListener('pointerdown', e => e.stopPropagation());
@@ -349,24 +355,59 @@ function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor) {
     stackedOpt.visible = !horiz;
     horizOpt.visible = horiz;
     syncLabel();
+    forceCheck = true;
     markShadows();
     wake(10);
   });
-  const _v = new THREE.Vector3();
-  let lastX = -1, lastY = -1, lastHidden = true;
+  const _v = new THREE.Vector3(), _t = new THREE.Vector3(), _dir = new THREE.Vector3();
+  const _ray = new THREE.Raycaster(), _cPos = new THREE.Vector3(), _cQuat = new THREE.Quaternion();
+  let lastX = -1, lastY = -1, lastHidden = true, lastVis = false, lastStateKey = '';
   const hide = () => { if (!lastHidden) { btn.hidden = true; lastHidden = true; } };
+  const isInside = (obj, grp) => { for (let p = obj; p; p = p.parent) if (p === grp) return true; return false; };
   updateLaundryToggle = camera => {
-    if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && state.roof && state.walls === 'up' && state.floors === 'both' && state.explode === 0)) {
+    if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && G.mainRoof.visible && state.explode === 0)) {
       hide();
       return;
     }
     const anchor = horiz ? horizAnchor : stackedAnchor;
+    const target = horiz ? horizTarget : stackedTarget;
+    const optGrp = horiz ? horizOpt : stackedOpt;
+    const stateKey = `${horiz ? 1 : 0}|${WALK.on ? 1 : 0}|${state.walls}|${state.explode}|${G.mainRoof.visible ? 1 : 0}`;
+    const camMoved = forceCheck || stateKey !== lastStateKey || _cPos.distanceToSquared(camera.position) > 1e-6 || Math.abs(_cQuat.dot(camera.quaternion)) < 0.999999;
+    if (camMoved) {
+      forceCheck = false;
+      lastStateKey = stateKey;
+      _cPos.copy(camera.position);
+      _cQuat.copy(camera.quaternion);
+      target.getWorldPosition(_t);
+      _dir.subVectors(_t, camera.position);
+      const dist = _dir.length();
+      if (WALK.on && dist > 22 * FT) { lastVis = false; }
+      else {
+        anchor.getWorldPosition(_v);
+        _v.project(camera);
+        if (_v.z < -1 || _v.z > 1) { lastVis = false; }
+        else {
+          const px = (_v.x * 0.5 + 0.5) * window.innerWidth;
+          const py = (-_v.y * 0.5 + 0.5) * window.innerHeight;
+          if (px < 0 || px > window.innerWidth || py < 0 || py > window.innerHeight) { lastVis = false; }
+          else {
+            _dir.divideScalar(dist || 1);
+            _ray.set(camera.position, _dir);
+            _ray.far = dist + 0.5 * FT;
+            const roots = G.mainRoof.visible ? [G.ground, G.loft, G.mainRoof] : [G.ground, G.loft];
+            const hits = _ray.intersectObjects(roots, true);
+            const h0 = hits.find(h => h.object.visible && isShown(h.object) && h.object.material?.name !== 'glass');
+            lastVis = !h0 || h0.distance >= dist - 1.6 * FT || isInside(h0.object, optGrp);
+          }
+        }
+      }
+    }
+    if (!lastVis) { hide(); return; }
     anchor.getWorldPosition(_v);
     _v.project(camera);
-    if (_v.z < -1 || _v.z > 1) { hide(); return; }
     const x = Math.round((_v.x * 0.5 + 0.5) * window.innerWidth);
     const y = Math.round((-_v.y * 0.5 + 0.5) * window.innerHeight);
-    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) { hide(); return; }
     if (lastHidden) { btn.hidden = false; lastHidden = false; }
     if (x !== lastX || y !== lastY) {
       lastX = x; lastY = y;
