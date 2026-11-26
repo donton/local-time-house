@@ -197,8 +197,8 @@ function buildUpperBath(g) {
   box(g, [41.4, 47.56], [y, tileTop(15.21)], [15.18, 15.21], 'biscuit', R);
   prism(g, 'z', [[10.58, y], [15.18, y], [15.18, roofUnder(15.18)], [10.58, roofUnder(10.58)]], [47.53, 47.56], 'biscuit', R);
   prism(g, 'z', [[10.58, y], [15.18, y], [15.18, roofUnder(15.18)], [10.58, roofUnder(10.58)]], [41.4, 41.43], 'biscuit', R);
-  // shower niche on the west wall (A401.2 bath elev. 1)
-  box(g, [41.43, 41.45], [y + 3.9, y + 6.2], [11.9, 12.85], 'biscuitShade', R);
+  // shower niche on the long south wall, centered (~1' margin left/right, 2' tall)
+  box(g, [42.43, 46.53], [y + 3.5, y + 5.5], [15.16, 15.18], 'biscuitShade', R);
   // pony wall with fixed glass above (east), glass door on a curb (west), 7'-0" (bath elev. 4)
   // pony wall: 10½" thick per A401.2 plan 6 (elev. 3 dims 5" + 5"), raised to 4'-0" to match the half wall (owner)
   const PONY_N = 10.58 - 10.5 / 12;
