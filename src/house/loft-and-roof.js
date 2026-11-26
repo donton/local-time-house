@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { FT, LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
 import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
-import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror } from '../core/builder.js';
+import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror, withCutAxis } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
 import { buildGround, bedSized } from './ground-floor.js';
 
@@ -74,10 +74,9 @@ function buildLoft(g) {
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
-  // MECH (west, revised): hot water heater (keynote 28), HRV
+  // MECH (west, revised): hot water heater (keynote 28)
   RT.NOCUT = true;
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
-  box(g, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
 
   // Toggleable laundry/closet options: stacked (default) vs. previous horizontal
   const stackedOpt = new THREE.Group(); stackedOpt.name = 'laundryStacked'; g.add(stackedOpt);
@@ -86,8 +85,18 @@ function buildLoft(g) {
   // --- Option A: Stacked W/D on MECH wall + hidden Door 203 + full-width hanging storage ---
   RT.NOCUT = false;
   P('z', [0.52, 5.42], [30.23, 30.77], [[0.72, 3.02, LV.LOFT, LV.LOFT + 5]], true, stackedOpt);
-  doorLeaf(stackedOpt, { axis: 'z', u: [0.72, 3.02], face: 30.77, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, mat: 'chalk', wt: 0 });
+  doorLeaf(stackedOpt, { axis: 'z', u: [0.72, 3.02], face: 30.77 - 0.146, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, mat: 'chalk', wt: 0 });
+  withCutAxis('x', () => {
+    const y0 = LV.LOFT, y1 = y0 + 5, lin = 0.025, cw = 0.2;
+    box(stackedOpt, [30.23, 30.624], [y0, y1], [0.72, 0.72 + lin], 'windowTrim');
+    box(stackedOpt, [30.23, 30.624], [y0, y1], [3.02 - lin, 3.02], 'windowTrim');
+    box(stackedOpt, [30.23, 30.624], [y1 - lin, y1], [0.72, 3.02], 'windowTrim');
+    box(stackedOpt, [30.19, 30.23], [y0, y1 + cw], [0.72 - cw, 0.72], 'windowTrim');
+    box(stackedOpt, [30.19, 30.23], [y0, y1 + cw], [3.02, 3.02 + cw], 'windowTrim');
+    box(stackedOpt, [30.19, 30.23], [y1, y1 + cw], [0.72, 3.02], 'windowTrim');
+  });
   RT.NOCUT = true;
+  box(stackedOpt, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [3.1, 4.9], 'appliance', { room: 'mech' }); // HRV shifted south to clear Door 203
   const addStackedLaundry = (y0, label, hingeDir, clothMat) => {
     const z0 = 3.15, z1 = 5.40, cz = (z0 + z1) / 2, cy = y0 + 1.4, R = { room: 'laundry' };
     box(stackedOpt, [30.79, 33.24], [y0, y0 + 3.15], [z0, z1], 'porcelain', R);
@@ -131,6 +140,7 @@ function buildLoft(g) {
   P('z', [0.52, 5.42], [30.23, 30.77], [[2.3, 5.42, LV.LOFT, LV.LOFT + 5]], true, horizOpt);
   doorLeaf(horizOpt, { axis: 'z', u: [2.3, 5.42], face: 30.77, swing: +1, hinge: 'b', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });
   RT.NOCUT = true;
+  box(horizOpt, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
   const addHorizLaundry = (x0, x1, label, hingeDir, clothMat) => {
     const cx = (x0 + x1) / 2, cy = LV.LOFT + 1.4, y0 = LV.LOFT, R = { room: 'laundry' };
     box(horizOpt, [x0, x1], [y0, y0 + 3.2], [0.6, 3.04], 'porcelain', R);
