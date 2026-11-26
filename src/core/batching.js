@@ -150,7 +150,9 @@ export function batchSceneGeometries() {
     const keptCutEls = [];
     for (const el of CUT.els) {
       const m = el.m;
-      if (!m || !m.parent || m.isInstancedMesh || Array.isArray(m.material) || actOf(m) || m.userData.noMerge || snowSet.has(m) || floorSet.has(m)) {
+      let isolated = false;
+      for (let p = m && m.parent; p && p !== G[el.key]; p = p.parent) if (p.userData.isolateBatch) { isolated = true; break; }
+      if (!m || !m.parent || isolated || m.isInstancedMesh || Array.isArray(m.material) || actOf(m) || m.userData.noMerge || snowSet.has(m) || floorSet.has(m)) {
         keptCutEls.push(el);
         continue;
       }
