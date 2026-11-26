@@ -1,9 +1,9 @@
 // Loft walls & rooms, upstairs bath, standing-seam metal roof, skylights, and flat wing roof.
 import * as THREE from 'three';
 import { FT, LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
-import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, isShown, markShadows, wake } from '../core/state.js';
+import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
-import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror, withCutAxis } from '../core/builder.js';
+import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
 import { buildGround, bedSized } from './ground-floor.js';
 
@@ -74,9 +74,10 @@ function buildLoft(g) {
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
   pocketDoor(g, { axis: 'z', u: [6.05, 9.05], c: 41.13, t: 0.54, y0: LV.LOFT, h: 8, slide: 1, open: true });                             // 204 pocket (bedroom | bath)
 
-  // MECH (west, revised): hot water heater (keynote 28)
+  // MECH (west, revised): hot water heater (keynote 28), HRV
   RT.NOCUT = true;
   cyl(g, [26.0, 1.9], [LV.LOFT, LV.LOFT + 4.8], 0.95, 'porcelain', { room: 'mech' });
+  box(g, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
 
   // Toggleable laundry/closet options: stacked (default) vs. previous horizontal
   const stackedOpt = new THREE.Group(); stackedOpt.name = 'laundryStacked'; g.add(stackedOpt);
@@ -85,18 +86,8 @@ function buildLoft(g) {
   // --- Option A: Stacked W/D on MECH wall + hidden Door 203 + full-width hanging storage ---
   RT.NOCUT = false;
   P('z', [0.52, 5.42], [30.23, 30.77], [[0.72, 3.02, LV.LOFT, LV.LOFT + 5]], true, stackedOpt);
-  doorLeaf(stackedOpt, { axis: 'z', u: [0.72, 3.02], face: 30.77 - 0.146, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, mat: 'chalk', wt: 0 });
-  withCutAxis('x', () => {
-    const y0 = LV.LOFT, y1 = y0 + 5, lin = 0.025, cw = 0.2;
-    box(stackedOpt, [30.23, 30.624], [y0, y1], [0.72, 0.72 + lin], 'windowTrim');
-    box(stackedOpt, [30.23, 30.624], [y0, y1], [3.02 - lin, 3.02], 'windowTrim');
-    box(stackedOpt, [30.23, 30.624], [y1 - lin, y1], [0.72, 3.02], 'windowTrim');
-    box(stackedOpt, [30.19, 30.23], [y0, y1 + cw], [0.72 - cw, 0.72], 'windowTrim');
-    box(stackedOpt, [30.19, 30.23], [y0, y1 + cw], [3.02, 3.02 + cw], 'windowTrim');
-    box(stackedOpt, [30.19, 30.23], [y1, y1 + cw], [0.72, 3.02], 'windowTrim');
-  });
+  doorLeaf(stackedOpt, { axis: 'z', u: [0.72, 3.02], face: 30.77, swing: +1, hinge: 'a', y0: LV.LOFT, h: 5, open: 0, mat: 'chalk', wt: 0 });
   RT.NOCUT = true;
-  box(stackedOpt, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [3.1, 4.9], 'appliance', { room: 'mech' }); // HRV shifted south to clear Door 203
   const addStackedLaundry = (y0, label, hingeDir, clothMat) => {
     const z0 = 3.15, z1 = 5.40, cz = (z0 + z1) / 2, cy = y0 + 1.4, R = { room: 'laundry' };
     box(stackedOpt, [30.79, 33.24], [y0, y0 + 3.15], [z0, z1], 'porcelain', R);
@@ -140,7 +131,6 @@ function buildLoft(g) {
   P('z', [0.52, 5.42], [30.23, 30.77], [[2.3, 5.42, LV.LOFT, LV.LOFT + 5]], true, horizOpt);
   doorLeaf(horizOpt, { axis: 'z', u: [2.3, 5.42], face: 30.77, swing: +1, hinge: 'b', y0: LV.LOFT, h: 5, open: 0, wt: 0.54 });
   RT.NOCUT = true;
-  box(horizOpt, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [0.6, 2.4], 'appliance', { room: 'mech' });
   const addHorizLaundry = (x0, x1, label, hingeDir, clothMat) => {
     const cx = (x0 + x1) / 2, cy = LV.LOFT + 1.4, y0 = LV.LOFT, R = { room: 'laundry' };
     box(horizOpt, [x0, x1], [y0, y0 + 3.2], [0.6, 3.04], 'porcelain', R);
@@ -369,55 +359,26 @@ function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor, st
     markShadows();
     wake(10);
   });
-  const _v = new THREE.Vector3(), _t = new THREE.Vector3(), _dir = new THREE.Vector3();
-  const _ray = new THREE.Raycaster(), _cPos = new THREE.Vector3(), _cQuat = new THREE.Quaternion();
-  let lastX = -1, lastY = -1, lastHidden = true, lastVis = false, lastStateKey = '';
+  const _v = new THREE.Vector3(), _t = new THREE.Vector3();
+  let lastX = -1, lastY = -1, lastHidden = true;
   const hide = () => { if (!lastHidden) { btn.hidden = true; lastHidden = true; } };
-  const isInside = (obj, grp) => { for (let p = obj; p; p = p.parent) if (p === grp) return true; return false; };
   updateLaundryToggle = camera => {
     if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && G.mainRoof.visible && state.explode === 0)) {
       hide();
       return;
     }
-    const anchor = horiz ? horizAnchor : stackedAnchor;
-    const target = horiz ? horizTarget : stackedTarget;
-    const optGrp = horiz ? horizOpt : stackedOpt;
-    const stateKey = `${horiz ? 1 : 0}|${WALK.on ? 1 : 0}|${state.walls}|${state.explode}|${G.mainRoof.visible ? 1 : 0}`;
-    const camMoved = forceCheck || stateKey !== lastStateKey || _cPos.distanceToSquared(camera.position) > 1e-6 || Math.abs(_cQuat.dot(camera.quaternion)) < 0.999999;
-    if (camMoved) {
-      forceCheck = false;
-      lastStateKey = stateKey;
-      _cPos.copy(camera.position);
-      _cQuat.copy(camera.quaternion);
+    if (WALK.on) {
+      const target = horiz ? horizTarget : stackedTarget;
       target.getWorldPosition(_t);
-      _dir.subVectors(_t, camera.position);
-      const dist = _dir.length();
-      if (WALK.on && dist > 22 * FT) { lastVis = false; }
-      else {
-        anchor.getWorldPosition(_v);
-        _v.project(camera);
-        if (_v.z < -1 || _v.z > 1) { lastVis = false; }
-        else {
-          const px = (_v.x * 0.5 + 0.5) * window.innerWidth;
-          const py = (-_v.y * 0.5 + 0.5) * window.innerHeight;
-          if (px < 0 || px > window.innerWidth || py < 0 || py > window.innerHeight) { lastVis = false; }
-          else {
-            _dir.divideScalar(dist || 1);
-            _ray.set(camera.position, _dir);
-            _ray.far = dist + 0.5 * FT;
-            const roots = G.mainRoof.visible ? [G.ground, G.loft, G.mainRoof] : [G.ground, G.loft];
-            const hits = _ray.intersectObjects(roots, true);
-            const h0 = hits.find(h => h.object.visible && isShown(h.object) && h.object.material?.name !== 'glass');
-            lastVis = !h0 || h0.distance >= dist - 1.6 * FT || isInside(h0.object, optGrp);
-          }
-        }
-      }
+      if (camera.position.distanceToSquared(_t) > (22 * FT) * (22 * FT)) { hide(); return; }
     }
-    if (!lastVis) { hide(); return; }
+    const anchor = horiz ? horizAnchor : stackedAnchor;
     anchor.getWorldPosition(_v);
     _v.project(camera);
+    if (_v.z < -1 || _v.z > 1) { hide(); return; }
     const x = Math.round((_v.x * 0.5 + 0.5) * window.innerWidth);
     const y = Math.round((-_v.y * 0.5 + 0.5) * window.innerHeight);
+    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) { hide(); return; }
     if (lastHidden) { btn.hidden = false; lastHidden = false; }
     if (x !== lastX || y !== lastY) {
       lastX = x; lastY = y;
