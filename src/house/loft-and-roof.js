@@ -96,22 +96,22 @@ function buildLoft(g) {
     box(stackedOpt, [30.19, 30.23], [y1, y1 + cw], [0.72, 3.02], 'windowTrim');
   });
   RT.NOCUT = true;
-  // Compact captain's ladder in MECH (shifted right, steeper to take up minimal floor space)
+  // Compact captain's ladder in MECH next to the west wall (steeper to take up minimal floor space)
   {
     const R = { room: 'mech' }, y0 = LV.LOFT, y1 = LV.LOFT_CEIL + 0.15, z0 = 4.10, z1 = 5.35;
-    for (const lx of [28.75, 29.95]) {
+    for (const lx of [24.85, 26.05]) {
       rod(stackedOpt, [lx, y0, z0], [lx, y1, z1], 0.05, 'oak', R);
     }
     const steps = 8;
     for (let i = 1; i <= steps; i++) {
       const f = i / (steps + 1);
       const sy = y0 + (y1 - y0) * f, sz = z0 + (z1 - z0) * f;
-      box(stackedOpt, [28.80, 29.90], [sy - 0.035, sy + 0.035], [sz - 0.14, sz + 0.14], 'oak', R);
+      box(stackedOpt, [24.90, 26.00], [sy - 0.035, sy + 0.035], [sz - 0.14, sz + 0.14], 'oak', R);
     }
-    rod(stackedOpt, [30.00, y0 + 2.4, z0 + 0.25], [30.00, y1 + 1.0, z1 - 0.05], 0.03, 'chrome', R);
+    rod(stackedOpt, [26.10, y0 + 2.4, z0 + 0.25], [26.10, y1 + 1.0, z1 - 0.05], 0.03, 'chrome', R);
     // Closed attic hatch panel on the MECH face of the wall above the ladder
-    box(stackedOpt, [28.35, 30.05], [LV.LOFT_CEIL + 0.15, 19.35], [5.38, 5.42], 'windowTrim', R);
-    box(stackedOpt, [28.43, 29.97], [LV.LOFT_CEIL + 0.23, 19.27], [5.36, 5.40], 'chalk', R);
+    box(stackedOpt, [24.80, 26.50], [LV.LOFT_CEIL + 0.15, 19.35], [5.38, 5.42], 'windowTrim', R);
+    box(stackedOpt, [24.88, 26.42], [LV.LOFT_CEIL + 0.23, 19.27], [5.36, 5.40], 'chalk', R);
   }
   const addStackedLaundry = (y0, label, hingeDir, clothMat) => {
     const z0 = 3.15, z1 = 5.40, cz = (z0 + z1) / 2, cy = y0 + 1.4, R = { room: 'laundry' };
