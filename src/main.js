@@ -13,7 +13,7 @@ import { renderer, labelRenderer, scene, camera, controls, phoneFov, homePos, cl
 import { lightsOutStep } from './house/lighting.js';
 import { LAND } from './landscape/terrain-and-trees.js';
 import { PATIO, WEST_DECK, GRILL } from './landscape/outdoor-living.js';
-import { _cv, updateWalls } from './systems/cutaway.js';
+import { _cv, updateWalls, prewarmCutaway } from './systems/cutaway.js';
 import { select } from './systems/labels-selection.js';
 import { fireLight, pickAct, useAct, interactStep } from './systems/interactions.js';
 import { toW, floorAt, walkStep, enterWalk, exitWalk } from './modes/walk-mode.js';
@@ -137,17 +137,15 @@ window.__house = {
   FAN, FX_FIRE: RT.FX_FIRE, FX_TV: RT.FX_TV, FX_SHOWERS, FX_MIRRORS,
 };
 
-// Idle-prefetch optional Timeline & Build modules + pre-warm scene & mirror shaders/FBOs after first render
-const idlePrefetch = window.requestIdleCallback || (cb => setTimeout(cb, 120));
+// Idle-prefetch optional Timeline & Build modules + pre-warm scene & cutaway shaders after first render
+const idlePrefetch = window.requestIdleCallback || (cb => requestAnimationFrame(() => setTimeout(cb, 600)));
 idlePrefetch(() => {
-  renderer.compile(scene, camera);
-  for (const m of FX_MIRRORS) {
-    m.ref.visible = true;
-    try { m.ref.onBeforeRender(renderer, scene, camera); } catch (_) { renderer.compile(m.ref, camera); }
-    m.ref.visible = false;
-  }
-  loadTimelineModule();
-  loadBuildModule();
+  (renderer.compileAsync ? renderer.compileAsync(scene, camera) : Promise.resolve(renderer.compile(scene, camera)))
+    .then(() => prewarmCutaway());
+  setTimeout(() => {
+    loadTimelineModule();
+    loadBuildModule();
+  }, 1500);
   const wxInfo = (c, night) => c === 0 ? [night ? 'clearNight' : 'clear', 'Clear']
     : c <= 2 ? [night ? 'clearNight' : 'partly', 'Partly cloudy']
     : c === 3 ? ['overcast', 'Overcast']

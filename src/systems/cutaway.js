@@ -9,13 +9,34 @@ import { renderer, camera, controls } from '../core/renderer.js';
 let _lastWallsDown = false;
 renderer.localClippingEnabled = true;
 const capMat = new THREE.MeshStandardMaterial({ color: 0xD9D2C7, roughness: 0.95 }); capMat.name = 'wallCap';
+const _clipCache = new Map();
 function clipVariant(el) {
   if (!el.variant) {
-    const v = el.base.clone(); v.clippingPlanes = [CUT.planes[el.key]]; v.clipShadows = true; v.userData.base = el.base;
-    if (el.base.userData.extLights) exteriorLightsOnly(v);
-    el.variant = v; CUT.variants.push(v);
+    const k = `${el.base.uuid}|${el.key}`;
+    let v = _clipCache.get(k);
+    if (!v) {
+      v = el.base.clone(); v.clippingPlanes = [CUT.planes[el.key]]; v.clipShadows = true; v.userData.base = el.base;
+      if (el.base.userData.extLights) exteriorLightsOnly(v);
+      _clipCache.set(k, v);
+      CUT.variants.push(v);
+    }
+    el.variant = v;
   }
   return el.variant;
+}
+function prewarmCutaway() {
+  const swapped = [];
+  let capShown = null;
+  for (const el of CUT.els) {
+    if (!el.hide && el.m.visible) {
+      const v = clipVariant(el);
+      if (el.m.material !== v) { swapped.push([el.m, el.m.material]); el.m.material = v; }
+      if (!capShown && el.cap && !el.cap.visible) { capShown = el.cap; capShown.visible = true; }
+    }
+  }
+  renderer.compile(G.loft.parent || G.loft, camera);
+  for (const [m, orig] of swapped) m.material = orig;
+  if (capShown) capShown.visible = false;
 }
 (function classifyWalls() {
   root.updateMatrixWorld(true);
@@ -95,4 +116,4 @@ function updateWalls(syncMaterials = true) {
 controls.addEventListener('change', () => { if (state.walls === 'cutaway') updateWalls(false); });
 
 MODES.updateWalls = updateWalls;
-export { capMat, clipVariant, _cv, updateWalls };
+export { capMat, clipVariant, prewarmCutaway, _cv, updateWalls };

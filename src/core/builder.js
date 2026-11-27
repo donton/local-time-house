@@ -1,7 +1,6 @@
 // Scoped 3D architectural geometry builders (boxes, cylinders, prisms, sloped slabs, walls, windows, doors, mirrors).
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
-import { Reflector } from 'three/addons/objects/Reflector.js';
 import { LV, EXT, LITE } from '../config/constants.js';
 import { RT, FX_MIRRORS, WALL_DEFS, tweenTo, act } from './state.js';
 import { M } from './materials.js';
@@ -25,21 +24,8 @@ function worldUV(geo, tile) {
 
 
 // P3: Adaptive resolution Reflector mirror helper with backing mirror box & fog overlay
-export function addMirror(g, xFace, [y0, y1], [z0, z1], fogMat, room, floorKey, createReflector = false) {
+export function addMirror(g, xFace, [y0, y1], [z0, z1], fogMat, room) {
   box(g, [xFace, xFace + 0.05], [y0, y1], [z0, z1], 'mirror', { room });
-  if (!createReflector) return;
-  const w = z1 - z0, h = y1 - y0, cy = (y0 + y1) / 2, cz = (z0 + z1) / 2;
-  const res = LITE ? 256 : 384;
-  const ref = new Reflector(new THREE.PlaneGeometry(w, h), { clipBias: 0.003, textureWidth: res, textureHeight: res, color: 0xd0dce2 });
-  ref.position.set(xFace - 0.002, cy, cz); ref.rotation.y = -Math.PI / 2;
-  ref.visible = false;
-  ref.userData = { room, nocut: true, noMerge: true };
-  g.add(ref);
-  const fogMesh = new THREE.Mesh(new THREE.PlaneGeometry(w, h), fogMat);
-  fogMesh.position.set(xFace - 0.005, cy, cz); fogMesh.rotation.y = -Math.PI / 2;
-  fogMesh.visible = false; fogMesh.userData = { room, nocut: true, noMerge: true };
-  g.add(fogMesh);
-  FX_MIRRORS.push({ ref, fogMesh, fogMat, pos: [xFace, cy, cz], floorKey });
 }
 
 export function withNoCut(fn) {
