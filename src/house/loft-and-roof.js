@@ -127,6 +127,26 @@ function buildLoft(g) {
       const hx = 31.35 + i * 0.50;
       box(stackedOpt, [hx - 0.14, hx + 0.14], [y + 2.55, y + 4.68], [1.18, 1.78], hangMats[i], { ...R, cast: false });
     }
+    // Freestanding bench / shoe rack under the right half of the hanging rod (clear of MECH door)
+    box(stackedOpt, [37.0, 40.5], [y + 1.25, y + 1.35], [0.90, 2.05], 'oak', { ...R, cast: false });
+    box(stackedOpt, [37.0, 40.5], [y + 0.40, y + 0.48], [0.95, 2.00], 'oak', { ...R, cast: false });
+    for (const lx of [37.05, 40.37]) {
+      box(stackedOpt, [lx, lx + 0.08], [y, y + 1.25], [0.95, 2.00], 'oak', { ...R, cast: false });
+    }
+    // Simple 14" deep open shelf stack + hamper spot on the tall south wall next to the stacked W/D
+    box(stackedOpt, [33.35, 33.43], [y, y + 7.5], [4.22, 5.42], 'millwork', R);
+    box(stackedOpt, [35.27, 35.35], [y, y + 7.5], [4.22, 5.42], 'millwork', R);
+    for (const sy of [2.5, 3.8, 5.1, 6.4, 7.42]) {
+      box(stackedOpt, [33.43, 35.27], [y + sy, y + sy + 0.08], [4.22, 5.42], 'millwork', R);
+    }
+    box(stackedOpt, [33.65, 35.05], [y, y + 2.0], [4.35, 5.30], 'fabric', { ...R, cast: false });      // freestanding laundry hamper
+    box(stackedOpt, [33.75, 34.85], [y + 2.58, y + 3.05], [4.45, 5.20], 'chalk', { ...R, cast: false }); // folded towels
+    box(stackedOpt, [33.70, 34.60], [y + 3.88, y + 4.30], [4.45, 5.20], 'nautical', { ...R, cast: false });
+    // Simple wood hook rail on the east wall
+    box(stackedOpt, [40.78, 40.86], [y + 4.85, y + 5.15], [2.50, 4.50], 'oak', { ...R, cast: false });
+    for (const hz of [2.75, 3.25, 3.75, 4.25]) {
+      box(stackedOpt, [40.66, 40.78], [y + 4.95, y + 5.05], [hz - 0.03, hz + 0.03], 'chrome', { ...R, cast: false });
+    }
   }
   const stackedAnchor = new THREE.Object3D();
   stackedAnchor.position.set(32.0, LV.LOFT + 7.2, 4.275);
