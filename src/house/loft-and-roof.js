@@ -68,7 +68,7 @@ function buildLoft(g) {
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
   P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+closet | bedroom (full height to sloped roof)
   P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+closet | bath (full height to sloped roof)
-  P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
+  withCutAxis('z', () => prism(g, 'z', [[1.44, LV.LOFT], [1.94, LV.LOFT], [1.94, roofUnder(1.94) + 0.01], [1.44, roofUnder(1.44) + 0.01]], [41.4, 47.56], 'chalk')); // bath | north storage (follows roof slope)
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
   doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, open: 165, wt: 0.54 });  // 201
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
