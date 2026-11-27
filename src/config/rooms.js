@@ -64,7 +64,7 @@ const ROOMS = [
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Overlooks the kitchen/dining. Desk along the guard (keynote 8), wood-stud slat screen at the stair (keynote 31), built-in millwork (keynote 30).' },
   { id: 'mech', name: 'MECH', floor: 'loft', y: LV.LOFT, mat: 'wood',
     rects: [[24.7, 30.23, 0.52, 5.42]], ceiling: 'Under the north roof slope',
-    finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Revised: MECH moved to the west room. Hot water heater (keynote 28). Accessed behind the hanging clothes through a flush hidden Door 203 on the north/right side of the MECH wall.' },
+    finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Hot water heater (keynote 28) and captain\'s ladder up to the attic hatch above the primary bedroom (housing the ERV and seasonal storage). Accessed behind the hanging clothes through flush hidden Door 203.' },
   { id: 'laundry', name: 'Closet & Laundry', floor: 'loft', y: LV.LOFT, mat: 'wood',
     rects: [[30.77, 40.86, 0.52, 5.42]], ceiling: 'Under the north roof slope',
     finishes: [WALLS_CHALK, FLOOR_OAK], note: 'Stacked washer/dryer rotated against the MECH wall on the left; full-width hanging storage along the north wall extends across the flush hidden Door 203 so no space is wasted while keeping MECH accessible.' },

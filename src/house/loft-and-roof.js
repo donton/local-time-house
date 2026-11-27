@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { FT, LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
 import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
-import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror, withCutAxis } from '../core/builder.js';
+import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror, withCutAxis, rod } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
 import { buildGround, bedSized } from './ground-floor.js';
 
@@ -66,7 +66,7 @@ function buildLoft(g) {
     intWall(target, axis, u, t, [LV.LOFT, y1], holes, { top: topFn });
   };
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
-  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+closet | bedroom (full height to sloped roof)
+  P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8], [27.4, 29.9, LV.LOFT_CEIL + 0.12, 19.45]], true); // MECH+closet | bedroom + attic hatch
   P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+closet | bath (full height to sloped roof)
   P('x', [41.4, 47.56], [1.44, 1.94]);                                                  // bath | north storage
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
@@ -96,7 +96,31 @@ function buildLoft(g) {
     box(stackedOpt, [30.19, 30.23], [y1, y1 + cw], [0.72, 3.02], 'windowTrim');
   });
   RT.NOCUT = true;
-  box(stackedOpt, [28.0, 30.1], [LV.LOFT, LV.LOFT + 2.2], [3.1, 4.9], 'appliance', { room: 'mech' }); // HRV shifted south to clear Door 203
+  // Captain's ladder in MECH ascending to the attic hatch above the 8'-0" bedroom ceiling
+  {
+    const R = { room: 'mech' }, y0 = LV.LOFT, y1 = LV.LOFT_CEIL + 0.15, z0 = 2.60, z1 = 5.35;
+    for (const lx of [27.95, 29.35]) {
+      rod(stackedOpt, [lx, y0, z0], [lx, y1, z1], 0.06, 'oak', R);
+    }
+    const steps = 8;
+    for (let i = 1; i <= steps; i++) {
+      const f = i / (steps + 1);
+      const sy = y0 + (y1 - y0) * f, sz = z0 + (z1 - z0) * f;
+      box(stackedOpt, [28.01, 29.29], [sy - 0.04, sy + 0.04], [sz - 0.18, sz + 0.18], 'oak', R);
+    }
+    rod(stackedOpt, [29.40, y0 + 2.4, z0 + 0.4], [29.40, y1 + 1.2, z1 - 0.1], 0.035, 'chrome', R);
+    // Attic hatch trim & panel (z 5.42–5.97, x 27.4–29.9)
+    box(stackedOpt, [27.40, 29.90], [LV.LOFT_CEIL + 0.12, 19.45], [5.85, 5.93], 'chalk', R);
+    box(stackedOpt, [27.36, 29.94], [LV.LOFT_CEIL + 0.08, LV.LOFT_CEIL + 0.14], [5.38, 5.99], 'windowTrim', R);
+    box(stackedOpt, [27.36, 29.94], [19.43, 19.49], [5.38, 5.99], 'windowTrim', R);
+    // Attic deck above the primary bedroom 8'-0" ceiling + ERV + storage totes
+    box(stackedOpt, [24.8, 40.7], [LV.LOFT_CEIL + 0.05, LV.LOFT_CEIL + 0.12], [6.0, 12.6], 'wood', { room: 'mech', cast: false });
+    box(stackedOpt, [30.5, 33.0], [LV.LOFT_CEIL + 0.20, LV.LOFT_CEIL + 2.20], [7.4, 9.6], 'appliance', R);          // ERV on isolation pads
+    for (const dz of [7.9, 9.0]) rod(stackedOpt, [33.0, LV.LOFT_CEIL + 1.4, dz], [34.4, LV.LOFT_CEIL + 1.4, dz], 0.24, 'steel', R);
+    box(stackedOpt, [25.6, 27.3], [LV.LOFT_CEIL + 0.12, LV.LOFT_CEIL + 1.45], [7.4, 8.8], 'millwork', { ...R, cast: false });
+    box(stackedOpt, [27.6, 29.3], [LV.LOFT_CEIL + 0.12, LV.LOFT_CEIL + 1.25], [7.5, 8.9], 'nautical', { ...R, cast: false });
+    box(stackedOpt, [25.8, 27.2], [LV.LOFT_CEIL + 0.12, LV.LOFT_CEIL + 1.15], [9.1, 10.3], 'fabric', { ...R, cast: false });
+  }
   const addStackedLaundry = (y0, label, hingeDir, clothMat) => {
     const z0 = 3.15, z1 = 5.40, cz = (z0 + z1) / 2, cy = y0 + 1.4, R = { room: 'laundry' };
     box(stackedOpt, [30.79, 33.24], [y0, y0 + 3.15], [z0, z1], 'porcelain', R);
