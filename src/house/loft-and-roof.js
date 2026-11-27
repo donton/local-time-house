@@ -1,7 +1,7 @@
 // Loft walls & rooms, upstairs bath, standing-seam metal roof, skylights, and flat wing roof.
 import * as THREE from 'three';
 import { FT, LV, EXT, roofTop, roofUnder, loftWallTop } from '../config/constants.js';
-import { state, RT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
+import { state, RT, CUT, WALK, BD, TL, TOUR, FX_SHOWERS, tweenTo, act, markShadows, wake } from '../core/state.js';
 import { BATH_MIRROR } from '../core/materials.js';
 import { addGeo, box, cyl, prism, slopedSlab, SIDING_T, ST, extWall, LAP_N, LAP_S, intWall, glazing, doorLeaf, pocketDoor, pivotFrom, addMirror, withCutAxis, rod } from '../core/builder.js';
 import { G, buildSite, buildFloors } from './site-and-floors.js';
@@ -401,26 +401,58 @@ function setupLaundryToggle(stackedOpt, horizOpt, stackedAnchor, horizAnchor, st
     markShadows();
     wake(10);
   });
-  const _v = new THREE.Vector3(), _t = new THREE.Vector3();
-  let lastX = -1, lastY = -1, lastHidden = true;
+  const _v = new THREE.Vector3(), _t = new THREE.Vector3(), _dir = new THREE.Vector3();
+  const _ray = new THREE.Raycaster(), _cPos = new THREE.Vector3(), _cQuat = new THREE.Quaternion();
+  let lastX = -1, lastY = -1, lastHidden = true, lastVis = false, lastStateKey = '', loftWalls = null;
   const hide = () => { if (!lastHidden) { btn.hidden = true; lastHidden = true; } };
+  const isInside = (obj, grp) => { for (let p = obj; p; p = p.parent) if (p === grp) return true; return false; };
   updateLaundryToggle = camera => {
     if (!G.loft.visible || BD.on || TL.on || TOUR.on || (!WALK.on && G.mainRoof.visible && state.explode === 0)) {
       hide();
       return;
     }
-    if (WALK.on) {
-      const target = horiz ? horizTarget : stackedTarget;
-      target.getWorldPosition(_t);
-      if (camera.position.distanceToSquared(_t) > (22 * FT) * (22 * FT)) { hide(); return; }
-    }
+    if (WALK.on && camera.position.y < (LV.LOFT - 1) * FT) { hide(); return; }
     const anchor = horiz ? horizAnchor : stackedAnchor;
+    const target = horiz ? horizTarget : stackedTarget;
+    const optGrp = horiz ? horizOpt : stackedOpt;
+    const stateKey = `${horiz ? 1 : 0}|${WALK.on ? 1 : 0}|${state.walls}|${state.explode}|${G.mainRoof.visible ? 1 : 0}`;
+    const camMoved = forceCheck || stateKey !== lastStateKey || _cPos.distanceToSquared(camera.position) > 1e-6 || Math.abs(_cQuat.dot(camera.quaternion)) < 0.999999;
+    if (camMoved) {
+      forceCheck = false;
+      lastStateKey = stateKey;
+      _cPos.copy(camera.position);
+      _cQuat.copy(camera.quaternion);
+      target.getWorldPosition(_t);
+      _dir.subVectors(_t, camera.position);
+      const dist = _dir.length();
+      const maxDist = (WALK.on ? 13 : 30) * FT;
+      if (dist > maxDist) { lastVis = false; }
+      else {
+        anchor.getWorldPosition(_v);
+        _v.project(camera);
+        if (_v.z < -1 || _v.z > 1) { lastVis = false; }
+        else {
+          const px = (_v.x * 0.5 + 0.5) * window.innerWidth;
+          const py = (-_v.y * 0.5 + 0.5) * window.innerHeight;
+          if (px < 0 || px > window.innerWidth || py < 0 || py > window.innerHeight) { lastVis = false; }
+          else {
+            if (!loftWalls) loftWalls = CUT.els.filter(e => e.key === 'loft').map(e => e.m);
+            _dir.divideScalar(dist || 1);
+            _ray.set(camera.position, _dir);
+            _ray.far = dist - 1.2 * FT;
+            const objs = G.mainRoof.visible ? [...loftWalls, G.mainRoof] : loftWalls;
+            const hits = _ray.intersectObjects(objs, true);
+            const h0 = hits.find(h => h.object.visible && h.object.material?.name !== 'glass' && !isInside(h.object, optGrp));
+            lastVis = !h0;
+          }
+        }
+      }
+    }
+    if (!lastVis) { hide(); return; }
     anchor.getWorldPosition(_v);
     _v.project(camera);
-    if (_v.z < -1 || _v.z > 1) { hide(); return; }
     const x = Math.round((_v.x * 0.5 + 0.5) * window.innerWidth);
     const y = Math.round((-_v.y * 0.5 + 0.5) * window.innerHeight);
-    if (x < 0 || x > window.innerWidth || y < 0 || y > window.innerHeight) { hide(); return; }
     if (lastHidden) { btn.hidden = false; lastHidden = false; }
     if (x !== lastX || y !== lastY) {
       lastX = x; lastY = y;
