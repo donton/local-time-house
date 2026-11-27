@@ -68,7 +68,7 @@ function buildLoft(g) {
   P('z', [0.52, 16.54], [24.16, 24.7], [[10.88, 13.71, LV.LOFT, LV.LOFT + 7]], true);   // stair/loft | bedroom, door 201 (full height to vaulted ceiling)
   P('x', [24.7, 40.86], [5.42, 5.97], [[37.61, 40.61, LV.LOFT, LV.LOFT + 8]], true);   // MECH+closet | bedroom (full height to sloped roof)
   P('z', [0.52, 16.54], [40.86, 41.4], [[6.05, 9.05, LV.LOFT, LV.LOFT + 8]], true);    // bedroom+closet | bath (full height to sloped roof)
-  withCutAxis('z', () => prism(g, 'z', [[1.44, LV.LOFT], [1.94, LV.LOFT], [1.94, roofUnder(1.94) + 0.01], [1.44, roofUnder(1.44) + 0.01]], [41.4, 47.56], 'chalk')); // bath | north storage (follows roof slope)
+  withCutAxis('z', () => prism(g, 'z', [[1.44, LV.LOFT], [1.94, LV.LOFT], [1.94, roofUnder(1.94)], [1.44, roofUnder(1.44)]], [41.4, 47.56], 'chalk')); // bath | north storage (follows roof slope)
   P('x', [41.4, 47.56], [15.21, 15.71]);                                                // bath | south storage
   doorLeaf(g, { axis: 'z', u: [10.88, 13.71], face: 24.7, swing: +1, hinge: 'a', y0: LV.LOFT, h: 7, open: 165, wt: 0.54 });  // 201
   pocketDoor(g, { axis: 'x', u: [37.61, 40.61], c: 5.695, t: 0.55, y0: LV.LOFT, h: 8, slide: -1, open: true });                          // 202 pocket (closet | bedroom)
@@ -337,10 +337,10 @@ function buildMainRoof(g) {
     slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [1.88, uz(1.88)], CT, 'ceiling', { cast: false });
     slopedSlab(g, [x0, x1], [zCB, uz(zCB)], [rz, uz(rz)], CT, 'ceiling', { cast: false });
     // white light-well sides + plumb low-end wall + perpendicular head from the ceiling up to the skylight curb
-    const yCA = uz(1.88) - 0.04, yCB = uz(zCB) - 0.04;
+    const yCA = uz(1.88) - 0.04, yLow = x0 > 40 ? roofUnder(zCA) : yCA, yCB = uz(zCB) - 0.04;
     for (const [a, b] of [[x0 + 0.02, x0 + 0.07], [x1 - 0.07, x1 - 0.02]])
       prism(g, 'z', [[1.88, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.36], [1.88, atZ(1.88) + 0.36]], [a, b], 'ceiling', { cast: false });
-    prism(g, 'z', [[1.88, yCA], [1.88, atZ(1.88) + 0.36], [zCA, atZ(zCA) + 0.36], [zCA, yCA]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // low end (plumb, flush at z 1.94)
+    prism(g, 'z', [[1.88, yLow], [1.88, atZ(1.88) + 0.36], [zCA, atZ(zCA) + 0.36], [zCA, yLow]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // low end (plumb, flush at z 1.94)
     prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.36], [zCB - 0.06, yCB], [zCB, yCB], [zB - 0.02, atZ(zB - 0.02) + 0.36]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // high end (perpendicular)
   }
   slopedSlab(g, [0.51, 24.16], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
