@@ -296,7 +296,7 @@ function buildMainRoof(g) {
   const [zA, zB] = SKY_Z;
   for (const [x0, x1, hole] of xSegments(-0.5, 48.56)) {
     if (!hole) { slopedSlab(g, [x0, x1], [N, atZ(N)], [rz, ry], T, 'roof'); continue; }
-    prism(g, 'z', [[N, roofUnder(N)], [1.88, roofUnder(1.88)], [1.88, atZ(zA)], [zA, atZ(zA)], [N, atZ(N)]], [x0, x1], 'roof');
+    prism(g, 'z', [[N, roofUnder(N)], [1.80, roofUnder(1.80)], [1.80, atZ(zA)], [zA, atZ(zA)], [N, atZ(N)]], [x0, x1], 'roof');
     slopedSlab(g, [x0, x1], [zB, atZ(zB)], [rz, ry], T, 'roof');
   }
   slopedSlab(g, [-0.5, dx0], [rz, ry], [S, atZ(S)], T, 'roof');                    // south slope, west
@@ -333,15 +333,15 @@ function buildMainRoof(g) {
   const CT = 0.04, uz = z => roofUnder(z) + 0.005;
   for (const [x0, x1, hole] of xSegments(0.51, 47.56)) {                              // north slope, cut for the skylights
     if (!hole) { slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [rz, uz(rz)], CT, 'ceiling', { cast: false }); continue; }
-    const dPerp = 0.585, zCA = 1.94, zCB = zB + dPerp;                                     // plumb low-end wall flush with bath north wall (z 1.94); 45° head at top
-    slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [1.88, uz(1.88)], CT, 'ceiling', { cast: false });
+    const dPerp = 0.585, z0W = zA + 0.20, zCA = 1.94, zCB = zB + dPerp;
+    slopedSlab(g, [x0, x1], [0.52, uz(0.52)], [z0W, uz(z0W)], CT, 'ceiling', { cast: false });
     slopedSlab(g, [x0, x1], [zCB, uz(zCB)], [rz, uz(rz)], CT, 'ceiling', { cast: false });
-    // white light-well sides + plumb low-end wall + perpendicular head from the ceiling up to the skylight curb
-    const yCA = uz(1.88) - 0.04, yLow = x0 > 40 ? roofUnder(zCA) : yCA, yCB = uz(zCB) - 0.04;
-    for (const [a, b] of [[x0 + 0.02, x0 + 0.07], [x1 - 0.07, x1 - 0.02]])
-      prism(g, 'z', [[1.88, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.36], [1.88, atZ(1.88) + 0.36]], [a, b], 'ceiling', { cast: false });
-    prism(g, 'z', [[1.88, yLow], [1.88, atZ(1.88) + 0.36], [zCA, atZ(zCA) + 0.36], [zCA, yLow]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // low end (plumb, flush at z 1.94)
-    prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.36], [zCB - 0.06, yCB], [zCB, yCB], [zB - 0.02, atZ(zB - 0.02) + 0.36]], [x0 + 0.02, x1 - 0.02], 'ceiling', { cast: false });   // high end (perpendicular)
+    // white light-well sides + plumb low-end wall (z 1.80–1.94) + perpendicular head
+    const yCA = uz(z0W) - 0.04, yLow = x0 > 40 ? roofUnder(zCA) : yCA, yCB = uz(zCB) - 0.04;
+    for (const [a, b] of [[x0, x0 + 0.06], [x1 - 0.06, x1]])
+      prism(g, 'z', [[z0W, yCA], [zCB, yCB], [zB - 0.15, atZ(zB - 0.15) + 0.36], [z0W, atZ(z0W) + 0.40]], [a, b], 'ceiling', { cast: false });
+    prism(g, 'z', [[z0W, yLow], [z0W, atZ(z0W) + 0.40], [zCA, atZ(zCA) + 0.40], [zCA, yLow]], [x0, x1], x0 > 40 ? 'chalk' : 'ceiling', { cast: false });
+    prism(g, 'z', [[zB - 0.18, atZ(zB - 0.18) + 0.36], [zCB - 0.06, yCB], [zCB, yCB], [zB - 0.02, atZ(zB - 0.02) + 0.36]], [x0, x1], 'ceiling', { cast: false });
   }
   slopedSlab(g, [0.51, 24.16], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
   slopedSlab(g, [41.4, 47.56], [rz, uz(rz)], [16.54, uz(16.54)], CT, 'ceiling', { cast: false });
