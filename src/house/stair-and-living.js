@@ -197,7 +197,6 @@ function buildGuestBath(g) {
   // mirror over the sink with D4 sconces either side (elev. 1)
   const GUEST_MIRROR = makeMirrorFogMat();
   addMirror(g, 38.72, [4.0, 7.0], [7.6, 9.6], GUEST_MIRROR, 'guestBath', 'ground');
-  for (const z of [7.3, 9.9]) cyl(g, [38.68, z], [5.55, 6.05], 0.12, 'chrome', R);
   // chrome: shower arm/head, valve, faucet, towel bar
   const guestShowerParts = [box(g, [38.2, 38.74], [6.7, 6.78], [2.06, 2.14], 'chrome', R),
     cyl(g, [38.15, 2.1], [6.6, 6.7], 0.3, 'chrome', R),

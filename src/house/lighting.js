@@ -67,8 +67,8 @@ const RCP = {
       { pos: [12.81, 6.61], target: [12.20, 2.9, 6.61] },
     ],
     D1: [DINING_CENTER],                                                            // pendant, centered over the table
-    D4: [['x', 23.93, 12.1, 6.0, -1, 'hall'],                                       // entry
-         ['x', 38.68, 7.3, 5.8, -1], ['x', 38.68, 9.9, 5.8, -1]],                    // guest bath, either side of the mirror
+    D4: [['x', 23.93, 12.1, 6.0, -1, 'hall']],                                     // entry
+    orb: [[37.9, 7.15, 5.8]],                                                       // guest bath hanging orb, left of the mirror
     D5: [['x', -0.4, 4.1, 12.4, -1], ['x', -0.4, 12.5, 12.4, -1],                  // west gable (A201: above W07 / W15)
          ['x', 17.43, 20.5, 6.5, +1],                                               // porch, wing east wall
          ['z', 31.1, 17.45, 6.5, +1], ['z', 39.6, 17.45, 6.5, +1],                  // south wall
@@ -275,6 +275,14 @@ function fixtures() {
     };
     (F.D4 || []).forEach(f => sconce(f, false));
     (F.D5 || []).forEach(f => sconce(f, true));
+    (F.orb || []).forEach(([x, z, y]) => {
+      const top = ceilAt(floor, x, z), r = 0.32, gg = floor === 'ground' ? G.loft : R;
+      const canopy = new THREE.Mesh(cyl(0.14, 0.14, 0.03, 18), trimMat); canopy.position.set(x, top - 0.015, z); gg.add(canopy);
+      const len = Math.max(0.1, top - (y + r));
+      const cord = new THREE.Mesh(cyl(0.015, 0.015, len, 8), trimMat); cord.position.set(x, y + r + len / 2, z); gg.add(cord);
+      const globe = new THREE.Mesh(cached('orb:geo', () => new THREE.SphereGeometry(r, 24, 16)), lampMat);
+      globe.position.set(x, y, z); g.add(globe);
+    });
   }
 }
 {
@@ -338,7 +346,7 @@ const NIGHT_LIGHTS = [
   ['ground', 9.5, 4.5, 21.5, 2.0, 5.5],                                                             // sunken living bounce
   ['ground', 29.0, 4.5, 6.5, 1.5, 4.8],                                                             // guest bed bounce
   ['ground', 35.8, 4.5, 6.5, 1.3, 2.6],                                                             // guest bath bounce
-  ['ground', 37.8, 5.8, 8.6, 2.2, 2.4],                                                             // guest bath vanity sconces
+  ['ground', 37.8, 5.8, 7.15, 2.4, 2.8],                                                            // guest bath hanging orb (left of mirror)
   ['ground', 43.5, 4.5, 8.5, 1.5, 4.5],                                                             // east office bounce
   ['ground', 46.25, 3.2, 12.65, 1.3, 3.8],                                                          // east office conical desk lamp
   ['loft', 33.0, LV.LOFT + 4.2, 11.2, 1.8, 5.2],                                                    // loft bounce
