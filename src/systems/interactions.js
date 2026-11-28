@@ -153,6 +153,7 @@ export function pickAct(nx, ny, maxDist) {
 
   // Stage 2: Narrowphase mesh intersection & wall occlusion
   if (!PICK_ROOTS) PICK_ROOTS = [G.ground, G.loft, G.mainRoof, G.wingRoof, G.site, CAR.car, GRILL.grp];
+  AR.far = maxDist + 0.5;
   const hits = AR.intersectObjects(PICK_ROOTS, true);
   for (const h of hits) {
     if (!isShown(h.object) || h.object.isPoints || h.object.isLineSegments || FX_SHOWERS.some(S => S.steam === h.object)) continue;
