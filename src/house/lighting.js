@@ -33,7 +33,7 @@ const RCP = {
   ground: {
     L1: [[15.5, 12.6], [22.3, 12.6], [15.5, 15.5], [22.3, 15.5],                 // under the loft (kitchen edge + entry)
          [26.6, 2.6], [30.9, 2.6], [26.6, 8.8], [30.9, 8.8], [30.7, 12.2],          // guest bed + closet
-         [33.8, 2.2], [36.4, 2.2], [35.0, 5.9], [35.0, 9.6],                        // guest bath (2 over shower)
+         [34.75, 2.3], [37.4, 2.3], [35.0, 5.9], [35.0, 9.6],                       // guest bath (2 centered over shower)
          [26.4, 15.0], [30.8, 15.0], [35.0, 15.0],                                  // corridor
          [41.4, 4.5], [45.6, 4.5], [41.4, 12.5], [45.6, 12.5], [46.6, 9.3]],        // office + closet
     L4: [[5.75, 19.81], [13.2, 19.81], [5.75, 24.06], [13.2, 24.06]],                // sunken living, centered in joist bays on the 8'-10" ceiling
@@ -293,8 +293,8 @@ const RECESS_SPOTS = [
   ['ground', 9.5, 8.78, 24.06, 0, 14, 0.72, 5.2],                                                   // sunken living south pair
   ['ground', 28.75, 7.95, 2.6, 0, 12, 0.70, 4.5],                                                   // guest bed north cans (over bed)
   ['ground', 28.75, 7.95, 8.8, 0, 12, 0.70, 4.5],                                                   // guest bed south cans (in front of closet)
-  ['ground', 33.8, 7.95, 2.2, 0, 11, 0.68, 4.0],                                                    // guest bath north-west shower can
-  ['ground', 36.4, 7.95, 2.2, 0, 11, 0.68, 4.0],                                                    // guest bath north-east shower can
+  ['ground', 34.75, 7.95, 2.3, 0, 11, 0.68, 4.0],                                                   // guest bath west shower can
+  ['ground', 37.4, 7.95, 2.3, 0, 11, 0.68, 4.0],                                                    // guest bath east shower can
   ['ground', 35.0, 7.95, 5.9, 0, 16, 0.72, 4.0],                                                    // guest bath mid can
   ['ground', 35.0, 7.95, 9.6, 0, 16, 0.72, 4.0],                                                    // guest bath south can (vanity)
   ['ground', 26.4, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor west can
