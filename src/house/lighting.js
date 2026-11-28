@@ -33,7 +33,7 @@ const RCP = {
   ground: {
     L1: [[15.5, 12.6], [22.3, 12.6], [15.5, 15.5], [22.3, 15.5],                 // under the loft (kitchen edge + entry)
          [26.6, 2.6], [30.9, 2.6], [26.6, 8.8], [30.9, 8.8], [30.7, 12.2],          // guest bed + closet
-         [35.0, 2.2], [35.0, 5.9], [35.0, 9.6],                                     // guest bath
+         [33.8, 2.2], [36.4, 2.2], [35.0, 5.9], [35.0, 9.6],                        // guest bath (2 over shower)
          [26.4, 15.0], [30.8, 15.0], [35.0, 15.0],                                  // corridor
          [41.4, 4.5], [45.6, 4.5], [41.4, 12.5], [45.6, 12.5], [46.6, 9.3]],        // office + closet
     L4: [[5.75, 19.81], [13.2, 19.81], [5.75, 24.06], [13.2, 24.06]],                // sunken living, centered in joist bays on the 8'-10" ceiling
@@ -79,7 +79,7 @@ const RCP = {
     L1: [[27.97, 8.45], [37.03, 8.45], [27.97, 14.05], [37.03, 14.05]],            // primary bedroom, 8'-0" flat ceiling
     F1: [[32.47, 11.25]],
     L2: [[27.41, 2.98], [33.22, 2.98], [38.4, 2.98],                               // MECH + laundry (vaulted, north slope)
-         [44.47, 7.22], [44.47, 9.86], [44.47, 12.58]],                            // upstairs bath (vaulted)
+         [44.47, 7.22], [44.47, 9.86], [43.1, 12.58], [45.85, 12.58]],               // upstairs bath (vaulted, 2 over shower)
     D4: [['z', 20.58, 0.62, LV.LOFT + 0.6, +1, 'hall'], ['x', 23.92, 6.53, 11.8, -1, 'hall'],   // stair: north wall, east stair wall
          ['x', 47.56, 7.19, LV.LOFT + 5.25, -1], ['x', 47.56, 7.19, LV.LOFT + 6.3, -1]],   // upstairs bath: stacked between the mirrors (elev. 3)
   },
