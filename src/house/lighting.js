@@ -293,7 +293,8 @@ const RECESS_SPOTS = [
   ['ground', 9.5, 8.78, 24.06, 0, 14, 0.72, 5.2],                                                   // sunken living south pair
   ['ground', 28.75, 7.95, 2.6, 0, 12, 0.70, 4.5],                                                   // guest bed north cans (over bed)
   ['ground', 28.75, 7.95, 8.8, 0, 12, 0.70, 4.5],                                                   // guest bed south cans (in front of closet)
-  ['ground', 35.0, 7.95, 2.2, 0, 16, 0.72, 4.0],                                                    // guest bath north can (shower)
+  ['ground', 33.8, 7.95, 2.2, 0, 11, 0.68, 4.0],                                                    // guest bath north-west shower can
+  ['ground', 36.4, 7.95, 2.2, 0, 11, 0.68, 4.0],                                                    // guest bath north-east shower can
   ['ground', 35.0, 7.95, 5.9, 0, 16, 0.72, 4.0],                                                    // guest bath mid can
   ['ground', 35.0, 7.95, 9.6, 0, 16, 0.72, 4.0],                                                    // guest bath south can (vanity)
   ['ground', 26.4, 7.95, 15.0, 0, 10, 0.72, 3.8],                                                   // corridor west can
@@ -306,7 +307,8 @@ const RECESS_SPOTS = [
   ['loft', 35.5, roofUnder(3.8) - 0.05, 3.8, LV.LOFT, 14, 0.72, 4.5],                                // loft walk-in closet & laundry
   ['loft', 44.47, 21.25, 7.22, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath north can (vanity)
   ['loft', 44.47, 21.25, 9.86, LV.LOFT, 18, 0.78, 6.2],                                              // upstairs bath mid can
-  ['loft', 44.47, 18.52, 12.58, LV.LOFT, 20, 0.78, 5.8],                                             // upstairs bath south can (shower)
+  ['loft', 43.1, 18.52, 12.58, LV.LOFT, 13, 0.74, 5.8],                                             // upstairs bath west shower can
+  ['loft', 45.85, 18.52, 12.58, LV.LOFT, 13, 0.74, 5.8],                                            // upstairs bath east shower can
 ];
 // Aimed track spotlights from the U-shaped suspended rail (each head illuminates its counter/cabinet zone)
 const TRACK_Y = RCP.ground.T1.y - 0.065 - 0.21;
